@@ -13,8 +13,7 @@ rng = np.random.RandomState(42)
 
 #toy graph
 
-n = 20
-feat_C1=np.random.randint(1,5,n) #node features
+n = 20 #number of nodes
 nc = 3
 ratio = np.array([.2, .3, .5])
 P = np.array(0.6 * np.eye(3) + 0.02 * np.ones((3, 3)))
