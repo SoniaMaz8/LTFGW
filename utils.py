@@ -1,10 +1,9 @@
 import numpy as np
 import torch
-import os
 import matplotlib.pyplot as plt
 import networkx as nx
 from torch_geometric.data import Data
-from torch_geometric.utils import k_hop_subgraph
+from torch_geometric.utils import k_hop_subgraph,to_networkx
 import ot
 
 
@@ -17,6 +16,7 @@ def visualize_graph(G, color='b'):
     plt.figure(figsize=(7,7))
     plt.xticks([])
     plt.yticks([])
+    G = to_networkx(G, to_undirected=True)
     nx.draw_networkx(G, pos=nx.spring_layout(G, seed=42), with_labels=True,
                      node_color=color, cmap="Set2")
     plt.show()
@@ -38,7 +38,6 @@ def graph_to_adjacency(n,edges):  #enfait juste bsoin du nombre de noeuds
     n : number of nodes
     edges : edges in the format [[senders],[receivers]]
     """
-    n
     C=np.zeros((n,n))
     m=len(edges[0])
     for i in range(m):
@@ -78,6 +77,7 @@ def adjacency_to_graph(C,x):
     x=torch.tensor(x,dtype=torch.float)
     return Data(x=x,edge_index=edge_index)
 
+
 def subgraph(C,x,node_idx, order):
     """
     Computes the edges and nodes of a subgraph center at node_idx of order k
@@ -87,20 +87,15 @@ def subgraph(C,x,node_idx, order):
     order : order of te subgraph
     """
     G=adjacency_to_graph(C,x)
-
     sub_G=k_hop_subgraph(node_idx,order,edge_index=G.edge_index,relabel_nodes=False) 
     x_sub=x[sub_G[0]]
-    min_idx=sub_G[0][0]
-    n=len(x_sub)
+    sub_G=k_hop_subgraph(node_idx,order,edge_index=G.edge_index,relabel_nodes=True) #surement une meilleure manière de faire
     edges_sub=sub_G[1]
-    edges_sub[0]=edges_sub[0]-min_idx  #make the indexes start at 0
-    edges_sub[1]=edges_sub[1]-min_idx
-    C_sub=graph_to_adjacency(n,edges_sub)
+    C_sub=graph_to_adjacency(len(sub_G[0]),edges_sub)
     return C_sub,x_sub
 
 
-
-def distance_to_template(C,x_C,T,x_T,k):
+def distance_to_template(C,x_C,T,x_T,k,n_feat,alpha):
     """
     Computes the OT distance between each subgraphs of order k of G and the templates
     C : adjacency matrix of the graph
@@ -108,17 +103,19 @@ def distance_to_template(C,x_C,T,x_T,k):
     T : list of adjacency matrices of the templates
     x_T : list of the features of the templates nodes
     k : number of neighbours in the subgraphs
+    n_feat : dimension of the features
+    alpha : trade-off parameter for fused gromov-wasserstein distance
     """
     n=C.shape[0]
     n_T=len(T)
     distances=np.zeros((n,n_T))
 
     for i in range(n):
+        print(i)
+        C_sub,x_sub=subgraph(C,x_C,i,k)
         for j in range(n_T):
-          
-          C_sub,x_sub=subgraph(C,x_C,i,k)
-          x_sub=x_sub.reshape(len(x_sub),1)  #reshape pour utiliser ot.dist
-          template_features=x_T[j].reshape(len(x_T[j]),1)   #reshape pour utiliser ot.dist
+          x_sub=x_sub.reshape(len(x_sub),n_feat)  #reshape pour utiliser ot.dist
+          template_features=x_T[j].reshape(len(x_T[j]),n_feat)   #reshape pour utiliser ot.dist
           M=np.array(ot.dist(x_sub,template_features))  #cost matrix between the features of the subgraph and the template
 
           n_sub=len(x_sub)
@@ -126,7 +123,7 @@ def distance_to_template(C,x_C,T,x_T,k):
           p=np.ones(n_sub)/n_sub
           q=np.ones(n_template)/n_template
           
-          dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, T[j], p, q)
+          dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, T[j], p, q,alpha=alpha)
           distances[i,j]=dist
 
     return distances
