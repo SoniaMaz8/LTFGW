@@ -72,17 +72,9 @@ def adjacency_to_graph(C,x):
     x : features of the nodes of the graph
     """
     n=C.shape[0]
-    senders=[]
-    receivers=[]
-    for i in range(n):
-        for j in range(n):
-            if C[i,j]>0:
-                senders.append(i)
-                receivers.append(j)
-    edge_index=np.zeros((2,len(senders)))
-    edge_index[0]=senders
-    edge_index[1]=receivers
-    edge_index=torch.tensor(edge_index,dtype=torch.long)
+    edges=np.where(C==1)
+    edges=np.array(edges)
+    edge_index=torch.tensor(edges,dtype=torch.long)
     x=torch.tensor(x,dtype=torch.float)
     return Data(x=x,edge_index=edge_index)
 
