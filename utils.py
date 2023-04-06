@@ -7,7 +7,7 @@ from torch_geometric.utils import k_hop_subgraph,to_networkx
 import ot
 
 
-rng = np.random.RandomState(42)
+#rng = np.random.RandomState(42)
 
 def visualize_graph(G, color='b'):
     """"
@@ -38,27 +38,28 @@ def graph_to_adjacency(n,edges):  #enfait juste bsoin du nombre de noeuds
     n : number of nodes
     edges : edges in the format [[senders],[receivers]]
     """
-    C=np.zeros((n,n))
+    C=torch.zeros((n,n))
     m=len(edges[0])
     for i in range(m):
         C[edges[0,i],edges[1,i]]=1
     return C
 
 def get_sbm(n, nc, ratio, P):
-    nbpc = np.round(n * ratio).astype(int)
-    n = np.sum(nbpc)
-    C = np.zeros((n, n))
+    torch.manual_seed(32)
+    nbpc = torch.round(n * ratio).type(torch.int64)
+    n =  torch.sum(nbpc).item()
+    C =  torch.zeros(n, n)
     for c1 in range(nc):
         for c2 in range(c1 + 1):
             if c1 == c2:
-                for i in range(np.sum(nbpc[:c1]), np.sum(nbpc[:c1 + 1])):
-                    for j in range(np.sum(nbpc[:c2]), i):
-                        if rng.rand() <= P[c1, c2]:
+                for i in range( torch.sum(nbpc[:c1]),  torch.sum(nbpc[:c1 + 1])):
+                    for j in range( torch.sum(nbpc[:c2]), i):
+                        if torch.rand(1) <= P[c1, c2]:
                             C[i, j] = 1
             else:
-                for i in range(np.sum(nbpc[:c1]), np.sum(nbpc[:c1 + 1])):
-                    for j in range(np.sum(nbpc[:c2]), np.sum(nbpc[:c2 + 1])):
-                        if rng.rand() <= P[c1, c2]:
+                for i in range( torch.sum(nbpc[:c1]),  torch.sum(nbpc[:c1 + 1])):
+                    for j in range( torch.sum(nbpc[:c2]),  torch.sum(nbpc[:c2 + 1])):
+                        if torch.rand(1) <= P[c1, c2]:
                             C[i, j] = 1
 
     return C + C.T
@@ -70,11 +71,8 @@ def adjacency_to_graph(C,x):
     C : adjacency matrix of the graph
     x : features of the nodes of the graph
     """
-    n=C.shape[0]
-    edges=np.where(C==1)
-    edges=np.array(edges)
-    edge_index=torch.tensor(edges,dtype=torch.long)
-    x=torch.tensor(x,dtype=torch.float)
+    edges=torch.where(C==1)
+    edge_index=torch.stack(edges)
     return Data(x=x,edge_index=edge_index)
 
 
@@ -91,7 +89,7 @@ def subgraph(C,x,node_idx, order):
     x_sub=x[sub_G[0]]
     sub_G=k_hop_subgraph(node_idx,order,edge_index=G.edge_index,relabel_nodes=True) #surement une meilleure manière de faire
     edges_sub=sub_G[1]
-    C_sub=graph_to_adjacency(len(sub_G[0]),edges_sub)
+    C_sub=graph_to_adjacency(len(sub_G[0]),edges_sub).type(torch.float64)
     return C_sub,x_sub
 
 
@@ -108,7 +106,7 @@ def distance_to_template(C,x_C,T,x_T,k,n_feat,alpha):
     """
     n=C.shape[0]
     n_T=len(T)
-    distances=np.zeros((n,n_T))
+    distances=torch.zeros(n,n_T)
 
     for i in range(n):
         print(i)
@@ -116,14 +114,13 @@ def distance_to_template(C,x_C,T,x_T,k,n_feat,alpha):
         for j in range(n_T):
           x_sub=x_sub.reshape(len(x_sub),n_feat)  #reshape pour utiliser ot.dist
           template_features=x_T[j].reshape(len(x_T[j]),n_feat)   #reshape pour utiliser ot.dist
-          M=np.array(ot.dist(x_sub,template_features))  #cost matrix between the features of the subgraph and the template
-
+          M=torch.tensor(ot.dist(x_sub,template_features))  #cost matrix between the features of the subgraph and the template
           n_sub=len(x_sub)
           n_template=len(x_T[j]) 
-          p=np.ones(n_sub)/n_sub
-          q=np.ones(n_template)/n_template
-          
+          p=torch.ones(n_sub)/n_sub
+          q=torch.ones(n_template)/n_template
           dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, T[j], p, q,alpha=alpha)
           distances[i,j]=dist
 
     return distances
+
