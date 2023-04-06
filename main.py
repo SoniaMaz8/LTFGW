@@ -2,25 +2,26 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 import networkx as nx
-from torch_geometric.data import Data
-from utils import plot_graph, distance_to_template, get_sbm
-from torch_geometric.utils import to_networkx
+from utils import  distance_to_template, get_sbm, plot_graph
 from networkx.generators.community import stochastic_block_model as sbm
 from sklearn.manifold import MDS
+from torch_geometric.utils.convert import from_networkx
 
 
-rng = np.random.RandomState(42)
+
+#rng = np.random.RandomState(42)
+torch.manual_seed(42)
 
 #toy graph
 
 n = 20 #number of nodes
 nc = 3
-ratio = np.array([.2, .3, .5])
-P = np.array(0.6 * np.eye(3) + 0.02 * np.ones((3, 3)))
-C1 = get_sbm(n, nc, ratio, P) 
+ratio = torch.tensor([.2, .3, .5])
+P = 0.6 * torch.eye(3) + 0.02 * torch.ones(3, 3)
+C1 = get_sbm(n, nc, ratio, P)
 
 # get 2d position for nodes
-x1 = MDS(dissimilarity='precomputed', random_state=0).fit_transform(1 - C1)
+x1 = MDS(dissimilarity='precomputed', random_state=2,normalized_stress='auto').fit_transform(1-C1)
 
 plt.figure(1, (10, 5))
 plt.clf()
@@ -36,13 +37,25 @@ plt.show()
 
 #node features
 
-feat_C1=[0,0,0,0,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2]
-feat_C1=feat_C1+np.random.rand(20)
+n_feat=3       #dimension of the features
+feat_C1=[]   #features
+labels=[0,0,0,0,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2]
+for i in range(n):               #one hot encoding for the features
+   feat=torch.zeros(n_feat)
+   feat[labels[i]]=1
+  # feat=feat+torch.rand(n_feat)   #noise
+   feat_C1.append(feat)
+   
+
+feat_C1 = torch.stack(feat_C1)  
+feat_C1=feat_C1.type(torch.float64) 
+
+
  
 #compute the templates with SBM generator
 
 
-np.random.seed(42)
+
 N = 10  # number of templates
 n_cluster = 2
 dataset = []
@@ -54,33 +67,36 @@ p_intra = 0.6
 
 #templates generation
 for i in range(N):
-    n_nodes = int(np.random.uniform(low=5, high=7))
-    P = p_inter * np.ones((n_cluster, n_cluster))
-    np.fill_diagonal(P, p_intra)
-    sizes=np.round(n_nodes * np.ones(n_cluster) / n_cluster).astype(np.int32)
+    n_nodes = torch.randint(5,7,(1,)).item()
+    P = p_inter * torch.ones((n_cluster, n_cluster))
+    P.fill_diagonal_(p_intra)
+    sizes=torch.round(n_nodes * torch.ones(n_cluster) / n_cluster).type(torch.int64)
     G = sbm(sizes, P, seed=i, directed=False)
-    C = nx.to_numpy_array(G)
+    C = torch.tensor(nx.to_numpy_array(G))
     m=C.shape[0]
-    dataset.append(C) 
-    feat=torch.tensor(np.random.randint(1,4,m),dtype=torch.long)
+    C=C.type(torch.float64)
+    dataset.append(C)
+    feat=torch.tensor(torch.randint(0,2,(m,n_feat)),dtype=torch.float64)
     features_templates.append(feat)
 
 plt.figure(2,figsize=(13,6))
 plt.clf()
 for i in range(N):
   C = dataset[i]
-  x = MDS(dissimilarity='precomputed', random_state=0).fit_transform(C)
+  x = MDS(dissimilarity='precomputed', random_state=0,normalized_stress='auto').fit_transform(C)
   plt.subplot(1, N, i+1)
   plot_graph(x, C)
   plt.title('{}'.format(i+1), fontsize=14)
   plt.axis("off")
 plt.show()
 
+
 #distances to subgraphs computations
 nb_neighbours=1
-feat_C1=torch.tensor(feat_C1,dtype=torch.long)
-feat_C1=feat_C1.long()
-dist= distance_to_template(C1,feat_C1,dataset,features_templates,nb_neighbours)
+C1=C1.type(torch.float64) 
+
+dist= distance_to_template(C1,feat_C1,dataset,features_templates,nb_neighbours,n_feat,0.5)
+
 
 plt.figure(3)
 plt.imshow(dist)
