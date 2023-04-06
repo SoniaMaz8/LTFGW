@@ -32,11 +32,13 @@ def plot_graph(x, C, binary=True, color='C0', s=None):
 
     plt.scatter(x[:, 0], x[:, 1], c=color, s=s, zorder=10, edgecolors='k', cmap='tab10', vmax=9)
 
-def graph_to_adjacency(nodes,edges):
+def graph_to_adjacency(n,edges):  #enfait juste bsoin du nombre de noeuds
     """"
     adjacency matrix of a graph given its nodes and edges in a torch.geometric format
+    n : number of nodes
+    edges : edges in the format [[senders],[receivers]]
     """
-    n=len(nodes)
+    n
     C=np.zeros((n,n))
     m=len(edges[0])
     for i in range(m):
@@ -93,11 +95,15 @@ def subgraph(C,x,node_idx, order):
     order : order of te subgraph
     """
     G=adjacency_to_graph(C,x)
+
     sub_G=k_hop_subgraph(node_idx,order,edge_index=G.edge_index,relabel_nodes=False) 
     x_sub=x[sub_G[0]]
-    sub_G=k_hop_subgraph(node_idx,order,edge_index=G.edge_index,relabel_nodes=True) #surement une meilleure manière de faire
+    min_idx=sub_G[0][0]
+    n=len(x_sub)
     edges_sub=sub_G[1]
-    C_sub=graph_to_adjacency(sub_G[0],edges_sub)
+    edges_sub[0]=edges_sub[0]-min_idx  #make the indexes start at 0
+    edges_sub[1]=edges_sub[1]-min_idx
+    C_sub=graph_to_adjacency(n,edges_sub)
     return C_sub,x_sub
 
 
