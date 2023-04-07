@@ -21,6 +21,11 @@ n_nodes=len(nodes)
 
 #compute the adjacency matrix
 C1=graph_to_adjacency(n_nodes,edges)
+G=adjacency_to_graph(C1,features)
+G=GraphData(x=features, edge_index=G.edge_index,y=label, num_features=n_feat , num_classes=6)
+transform=RandomNodeSplit()
+
+G=transform(G)
 
 
 #save the data
@@ -30,4 +35,6 @@ torch.save(n_nodes,'n_nodes_Citeseer.pt')
 torch.save(nodes,'nodes_Citeseer.pt')
 torch.save(label,'labels_Citeseer.pt')
 torch.save(features,'features_Citeseer.pt')
+torch.save(G,'graph_Citeseer.pt')
+
 torch.save(G,'graph_Citeseer.pt')
