@@ -32,16 +32,15 @@ def plot_graph(x, C, binary=True, color='C0', s=None):
 
     plt.scatter(x[:, 0], x[:, 1], c=color, s=s, zorder=10, edgecolors='k', cmap='tab10', vmax=9)
 
-def graph_to_adjacency(n,edges):  #enfait juste bsoin du nombre de noeuds
+def graph_to_adjacency(n,edges):  
     """"
     adjacency matrix of a graph given its nodes and edges in a torch.geometric format
     n : number of nodes
     edges : edges in the format [[senders],[receivers]]
+
+    Returns: sparse adjacency matrix C
     """
-    C=torch.zeros((n,n))
-    m=len(edges[0])
-    for i in range(m):
-        C[edges[0,i],edges[1,i]]=1
+    C=torch.sparse_coo_tensor(edges, np.ones(len(edges[0])),size=(n, n))
     return C
 
 def get_sbm(n, nc, ratio, P):
