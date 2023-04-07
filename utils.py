@@ -84,9 +84,8 @@ def subgraph(C,x,node_idx, order):
     order : order of te subgraph
     """
     G=adjacency_to_graph(C,x)
-    sub_G=k_hop_subgraph(node_idx,order,edge_index=G.edge_index,relabel_nodes=False) 
+    sub_G=k_hop_subgraph(node_idx,order,edge_index=G.edge_index,relabel_nodes=True) 
     x_sub=x[sub_G[0]]
-    sub_G=k_hop_subgraph(node_idx,order,edge_index=G.edge_index,relabel_nodes=True) #surement une meilleure manière de faire
     edges_sub=sub_G[1]
     C_sub=graph_to_adjacency(len(sub_G[0]),edges_sub).type(torch.float64)
     return C_sub,x_sub
