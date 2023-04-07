@@ -2,7 +2,7 @@ import numpy as np
 import torch
 import matplotlib.pyplot as plt
 import networkx as nx
-from torch_geometric.data import Data
+from torch_geometric.data import Data as GraphData
 from torch_geometric.utils import k_hop_subgraph,to_networkx
 import ot
 
@@ -32,17 +32,6 @@ def plot_graph(x, C, binary=True, color='C0', s=None):
 
     plt.scatter(x[:, 0], x[:, 1], c=color, s=s, zorder=10, edgecolors='k', cmap='tab10', vmax=9)
 
-def graph_to_adjacency(n,edges):  
-    """"
-    adjacency matrix of a graph given its nodes and edges in a torch.geometric format
-    n : number of nodes
-    edges : edges in the format [[senders],[receivers]]
-
-    Returns: sparse adjacency matrix C
-    """
-    C=torch.sparse_coo_tensor(edges, np.ones(len(edges[0])),size=(n, n))
-    return C
-
 def get_sbm(n, nc, ratio, P):
     torch.manual_seed(32)
     nbpc = torch.round(n * ratio).type(torch.int64)
@@ -60,22 +49,33 @@ def get_sbm(n, nc, ratio, P):
                     for j in range( torch.sum(nbpc[:c2]),  torch.sum(nbpc[:c2 + 1])):
                         if torch.rand(1) <= P[c1, c2]:
                             C[i, j] = 1
-
     return C + C.T
 
 
-def adjacency_to_graph(C,x):
+def adjacency_to_graph(C,F):
     """
     Returns a torch_geometric graph given binary adjacency matrix and features
     C : adjacency matrix of the graph
-    x : features of the nodes of the graph
+    F : features of the nodes of the graph
     """
     edges=torch.where(C==1)
     edge_index=torch.stack(edges)
-    return Data(x=x,edge_index=edge_index)
+    return GraphData(x=F,edge_index=edge_index)
 
 
-def subgraph(C,x,node_idx, order):
+def graph_to_adjacency(n,edges): 
+    """"
+    adjacency matrix of a graph given its nodes and edges in a torch.geometric format
+    n : number of nodes
+    edges : edges in the format [[senders],[receivers]]
+
+    Returns: sparse adjacency matrix C
+    """
+    C=torch.sparse_coo_tensor(edges, np.ones(len(edges[0])),size=(n, n))
+    return C.to_dense()
+
+
+def subgraph(C,F,node_idx, order):
     """
     Computes the edges and nodes of a subgraph center at node_idx of order k
     C : adjacency matrix of the graph
@@ -83,21 +83,21 @@ def subgraph(C,x,node_idx, order):
     node_idx : index of the node to center the subgraph
     order : order of te subgraph
     """
-    G=adjacency_to_graph(C,x)
+    G=adjacency_to_graph(C,F)
     sub_G=k_hop_subgraph(node_idx,order,edge_index=G.edge_index,relabel_nodes=True) 
-    x_sub=x[sub_G[0]]
+    F_sub=F[sub_G[0]]
     edges_sub=sub_G[1]
     C_sub=graph_to_adjacency(len(sub_G[0]),edges_sub).type(torch.float64)
-    return C_sub,x_sub
+    return C_sub,F_sub
 
 
-def distance_to_template(C,x_C,T,x_T,k,n_feat,alpha):
+def distance_to_template(C,F_C,T,F_T,k,n_feat,alpha):
     """
     Computes the OT distance between each subgraphs of order k of G and the templates
     C : adjacency matrix of the graph
-    x_C : features of the nodes of the graph
+    F_C : features of the nodes of the graph
     T : list of adjacency matrices of the templates
-    x_T : list of the features of the templates nodes
+    F_T : list of the features of the templates nodes
     k : number of neighbours in the subgraphs
     n_feat : dimension of the features
     alpha : trade-off parameter for fused gromov-wasserstein distance
@@ -108,17 +108,16 @@ def distance_to_template(C,x_C,T,x_T,k,n_feat,alpha):
 
     for i in range(n):
         print(i)
-        C_sub,x_sub=subgraph(C,x_C,i,k)
+        C_sub,F_sub=subgraph(C,F_C,i,k)
         for j in range(n_T):
-          x_sub=x_sub.reshape(len(x_sub),n_feat)  #reshape pour utiliser ot.dist
-          template_features=x_T[j].reshape(len(x_T[j]),n_feat)   #reshape pour utiliser ot.dist
-          M=torch.tensor(ot.dist(x_sub,template_features))  #cost matrix between the features of the subgraph and the template
-          n_sub=len(x_sub)
-          n_template=len(x_T[j]) 
+          F_sub=F_sub.reshape(len(F_sub),n_feat)  #reshape pour utiliser ot.dist
+          template_features=F_T[j].reshape(len(F_T[j]),n_feat)   #reshape pour utiliser ot.dist
+          M=torch.tensor(ot.dist(F_sub,template_features))  #cost matrix between the features of the subgraph and the template
+          n_sub=len(F_sub)
+          n_template=len(F_T[j]) 
           p=torch.ones(n_sub)/n_sub
           q=torch.ones(n_template)/n_template
           dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, T[j], p, q,alpha=alpha)
           distances[i,j]=dist
-
     return distances
 
