@@ -6,9 +6,6 @@ from torch_geometric.data import Data as GraphData
 from torch_geometric.utils import k_hop_subgraph,to_networkx
 import ot
 
-
-#rng = np.random.RandomState(42)
-
 def visualize_graph(G, color='b'):
     """"
     visualisation of a torch.geometric graph
