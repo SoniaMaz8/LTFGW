@@ -9,6 +9,10 @@ dataset=torch.load('toy_graph1.pt')
 class lTFWG(nn.Module):
     """ Layer for the local TFWG """
     def __init__(self, N_templates,N_templates_nodes=5):
+        """
+        N_templates: number of templates
+        N_templates_nodes: number of nodes per template
+        """
         super().__init__()
         self.N_templates=N_templates
         self.N_templates_nodes=N_templates_nodes
