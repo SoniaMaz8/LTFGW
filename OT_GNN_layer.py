@@ -22,18 +22,22 @@ class OT_GNN_layer(nn.Module):
         templates_features=torch.Tensor(N_templates,N_templates_nodes,dataset.num_features)
         self.templates_features = nn.Parameter(templates_features)
 
-       # self.conv= GCNConv(self.N_templates, dataset.num_classes)
+        self.conv1= GCNConv(dataset.num_features, hidden_channels)
+        self.conv2= GCNConv(hidden_channels, dataset.num_features)
         self.linear=Linear(self.N_templates, dataset.num_classes)
+
+        self.C=graph_to_adjacency(dataset.num_nodes,dataset.edge_index)
 
         # initialize adjacency matrices for the templates
         nn.init.uniform_(self.templates)
         nn.init.uniform_(self.templates_features)
 
     def forward(self, G):
-        C=graph_to_adjacency(G.num_nodes,G.edge_index)
-        F_C=distance_to_template(C,G.x,self.templates,self.templates_features,1,G.num_features)
-        x=self.linear(F_C)
-       # x=self.conv(F_C,G.edge_index)
+        x=self.conv1(G.x,G.edge_index)
+        x = x.relu()
+        x=self.conv2(x,G.edge_index)
+        x=distance_to_template(self.C,x,self.templates,self.templates_features,1,G.num_features)
+        x=self.linear(x)
         return  x
     
 
