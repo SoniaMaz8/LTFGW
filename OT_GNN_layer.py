@@ -45,11 +45,11 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
 
 def train():
       model.train()
-      optimizer.zero_grad()  # Clear gradients.
-      out = model(dataset)  # Perform a single forward pass.
-      loss = criterion(out[dataset.train_mask], dataset.y[dataset.train_mask])  # Compute the loss solely based on the training nodes.
-      loss.backward()  # Derive gradients.
-      optimizer.step()  # Update parameters based on gradients.
+      optimizer.zero_grad()  
+      out = model(dataset)  
+      loss = criterion(out[dataset.train_mask], dataset.y[dataset.train_mask]) 
+      loss.backward()  
+      optimizer.step() 
       return loss
 
 def test():
@@ -58,8 +58,8 @@ def test():
       print(out)
       pred = out.argmax(dim=1)  # Use the class with highest probability.
       print(pred)
-      test_correct = pred[dataset.test_mask] == dataset.y[dataset.test_mask]  # Check against ground-truth labels.
-      test_acc = int(test_correct.sum()) / int(dataset.test_mask.sum())  # Derive ratio of correct predictions.
+      test_correct = pred[dataset.test_mask] == dataset.y[dataset.test_mask]  
+      test_acc = int(test_correct.sum()) / int(dataset.test_mask.sum())  
       return test_acc
 
 for epoch in range(1, 10):
