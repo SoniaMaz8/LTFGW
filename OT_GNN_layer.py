@@ -6,12 +6,9 @@ from torch_geometric.nn import GCNConv, Linear
 
 dataset=torch.load('toy_graph1.pt')
 
-class OT_GNN_layer(nn.Module):
-    def __init__(self,N_templates=10,N_templates_nodes=10):
-        """
-        N_templates: number of templates
-        N_templates_nodes: number of nodes in each template
-        """
+class lTFWG(nn.Module):
+    """ Layer for the local TFWG """
+    def __init__(self, N_templates,N_templates_nodes=5):
         super().__init__()
         self.N_templates=N_templates
         self.N_templates_nodes=N_templates_nodes
@@ -22,21 +19,35 @@ class OT_GNN_layer(nn.Module):
         templates_features=torch.Tensor(N_templates,N_templates_nodes,dataset.num_features)
         self.templates_features = nn.Parameter(templates_features)
 
-        self.conv1= GCNConv(dataset.num_features, hidden_channels)
-        self.conv2= GCNConv(hidden_channels, dataset.num_features)
-        self.linear=Linear(self.N_templates, dataset.num_classes)
-
         self.C=graph_to_adjacency(dataset.num_nodes,dataset.edge_index)
 
         # initialize adjacency matrices for the templates
         nn.init.uniform_(self.templates)
         nn.init.uniform_(self.templates_features)
 
-    def forward(self, G):
-        x=self.conv1(G.x,G.edge_index)
+    def forward(self, x):
+        x=distance_to_template(x,self.C,self.templates,self.templates_features,dataset.num_features)
+        return x
+
+class OT_GNN_layer(nn.Module):
+    def __init__(self,hidden_channels=5):
+        """
+        N_templates: number of templates
+        N_templates_nodes: number of nodes in each template
+        """
+        super().__init__()
+
+        self.conv1= GCNConv(dataset.num_features, hidden_channels)
+        self.conv2= GCNConv(hidden_channels, dataset.num_features)
+        self.linear=Linear(10, dataset.num_classes)
+        self.lTFWG=lTFWG(10,5)
+
+
+    def forward(self, x, edge_index):
+        x=self.conv1(x,edge_index)
         x = x.relu()
-        x=self.conv2(x,G.edge_index)
-        x=distance_to_template(self.C,x,self.templates,self.templates_features,1,G.num_features)
+        x=self.conv2(x,edge_index)
+        x=self.lTFWG(x)
         x=self.linear(x)
         return  x
     
@@ -50,27 +61,24 @@ optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
 def train():
       model.train()
       optimizer.zero_grad()  
-      out = model(dataset)  
-      loss = criterion(out[dataset.train_mask], dataset.y[dataset.train_mask]) 
+      out = model(dataset.x,dataset.edge_index)  
+      loss = criterion(out[dataset.train_mask], dataset.y[dataset.train_mask])  
       loss.backward()  
-      optimizer.step() 
+      optimizer.step()  
       return loss
 
 def test():
       model.eval()
-      out = model(dataset)
-      print(out)
+      out = model(dataset.x,dataset.edge_index)
       pred = out.argmax(dim=1)  # Use the class with highest probability.
-      print(pred)
       test_correct = pred[dataset.test_mask] == dataset.y[dataset.test_mask]  
-      test_acc = int(test_correct.sum()) / int(dataset.test_mask.sum())  
+      test_acc = int(test_correct.sum()) / int(dataset.test_mask.sum()) 
       return test_acc
 
-for epoch in range(1, 10):
-    loss = train()
-    print(f'Epoch: {epoch:03d}, Loss: {loss:.4f}')
+for epoch in range(10):
+     loss = train()
+     print(f'Epoch: {epoch:03d}, Loss: {loss:.4f}')
 
 test_acc = test()
 print(f'Test Accuracy: {test_acc:.4f}')   
-
 
