@@ -8,52 +8,51 @@ dataset=torch.load('toy_graph1.pt')
 
 class lTFWG(nn.Module):
     """ Layer for the local TFWG """
-    def __init__(self, N_templates,N_templates_nodes=5):
-        """
-        N_templates: number of templates
-        N_templates_nodes: number of nodes per template
-        """
+    def __init__(self, N_templates,dataset,N_templates_nodes=5):
         super().__init__()
         self.N_templates=N_templates
         self.N_templates_nodes=N_templates_nodes
+        self.dataset=dataset
 
         templates=torch.Tensor(N_templates,N_templates_nodes,N_templates_nodes)  #templates adjacency matrices 
         self.templates = nn.Parameter(templates)
 
-        templates_features=torch.Tensor(N_templates,N_templates_nodes,dataset.num_features)
+        templates_features=torch.Tensor(N_templates,N_templates_nodes,self.dataset.num_features)
         self.templates_features = nn.Parameter(templates_features)
 
-        self.C=graph_to_adjacency(dataset.num_nodes,dataset.edge_index)
+        self.C=graph_to_adjacency(self.dataset.num_nodes,self.dataset.edge_index)
+
 
         # initialize adjacency matrices for the templates
         nn.init.uniform_(self.templates)
         nn.init.uniform_(self.templates_features)
 
     def forward(self, x):
-        x=distance_to_template(x,self.C,self.templates,self.templates_features,dataset.num_features)
+        x=distance_to_template(x,self.C,self.templates,self.templates_features,self.dataset.num_features)
         return x
-
+    
 class OT_GNN_layer(nn.Module):
-    def __init__(self,hidden_channels=5):
+    def __init__(self,dataset,hidden_channels=16):
         """
         N_templates: number of templates
         N_templates_nodes: number of nodes in each template
         """
         super().__init__()
-
-        self.conv1= GCNConv(dataset.num_features, hidden_channels)
-        self.conv2= GCNConv(hidden_channels, dataset.num_features)
-        self.linear=Linear(10, dataset.num_classes)
-        self.lTFWG=lTFWG(10,5)
-
+    
+        self.dataset=dataset
+        self.conv1= GCNConv(self.dataset.num_features, hidden_channels)
+        self.conv2= GCNConv(hidden_channels,self.dataset.num_features)
+        self.linear=Linear(10, self.dataset.num_classes)
+        self.lTFWG=lTFWG(10,self.dataset,5)
 
     def forward(self, x, edge_index):
-        x=self.conv1(x,edge_index)
-        x = x.relu()
-        x=self.conv2(x,edge_index)
+    #    x=self.conv1(x,edge_index)
+    #    x = x.relu()
+    #    x=self.conv2(x,edge_index)
         x=self.lTFWG(x)
         x=self.linear(x)
         return  x
+    
     
 
 torch.manual_seed(0)
