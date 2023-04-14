@@ -7,6 +7,9 @@ from torch_geometric.utils import k_hop_subgraph,to_networkx
 import ot
 import time
 
+
+#rng = np.random.RandomState(42)
+
 def visualize_graph(G, color='b'):
     """"
     visualisation of a torch.geometric graph
@@ -105,7 +108,7 @@ def distance_to_template(x,edge_index,x_T,C_T,k=1,alpha=0.5):
     for i in range(n):
         x_sub,edges_sub=subgraph(x,edge_index,i,k)
         n_sub=len(x_sub)
-        C_sub=graph_to_adjacency(n_sub,edges_sub).type(torch.float)
+        C_sub=graph_to_adjacency(n_sub,edges_sub).type(torch.float)    
         for j in range(n_T):
           x_sub=x_sub.reshape(len(x_sub),n_feat)  #reshape pour utiliser ot.dist
           template_features=x_T[j].reshape(len(x_T[j]),n_feat)   #reshape pour utiliser ot.dist
@@ -113,8 +116,7 @@ def distance_to_template(x,edge_index,x_T,C_T,k=1,alpha=0.5):
           n_template=len(x_T[j]) 
           p=torch.ones(n_sub)/n_sub
           q=torch.ones(n_template)/n_template
-          dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, C_T[j], p, q,alpha=alpha,symmetric=True)
+          dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, C_T[j], p, q,alpha=alpha,symmetric=True) 
           distances[i,j]=dist
     return distances
-
 
