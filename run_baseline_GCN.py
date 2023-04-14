@@ -1,10 +1,17 @@
 import torch
-from torch_geometric.nn import GCNConv
+from torch_geometric.nn import GCNConv, GATConv,CuGraphSAGEConv, TAGConv
 from torch_geometric.datasets import Planetoid
 from torch_geometric.transforms import NormalizeFeatures
 
-data = torch.load('toy_graph1.pt')
-dataset=torch.load('toy_graph1.pt')
+#%% Dataset
+
+#dataset = Planetoid(root='data/Planetoid', name='Cora', transform=NormalizeFeatures())
+#data = dataset[0] 
+
+data = torch.load('toy_graph2.pt')
+dataset=torch.load('toy_graph2.pt')
+
+print(data.train_mask)
 
 #%% GCN Model
 
@@ -21,10 +28,13 @@ class GCN(torch.nn.Module):
         x = self.conv2(x, edge_index)
         return x
 
+torch.manual_seed(0)
 model = GCN(hidden_channels=16)
 print(model)
 
 #%% Train the model
+
+
 
 optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
 criterion = torch.nn.CrossEntropyLoss()
@@ -32,7 +42,9 @@ criterion = torch.nn.CrossEntropyLoss()
 def train():
       model.train()
       optimizer.zero_grad() 
-      out = model(data.x, data.edge_index)  
+      out = model(data.x, data.edge_index) 
+      print(out)
+      pred = out.argmax(dim=1) 
       loss = criterion(out[data.train_mask], data.y[data.train_mask]) 
       loss.backward()  
       optimizer.step()  
@@ -46,10 +58,6 @@ def test():
       test_acc = int(test_correct.sum()) / int(data.test_mask.sum())  
       return test_acc
 
-
-for epoch in range(1, 101):
-    loss = train()
-    print(f'Epoch: {epoch:03d}, Loss: {loss:.4f}')
 
 test_acc = test()
 print(f'Test Accuracy: {test_acc:.4f}')
