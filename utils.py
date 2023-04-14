@@ -116,7 +116,7 @@ def distance_to_template(x,edge_index,x_T,C_T,k=1,alpha=0.5):
           M=torch.tensor(ot.dist(x_sub,template_features)).type(torch.float)  #cost matrix between the features of the subgraph and the template
           n_template=len(x_T[j]) 
           q=torch.ones(n_template)/n_template
-          dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, C_T[j], p, q,alpha=alpha,symmetric=True) 
+          dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, C_T[j], p, q,alpha=alpha,symmetric=True,max_iter=100) 
           distances[i,j]=dist
     return distances
 
