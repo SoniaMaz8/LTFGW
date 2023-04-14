@@ -3,8 +3,8 @@ from torch_geometric.nn import GCNConv
 from torch_geometric.datasets import Planetoid
 from torch_geometric.transforms import NormalizeFeatures
 
-dataset = Planetoid(root='data/Planetoid', name='Cora', transform=NormalizeFeatures())
-data = dataset[0] 
+data = torch.load('toy_graph1.pt')
+dataset=torch.load('toy_graph1.pt')
 
 #%% GCN Model
 
