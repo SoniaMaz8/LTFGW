@@ -4,12 +4,10 @@ from torch_geometric.datasets import Planetoid
 from torch_geometric.transforms import NormalizeFeatures
 
 #%% Dataset
+ 
 
-#dataset = Planetoid(root='data/Planetoid', name='Cora', transform=NormalizeFeatures())
-#data = dataset[0] 
-
-data = torch.load('toy_graph2.pt')
-dataset=torch.load('toy_graph2.pt')
+data = torch.load('data/toy_graph1.pt')
+dataset=torch.load('data/toy_graph1.pt')
 
 print(data.train_mask)
 
