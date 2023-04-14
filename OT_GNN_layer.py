@@ -43,6 +43,7 @@ class OT_GNN_layer(nn.Module):
         self.linear=Linear(10, self.num_classes)
         self.LTFWG=LTFWG(3,10,5)
 
+        
     def forward(self, x, edge_index):
         x=self.LTFWG(x,edge_index)
         x=self.linear(x)
