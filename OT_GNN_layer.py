@@ -18,18 +18,19 @@ class LTFWG(nn.Module):
         self.N_templates_nodes=N_templates_nodes
         self.N_features=N_features
 
-        templates=torch.Tensor(self.N_templates,self.N_templates_nodes,self.N_templates_nodes)  #templates adjacency matrices 
-        self.templates = nn.Parameter(templates)
+        latent_template=torch.Tensor(self.N_templates,self.N_templates_nodes,self.N_templates_nodes)
+        self.latent_template=nn.Parameter(latent_template)
 
         templates_features=torch.Tensor(self.N_templates,self.N_templates_nodes,self.N_features)
         self.templates_features = nn.Parameter(templates_features)
 
         # initialize adjacency matrices for the templates
-        nn.init.uniform_(self.templates)
+        nn.init.uniform_(self.latent_template)
         nn.init.uniform_(self.templates_features)
 
     def forward(self, x, edge_index):
-        x=distance_to_template(x,edge_index,self.templates_features,self.templates)
+        template=0.5*(self.latent_template+torch.transpose(self.latent_template,1,2))
+        x=distance_to_template(x,edge_index,self.templates_features,template)
         return x
 
 class OT_GNN_layer(nn.Module):
@@ -43,7 +44,6 @@ class OT_GNN_layer(nn.Module):
         self.linear=Linear(10, self.num_classes)
         self.LTFWG=LTFWG(3,10,5)
 
-        
     def forward(self, x, edge_index):
         x=self.LTFWG(x,edge_index)
         x=self.linear(x)
