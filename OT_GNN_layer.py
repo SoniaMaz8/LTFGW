@@ -1,87 +1,51 @@
 import torch
 import torch.nn as nn
-from utils import distance_to_template,graph_to_adjacency, adjacency_to_graph
+from utils import distance_to_template
 from torch_geometric.data import Data as GraphData
 from torch_geometric.nn import GCNConv, Linear
 
-dataset=torch.load('toy_graph1.pt')
 
-class lTFWG(nn.Module):
+class LTFWG(nn.Module):
     """ Layer for the local TFWG """
-    def __init__(self, N_templates,dataset,N_templates_nodes=5):
+    def __init__(self, N_features=3, N_templates=10,N_templates_nodes=5):
+        """
+        N_features: number of node features
+        N_templates: number of graph templates
+        N_templates_nodes: number of nodes in each template
+        """
         super().__init__()
         self.N_templates=N_templates
         self.N_templates_nodes=N_templates_nodes
-        self.dataset=dataset
+        self.N_features=N_features
 
-        templates=torch.Tensor(N_templates,N_templates_nodes,N_templates_nodes)  #templates adjacency matrices 
+        templates=torch.Tensor(self.N_templates,self.N_templates_nodes,self.N_templates_nodes)  #templates adjacency matrices 
         self.templates = nn.Parameter(templates)
 
-        templates_features=torch.Tensor(N_templates,N_templates_nodes,self.dataset.num_features)
+        templates_features=torch.Tensor(self.N_templates,self.N_templates_nodes,self.N_features)
         self.templates_features = nn.Parameter(templates_features)
-
-        self.C=graph_to_adjacency(self.dataset.num_nodes,self.dataset.edge_index)
-
 
         # initialize adjacency matrices for the templates
         nn.init.uniform_(self.templates)
         nn.init.uniform_(self.templates_features)
 
-    def forward(self, x):
-        x=distance_to_template(x,self.C,self.templates,self.templates_features,self.dataset.num_features)
+    def forward(self, x, edge_index):
+        x=distance_to_template(x,edge_index,self.templates_features,self.templates)
         return x
-    
+
 class OT_GNN_layer(nn.Module):
-    def __init__(self,dataset,hidden_channels=16):
+    def __init__(self,n_classes=3):
         """
-        N_templates: number of templates
-        N_templates_nodes: number of nodes in each template
+        n_classes: number of classes for node classification
         """
         super().__init__()
     
-        self.dataset=dataset
-        self.conv1= GCNConv(self.dataset.num_features, hidden_channels)
-        self.conv2= GCNConv(hidden_channels,self.dataset.num_features)
-        self.linear=Linear(10, self.dataset.num_classes)
-        self.lTFWG=lTFWG(10,self.dataset,5)
+        self.num_classes=n_classes
+        self.linear=Linear(10, self.num_classes)
+        self.LTFWG=LTFWG(3,10,5)
 
     def forward(self, x, edge_index):
-    #    x=self.conv1(x,edge_index)
-    #    x = x.relu()
-    #    x=self.conv2(x,edge_index)
-        x=self.lTFWG(x)
+        x=self.LTFWG(x,edge_index)
         x=self.linear(x)
         return  x
     
-    
-
-torch.manual_seed(0)
-model=OT_GNN_layer()
-
-criterion = torch.nn.CrossEntropyLoss()  
-optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-4)
-
-def train():
-      model.train()
-      optimizer.zero_grad()  
-      out = model(dataset.x,dataset.edge_index)  
-      loss = criterion(out[dataset.train_mask], dataset.y[dataset.train_mask])  
-      loss.backward()  
-      optimizer.step()  
-      return loss
-
-def test():
-      model.eval()
-      out = model(dataset.x,dataset.edge_index)
-      pred = out.argmax(dim=1)  # Use the class with highest probability.
-      test_correct = pred[dataset.test_mask] == dataset.y[dataset.test_mask]  
-      test_acc = int(test_correct.sum()) / int(dataset.test_mask.sum()) 
-      return test_acc
-
-for epoch in range(10):
-     loss = train()
-     print(f'Epoch: {epoch:03d}, Loss: {loss:.4f}')
-
-test_acc = test()
-print(f'Test Accuracy: {test_acc:.4f}')   
 
