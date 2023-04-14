@@ -1,7 +1,7 @@
 from OT_GNN_layer import OT_GNN_layer
 import torch
 
-dataset=torch.load('data/toy_graph1.pt')
+dataset=torch.load('Toy_graphs/toy_graph1.pt')
 model=OT_GNN_layer()
 
 criterion = torch.nn.CrossEntropyLoss()  
