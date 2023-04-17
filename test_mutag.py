@@ -3,7 +3,7 @@ import torch
 
 dataset_all=torch.load('test_mutag.pt')
 model=OT_GNN_layer()
-model.load_state_dict(torch.load('model_mutag.pt')['model_state_dict'])
+model.load_state_dict(torch.load('checkpoints/model_mutag.pt')['model_state_dict'])
 
 
 
