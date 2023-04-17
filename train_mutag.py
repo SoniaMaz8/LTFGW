@@ -5,7 +5,7 @@ from torch_geometric.loader import DataLoader
 from torch_geometric.data import Batch
 import numpy as np
 
-dataset=torch.load('train_mutag.pt')
+dataset=torch.load('data/train_mutag.pt')
 model=OT_GNN_layer()
 
 criterion = torch.nn.CrossEntropyLoss()  
