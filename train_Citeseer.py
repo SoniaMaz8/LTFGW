@@ -3,28 +3,31 @@ from torch_geometric.data import NeighborSampler
 from OT_GNN_layer import OT_GNN_layer
 import torch
 import time
-from torch_geometric.loader import DataLoader
+from torch_geometric.loader import DataLoader, GraphSAINTNodeSampler
 from torch_geometric.data import Batch
+import numpy as np
+from torch.optim.lr_scheduler import StepLR
 
 dataset=torch.load('data/graph_Citeseer.pt')
 
-
 train_loader = NeighborLoader(dataset,num_neighbors= [-1],
-    batch_size=30,
-    input_nodes=dataset.train_mask)
+    batch_size=4,
+    input_nodes=dataset.train_mask,shuffle=True)
+
 
 model=OT_GNN_layer()
 
 criterion = torch.nn.CrossEntropyLoss()  
-optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
+optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
+scheduler = StepLR(optimizer, step_size=10, gamma=0.1)
 
 Loss=[]
+Train_acc=[]
 def train():
     model.train()
     total_loss = 0
     total_train_acc=0
     for idx,data in enumerate(train_loader):
-        print(idx)
         optimizer.zero_grad()
         out = model(data.x,data.edge_index) 
         pred = out.argmax(dim=1) 
@@ -32,12 +35,22 @@ def train():
         train_acc = int(train_correct.sum()) / int(data.train_mask.sum())  
         total_train_acc+=train_acc
         loss = criterion(out[data.train_mask], data.y[data.train_mask])
-        Loss.append(loss.detach().numpy())
-        total_loss += loss.item() * len(pred)  #data.num_graphs=batchsize
+        total_loss += loss.item() 
         loss.backward()
         optimizer.step()
-    return total_loss / len(train_loader.dataset), total_train_acc / len(train_loader)
+    return total_loss / len(train_loader), total_train_acc / len(train_loader)
 
-for epoch in range(1, 10):
+for epoch in range(1, 100):
     loss,train_acc = train()
+    Loss.append(loss)
+    Train_acc.append(train_acc)
     print(f'Epoch: {epoch:03d}, Loss: {loss:.4f}, Train accuracy: {train_acc:.4f}')
+
+np.save('Loss.npy',Loss)  
+np.save('Train_acc.npy',Train_acc) 
+
+torch.save({
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            }, 'model_Citeseer.pt')
+
