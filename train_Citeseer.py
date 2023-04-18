@@ -31,7 +31,6 @@ def train():
         train_correct = pred[data.train_mask] == data.y[data.train_mask]   
         train_acc = int(train_correct.sum()) / int(data.train_mask.sum())  
         total_train_acc+=train_acc
-        print(train_acc)
         loss = criterion(out[data.train_mask], data.y[data.train_mask])
         Loss.append(loss.detach().numpy())
         total_loss += loss.item() * len(pred)  #data.num_graphs=batchsize
