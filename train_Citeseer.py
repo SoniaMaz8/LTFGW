@@ -6,7 +6,7 @@ import time
 from torch_geometric.loader import DataLoader
 from torch_geometric.data import Batch
 
-dataset=torch.load('Citeseer_data/graph_Citeseer.pt')
+dataset=torch.load('data/graph_Citeseer.pt')
 
 
 train_loader = NeighborLoader(dataset,num_neighbors= [-1],
