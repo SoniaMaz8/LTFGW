@@ -34,7 +34,7 @@ class LTFWG(nn.Module):
         return x
 
 class OT_GNN_layer(nn.Module):
-    def __init__(self,n_classes=6,N_features=3703, N_templates=10,N_templates_nodes=20):
+    def __init__(self,n_classes=2,N_features=10, N_templates=10,N_templates_nodes=10):
         """
         n_classes: number of classes for node classification
         """
