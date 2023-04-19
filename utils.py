@@ -91,6 +91,25 @@ def subgraph(x,edge_index,node_idx, order):
 
 
 
+def distance_to_template(x,edge_index,x_T,C_T,k=1,alpha=0.5):
+    """
+    Computes the OT distance between each subgraphs of order k of G and the templates
+    x : node features of the graph
+    edge_index : edge indexes of the graph
+    x_T : list of the node features of the templates
+    C_T : list of the adjacency matrices of the templates 
+    k : number of neighbours in the subgraphs
+    alpha : trade-off parameter for fused gromov-wasserstein distance
+    """
+    n=len(x)       #number of nodes in the graph
+    n_T=len(x_T)   #number of templates
+    n_feat=len(x[0])
+    n_feat_T=len(x_T[0][0])
+    if not n_feat==n_feat_T:
+        raise ValueError('the templates and the graphs must have the same number of features')
+    distances=torch.zeros(n,n_T)
+    n_template=len(x_T[0])
+    q=torch.ones(n_template)/n_template
     for i in range(n):
         x_sub,edges_sub=subgraph(x,edge_index,i,k)
         x_sub=x_sub.reshape(len(x_sub),n_feat)  #reshape pour utiliser ot.dist        
@@ -98,9 +117,9 @@ def subgraph(x,edge_index,node_idx, order):
         p=torch.ones(n_sub)/n_sub
         C_sub=graph_to_adjacency(n_sub,edges_sub).type(torch.float)    
         for j in range(n_T):
-          template_features=x_T[j].reshape(len(x_T[j]),n_feat)   #reshape pour utiliser ot.dist
+          template_features=x_T[j].reshape(len(x_T[j]),n_feat_T)   #reshape pour utiliser ot.dist
           M=torch.tensor(ot.dist(x_sub,template_features)).type(torch.float)  #cost matrix between the features of the subgraph and the template
-          dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, C_T[j], p, q,alpha=alpha,symmetric=True,max_iter=100)      
+          dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, C_T[j], p, q,alpha=alpha,symmetric=True,max_iter=100)    
           distances[i,j]=dist
     return distances
 
