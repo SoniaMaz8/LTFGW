@@ -1,3 +1,6 @@
+#adapted code from https://github.com/dmlc/dgl/tree/0.5.x/examples/pytorch/gcn, which is an implementation of the 
+#state of the art GCN https://arxiv.org/abs/1609.02907
+
 """GCN using DGL nn package
 References:
 - Semi-Supervised Classification with Graph Convolutional Networks
