@@ -7,7 +7,7 @@ from torch_geometric.nn import GCNConv, Linear
 
 class LTFWG(nn.Module):
     """ Layer for the local TFWG """
-    def __init__(self, N_features=3, N_templates=10,N_templates_nodes=5):
+    def __init__(self, N_features=10, N_templates=10,N_templates_nodes=10):
         """
         N_features: number of node features
         N_templates: number of graph templates
@@ -22,7 +22,7 @@ class LTFWG(nn.Module):
         self.latent_template=nn.Parameter(latent_template)
 
         templates_features=torch.Tensor(self.N_templates,self.N_templates_nodes,self.N_features)
-        self.templates_features = nn.Parameter(templates_features)
+        self.templates_features =nn.Parameter(templates_features)
 
         # initialize adjacency matrices for the templates
         nn.init.uniform_(self.latent_template)
@@ -34,19 +34,18 @@ class LTFWG(nn.Module):
         return x
 
 class OT_GNN_layer(nn.Module):
-    def __init__(self,n_classes=3):
+    def __init__(self,n_classes=6,N_features=3703, N_templates=10,N_templates_nodes=20):
         """
         n_classes: number of classes for node classification
         """
         super().__init__()
     
         self.num_classes=n_classes
-        self.linear=Linear(10, self.num_classes)
-        self.LTFWG=LTFWG(3,10,5)
+
+        self.LTFWG=LTFWG(N_features, N_templates,N_templates_nodes)
+        self.linear=Linear(N_templates, self.num_classes)
 
     def forward(self, x, edge_index):
         x=self.LTFWG(x,edge_index)
         x=self.linear(x)
         return  x
-    
-
