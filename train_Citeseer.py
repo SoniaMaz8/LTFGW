@@ -15,7 +15,7 @@ train_loader = NeighborLoader(dataset,num_neighbors= [-1],
     input_nodes=dataset.train_mask,shuffle=True)
 
 
-model=OT_GNN_layer()
+model=OT_GNN_layer(n_classes=6,N_features=3703, N_templates=10,N_templates_nodes=10)
 
 criterion = torch.nn.CrossEntropyLoss()  
 optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
