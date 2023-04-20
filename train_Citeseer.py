@@ -1,6 +1,6 @@
 from torch_geometric.loader import NeighborLoader
 from torch_geometric.data import NeighborSampler
-from OT_GNN_layer import OT_GNN_layer
+from OT_GNN_layer_Citeseer import OT_GNN_layer
 import torch
 import time
 from torch_geometric.loader import DataLoader, GraphSAINTNodeSampler
