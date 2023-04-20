@@ -73,7 +73,8 @@ def graph_to_adjacency(n,edges):
     Returns: sparse adjacency matrix C
     """
     C=torch.sparse_coo_tensor(edges, np.ones(len(edges[0])),size=(n, n))
-    return C.to_dense()
+    C=C.to_dense()
+    return C+C.T
 
 
 def subgraph(x,edge_index,node_idx, order):
