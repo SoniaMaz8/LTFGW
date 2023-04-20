@@ -118,7 +118,8 @@ def distance_to_template(x,edge_index,x_T,C_T,k=1,alpha=0.5):
         C_sub=graph_to_adjacency(n_sub,edges_sub).type(torch.float)    
         for j in range(n_T):
           template_features=x_T[j].reshape(len(x_T[j]),n_feat_T)   #reshape pour utiliser ot.dist
-          M=torch.tensor(ot.dist(x_sub,template_features)).type(torch.float)  #cost matrix between the features of the subgraph and the template
+          M=ot.dist(x_sub,template_features).clone().detach().requires_grad_(True)
+          M=M.type(torch.float)  #cost matrix between the features of the subgraph and the template
           dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, C_T[j], p, q,alpha=alpha,symmetric=True,max_iter=100)    
           distances[i,j]=dist
     return distances
