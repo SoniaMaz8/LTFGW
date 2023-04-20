@@ -19,10 +19,10 @@ class LTFWG(nn.Module):
         self.N_features=N_features
 
         latent_template=torch.Tensor(self.N_templates,self.N_templates_nodes,self.N_templates_nodes)
-        self.latent_template=nn.Parameter(latent_template)
+        self.latent_template=nn.Parameter(F.normalize(latent_template, p=2, dim=2))
 
         templates_features=torch.Tensor(self.N_templates,self.N_templates_nodes,self.N_features)
-        self.templates_features =nn.Parameter(templates_features)
+        self.templates_features = nn.Parameter(F.normalize(templates_features, p=2, dim=2))
 
         # initialize adjacency matrices for the templates
         nn.init.uniform_(self.latent_template)
