@@ -123,3 +123,32 @@ def distance_to_template(x,edge_index,x_T,C_T,k=1,alpha=0.5):
           distances[i,j]=dist
     return distances
 
+def construct_templates(g,N_nodes=10,N_templates=10):
+    """"
+    This function returns templates as subgraphs of the graph. The subgraphs are neighbourhoods of high degree nodes.
+    Input:
+        g: graph as input
+        N_nodes: number of nodes in each template
+        N_templates: number of templates
+    Output:
+        Templates: list of the adjacency matrices of the templates
+        Templates_features: list of the node features of the templates
+    """
+    deg = degree(g.edge_index[0], g.num_nodes)
+    high_degree_nodes=torch.where(deg>10)
+    indexes=torch.randint(len(high_degree_nodes[0]),[N_templates])  #high degree nodes selection (degree>10)
+    indexes=high_degree_nodes[0][indexes]     
+    Templates=[]
+    Templates_features=[]
+    for idx in indexes:
+        temp=k_hop_subgraph(idx.item(),2,edge_index=g.edge_index,relabel_nodes=False)  #neighbourhood  for the graph
+        deg = degree(temp[1][0], torch.max(temp[0])+1)
+        temp_high_degree_nodes=torch.where(deg>5)   #we select the subgraph with nodes of degree >5
+        temp_high_degree_nodes=temp_high_degree_nodes[0][torch.randperm(len(temp_high_degree_nodes[0]))][:N_nodes]  #random node selection
+        temp_graph=subgraph(temp_high_degree_nodes,temp[1])
+        u=temp_graph[0]
+        _,temp_sorted = torch.sort(u)
+        temp_graph=graph_to_adjacency(N_nodes,temp_sorted)
+        Templates.append(temp_graph)
+        Templates_features.append(g.x[temp_high_degree_nodes])
+    return Templates,Templates_features
