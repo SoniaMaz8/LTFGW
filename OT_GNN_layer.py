@@ -3,6 +3,7 @@ import torch.nn as nn
 from utils import distance_to_template
 from torch_geometric.data import Data as GraphData
 from torch_geometric.nn import GCNConv, Linear
+import torch.nn.functional as F
 
 
 class LTFWG(nn.Module):
