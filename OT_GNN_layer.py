@@ -19,16 +19,17 @@ class LTFWG(nn.Module):
         self.N_templates_nodes=N_templates_nodes
         self.N_features=N_features
 
-        latent_template=torch.Tensor(self.N_templates,self.N_templates_nodes,self.N_templates_nodes)
-        nn.init.normal_(latent_template)
-        self.latent_template=nn.Parameter(F.normalize(latent_template, p=2, dim=2))
-
         templates_features=torch.Tensor(self.N_templates,self.N_templates_nodes,self.N_features)
         nn.init.normal_(templates_features)
         self.templates_features = nn.Parameter(F.normalize(templates_features, p=2, dim=2))
-
+        
+        template=torch.Tensor(self.N_templates,self.N_templates_nodes,self.N_templates_nodes)
+        nn.init.normal_(template)
+        template=F.normalize(template, p=2, dim=2)
+        template=0.5*(template+torch.transpose(template,1,2))
+        self.template=template
+        
     def forward(self, x, edge_index):
-        template=0.5*(self.latent_template+torch.transpose(self.latent_template,1,2))
         x=distance_to_template(x,edge_index,self.templates_features,template)
         return x
 
