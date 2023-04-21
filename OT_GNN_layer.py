@@ -6,8 +6,8 @@ from torch_geometric.nn import GCNConv, Linear
 import torch.nn.functional as F
 
 
-class LTFWG(nn.Module):
-    """ Layer for the local TFWG """
+class LTFGW(nn.Module):
+    """ Layer for the local TFGW """
     def __init__(self, N_features=10, N_templates=10,N_templates_nodes=10):
         """
         N_features: number of node features
@@ -37,6 +37,9 @@ class OT_GNN_layer(nn.Module):
     def __init__(self,n_classes=2,N_features=10, N_templates=10,N_templates_nodes=10):
         """
         n_classes: number of classes for node classification
+        N_features: number of node features
+        N_templates: number of templates
+        N_templates_nodes: number of nodes in each template
         """
         super().__init__()
     
@@ -45,10 +48,10 @@ class OT_GNN_layer(nn.Module):
         self.N_templates=N_templates
         self.N_templates_nodes=N_templates_nodes
 
-        self.LTFWG=LTFWG(self.N_features, self.N_templates,self.N_templates_nodes)
+        self.LTFWG=LTFGW(self.N_features, self.N_templates,self.N_templates_nodes)
         self.linear=Linear(self.N_templates, self.n_classes)
 
     def forward(self, x, edge_index):
-        x=self.LTFWG(x,edge_index)
+        x=self.LTFGW(x,edge_index)
         x=self.linear(x)
         return  x
