@@ -48,7 +48,7 @@ class OT_GNN_layer(nn.Module):
         self.N_templates=N_templates
         self.N_templates_nodes=N_templates_nodes
 
-        self.LTFWG=LTFGW(self.N_features, self.N_templates,self.N_templates_nodes)
+        self.LTFGW=LTFGW(self.N_features, self.N_templates,self.N_templates_nodes)
         self.linear=Linear(self.N_templates, self.n_classes)
 
     def forward(self, x, edge_index):
