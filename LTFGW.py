@@ -48,7 +48,7 @@ class OT_GNN_layer(nn.Module):
         x = x.relu()  
         return  x
 
-#LTFWG replaced by a GCN 
+#LTFWG replaced by a GCN, for comparison 
 
 class GCN_layer(nn.Module):
     def __init__(self,n_classes=2,N_features=10,hidden_layer=20):
