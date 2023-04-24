@@ -27,7 +27,7 @@ def template_initialisation(N_templates,N_nodes,N_features):
 
 class LTFGW(nn.Module):
     """ Layer for the local TFWG """
-    def __init__(self, N_templates=15,N_templates_nodes=10,N_features=10):
+    def __init__(self, N_templates=15,N_templates_nodes=10,N_features=10, alpha_is_param=False):
         """
         N_features: number of node features
         N_templates: number of graph templates
@@ -38,15 +38,23 @@ class LTFGW(nn.Module):
         self.N_templates= N_templates
         self.N_templates_nodes=N_templates_nodes
         self.N_features=N_features
+        self.alpha_is_param=alpha_is_param
         
         #templates initilisation as subgraphs of the dataset after one GCN layer
 
         templates,templates_features=template_initialisation(self.N_templates_nodes,self.N_templates,self.N_features)
         self.templates=nn.Parameter(templates)
         self.templates_features = nn.Parameter(templates_features)
+        
+        if alpha_is_param:
+          alpha=torch.Tensor(0)
+          torch.nn.init.unif(alpha)
+          self.alpha=nn.Parameter(alpha)
+        else:
+            self.alpha=0.5*torch.ones(1)
 
     def forward(self, x, edge_index):
-        x=distance_to_template(x,edge_index,self.templates_features,self.templates)
+        x=distance_to_template(x,edge_index,self.templates_features,self.templates,self.alpha)
         return x
 
 
