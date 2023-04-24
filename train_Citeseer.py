@@ -21,9 +21,8 @@ model=OT_GNN_layer(n_classes=6,N_features=dataset.num_features, N_templates=10,N
 criterion = torch.nn.CrossEntropyLoss()  
 optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
-Loss=[]
-Train_acc=[]
-def train():
+
+def train_epoch():
     model.train()
     total_loss = 0
     total_train_acc=0
@@ -40,8 +39,11 @@ def train():
         optimizer.step()
     return total_loss / len(train_loader), total_train_acc / len(train_loader)
 
+
+Loss=[]
+Train_acc=[]
 for epoch in range(1, 50):
-    loss,train_acc = train()
+    loss,train_acc = train_epoch()
     Loss.append(loss)
     Train_acc.append(train_acc)
     print(f'Epoch: {epoch:03d}, Loss: {loss:.4f}, Train accuracy: {train_acc:.4f}')
