@@ -1,8 +1,7 @@
 class LTFGW(nn.Module):
-    """ Layer for the local TFWG """
+    """ Layer for the local TFGW """
     def __init__(self, N_templates=10,N_templates_nodes=10):
         """
-        N_features: number of node features
         N_templates: number of graph templates
         N_templates_nodes: number of nodes in each template
         """
@@ -23,14 +22,13 @@ class LTFGW(nn.Module):
         return x
 
 class OT_GNN_layer(nn.Module):
-    def __init__(self,n_classes=2,N_features=10, N_templates=10,N_templates_nodes=10,hidden_layer=20):
+    def __init__(self,n_classes=2, N_templates=10,N_templates_nodes=10,hidden_layer=20):
         """
         n_classes: number of classes for node classification
         """
         super().__init__()
     
         self.n_classes=n_classes
-        self.N_features=N_features
         self.N_templates=N_templates
         self.N_templates_nodes=N_templates_nodes
         self.hidden_layer=hidden_layer
