@@ -9,6 +9,7 @@ import numpy as np
 from torch.optim.lr_scheduler import StepLR
 
 dataset=torch.load('data/graph_Citeseer.pt')
+torch.manual_seed(123456)
 
 train_loader = NeighborLoader(dataset,num_neighbors= [-1],
     batch_size=4,
@@ -39,7 +40,7 @@ def train():
         optimizer.step()
     return total_loss / len(train_loader), total_train_acc / len(train_loader)
 
-for epoch in range(1, 100):
+for epoch in range(1, 50):
     loss,train_acc = train()
     Loss.append(loss)
     Train_acc.append(train_acc)
