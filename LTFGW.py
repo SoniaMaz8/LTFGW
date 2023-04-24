@@ -1,3 +1,14 @@
+import torch
+import torch.nn as nn
+from utils import distance_to_template,construct_templates,construct_templates2
+from torch_geometric.data import Data as GraphData
+from torch_geometric.nn import GCNConv, Linear
+import torch.nn.functional as F
+
+dataset=torch.load('Citeseer_data/graph_Citeseer.pt')
+
+torch.manual_seed(123456)
+
 class LTFGW(nn.Module):
     """ Layer for the local TFGW """
     def __init__(self, N_templates=10,N_templates_nodes=10):
