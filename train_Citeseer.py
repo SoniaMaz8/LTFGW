@@ -10,6 +10,8 @@ from torch.optim.lr_scheduler import StepLR
 
 dataset=torch.load('data/graph_Citeseer.pt')
 
+torch.manual_seed(123)
+
 train_loader = NeighborLoader(dataset,num_neighbors= [-1],
     batch_size=4,
     input_nodes=dataset.train_mask,shuffle=True)
