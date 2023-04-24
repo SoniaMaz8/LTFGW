@@ -1,13 +1,9 @@
 from torch_geometric.loader import NeighborLoader
-from torch_geometric.data import NeighborSampler
-from OT_GNN_layer_Citeseer import OT_GNN_layer
+from architectures import GCN_LTFGW
 import torch
 import time
-from torch_geometric.loader import DataLoader
-from torch_geometric.data import Batch
 import numpy as np
-from torch.optim.lr_scheduler import StepLR
-
+from torch.optim.lr_scheduler import MultiStepLR
 dataset=torch.load('data/graph_Citeseer.pt')
 torch.manual_seed(123456)
 
@@ -16,7 +12,7 @@ train_loader = NeighborLoader(dataset,num_neighbors= [-1],
     input_nodes=dataset.train_mask,shuffle=True)
 
 
-model=OT_GNN_layer(n_classes=6,N_features=dataset.num_features, N_templates=10,N_templates_nodes=10)
+model=GCN_LTFGW(n_classes=6,N_features=dataset.num_features, N_templates=10,N_templates_nodes=10)
 
 criterion = torch.nn.CrossEntropyLoss()  
 optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
