@@ -177,7 +177,7 @@ def construct_templates2(data,N_nodes=10,N_templates=10):
     for idx in indexes:
         temp=k_hop_subgraph(idx.item(),2,edge_index=g.edge_index,relabel_nodes=False)  #neighbourhood  for the graph
         deg = degree(temp[1][0], torch.max(temp[0])+1)
-        temp_high_degree_nodes=torch.where(deg>0)   #we select the subgraph with nodes of degree >5
+        temp_high_degree_nodes=torch.where(deg>0)   #we select the subgraph with nodes of degree >0
         v=temp_high_degree_nodes[0]
         if len(v)<N_nodes:
           raise ValueError('not enough nodes in the template')
