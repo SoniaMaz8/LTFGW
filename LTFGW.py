@@ -5,7 +5,7 @@ from torch_geometric.data import Data as GraphData
 from torch_geometric.nn import GCNConv, Linear
 import torch.nn.functional as F
 
-dataset=torch.load('Citeseer_data/graph_Citeseer.pt')
+dataset=torch.load('data/graph_Citeseer.pt')
 
 torch.manual_seed(123456)
 
