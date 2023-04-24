@@ -150,3 +150,45 @@ def construct_templates(data,N_nodes=10,N_templates=10):
     Templates_features=torch.stack(Templates_features) 
     Templates=torch.stack(Templates)
     return Templates,Templates_features
+
+
+#More complicated initialisation that ensures some connectivity in the templates.
+def construct_templates2(data,N_nodes=10,N_templates=10):
+    """"
+    This function returns templates as subgraphs of the graph. The subgraphs are neighbourhoods of high degree nodes.
+    Input:
+        g: graph as input
+        N_nodes: number of nodes in each template
+        N_templates: number of templates
+    Output:
+        Templates: list of the adjacency matrices of the templates
+        Templates_features: list of the node features of the templates
+    """
+    model=GCN(len(data.x[0]))
+    model.eval()
+    out=model(data.x,data.edge_index)
+    g=GraphData(out,data.edge_index)
+    deg = degree(g.edge_index[0], g.num_nodes)
+    high_degree_nodes=torch.where(deg>10)
+    indexes=torch.randint(len(high_degree_nodes[0]),[N_templates])  #high degree nodes selection (degree>10)
+    indexes=high_degree_nodes[0][indexes]     
+    Templates=[]
+    Templates_features=[]
+    for idx in indexes:
+        temp=k_hop_subgraph(idx.item(),2,edge_index=g.edge_index,relabel_nodes=False)  #neighbourhood  for the graph
+        deg = degree(temp[1][0], torch.max(temp[0])+1)
+        temp_high_degree_nodes=torch.where(deg>0)   #we select the subgraph with nodes of degree >5
+        v=temp_high_degree_nodes[0]
+        if len(v)<N_nodes:
+          raise ValueError('not enough nodes in the template')
+        temp_high_degree_nodes=v[torch.randperm(len(v))][:N_nodes]  #random node selection
+        temp_graph=subgraph_pyg(temp_high_degree_nodes,temp[1])
+        u=temp_graph[0]
+        _,temp_sorted = torch.sort(u)
+        temp_graph=graph_to_adjacency(N_nodes,temp_sorted)
+        temp_graph=temp_graph.double()
+        Templates.append(temp_graph)
+        Templates_features.append(g.x[temp_high_degree_nodes])
+    Templates_features=torch.stack(Templates_features) 
+    Templates=torch.stack(Templates)
+    return Templates,Templates_features
