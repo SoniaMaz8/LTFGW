@@ -32,6 +32,7 @@ class LTFGW(nn.Module):
         N_features: number of node features
         N_templates: number of graph templates
         N_templates_nodes: number of nodes in each template
+        alpha0: trade-off for the fused gromov-wasserstein distance. If None, alpha is optimised, else it is fixed at the given value.
         """
         super().__init__()
 
