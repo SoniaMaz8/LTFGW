@@ -4,14 +4,12 @@ from tqdm import tqdm
 import csv
 import datetime
 
-dataset=torch.load('data/toy_graph1.pt')
-model=GCN_LTFGW(n_classes=3,N_features=3)
-
-criterion = torch.nn.CrossEntropyLoss()  
-optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
 
 
-def train_epoch(dataset):
+
+
+
+def train_epoch(dataset,model,criterion,optimizer):
       model.train()
       optimizer.zero_grad()  
       out = model(dataset.x,dataset.edge_index) 
@@ -24,7 +22,7 @@ def train_epoch(dataset):
       return loss, train_acc
 
 
-def train(dataset,N_epoch,save):
+def train(model,dataset,N_epoch,criterion, optimizer,save):
       ''''
       save: bool, wether to save the parameters after each epoch or not
       '''
@@ -36,7 +34,7 @@ def train(dataset,N_epoch,save):
                   writer = csv.writer(f)
                   writer.writerow([new_column_name]) 
       for epoch in range(N_epoch):      
-            loss,train_acc = train_epoch(dataset)
+            loss,train_acc = train_epoch(dataset,model,criterion,optimizer)
             if save:
                   with open(filename, 'a', newline='') as f:
                         writer = csv.writer(f)
@@ -49,7 +47,14 @@ def train(dataset,N_epoch,save):
             'optimizer_state_dict': optimizer.state_dict(),
             }, 'model_toy.pt')
             
-train(dataset,50,True)
+
+dataset=torch.load('data/toy_graph1.pt')
+model=GCN_LTFGW(n_classes=3,N_features=3)  
+
+criterion = torch.nn.CrossEntropyLoss()  
+optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+
+train(model,dataset,50,criterion,optimizer,False)
        
 
 
