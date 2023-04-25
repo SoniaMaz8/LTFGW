@@ -12,9 +12,6 @@ torch.manual_seed(123456)
 dataset_name='citeseer'  #'citeseer' or 'toy_graph'
 model_name='LTFGW'  #'LTFGW' or 'GCN'
 
-criterion = torch.nn.CrossEntropyLoss()  
-optimizer = torch.optim.Adam(model.parameters(), lr=0.01)  
-
 if dataset_name=='citeseer':
     dataset=Citeseer_data()
 
@@ -34,6 +31,9 @@ if dataset_name=='citeseer':
       #filename to save the loss, accuracies and model parameters
       filename_values='results/Citeseer_results_GCN.csv'
       filename_model='models/model_Citeseer_GCN.pt'
+
+    criterion = torch.nn.CrossEntropyLoss()  
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.01)    
 
   
 
