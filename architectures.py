@@ -27,10 +27,10 @@ class GCN_LTFGW(nn.Module):
         x=self.conv1(x, edge_index)
         x = x.relu() 
         x=self.conv2(x, edge_index)
+        x = x.relu()
         y=self.LTFGW(x,edge_index)
         x=torch.hstack([x,y])
         x=self.linear(x)
-        x = x.relu()  
         return  x    
     
 

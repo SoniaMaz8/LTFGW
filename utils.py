@@ -92,7 +92,7 @@ def subgraph(x,edge_index,node_idx, order):
 
 
 
-def distance_to_template(x,edge_index,x_T,C_T,alpha=0.5,k=1):
+def distance_to_template(x,edge_index,x_T,C_T,alpha,k=1):
     """
     Computes the OT distance between each subgraphs of order k of G and the templates
     x : node features of the graph
