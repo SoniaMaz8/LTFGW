@@ -17,14 +17,14 @@ def train_epoch(dataset,model,criterion,optimizer):
       optimizer.step()  
       return loss, train_acc
 
-def train(model,dataset,N_epoch,criterion, optimizer,save):
+def train_toy(model,dataset,N_epoch,criterion, optimizer,save):
       ''''
       save: bool, wether to save the parameters after each epoch or not
       '''
       if save:
             now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             new_column_name = f'Loss/train_accuracy_{now}'
-            filename = 'results/loss_history.csv'
+            filename = 'results/toy_results.csv'
             with open(filename, 'a', newline='') as f:
                   writer = csv.writer(f)
                   writer.writerow([new_column_name]) 
@@ -43,20 +43,7 @@ def train(model,dataset,N_epoch,criterion, optimizer,save):
 
 dataset=torch.load('data/toy_graph1.pt')
   
-Loss=0
-Train_acc=0
-num_seeds=1
-seeds=torch.randint(100,(num_seeds,))
-for seed in tqdm(seeds):
-  torch.manual_seed(seed)
-  model=GCN_LTFGW(n_classes=3,N_features=3)
-  criterion = torch.nn.CrossEntropyLoss()  
-  optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
-  loss, train_acc=train(model,dataset,50,criterion,optimizer,False)
-  Loss+=loss
-  Train_acc+=train_acc
-print('mean loss={}'.format(Loss/num_seeds))
-print('mean train accuracy={}'.format(Train_acc/num_seeds))
+
        
 
 
