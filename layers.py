@@ -36,22 +36,20 @@ class LTFGW(nn.Module):
         self.N_templates= N_templates
         self.N_templates_nodes=N_templates_nodes
         self.N_features=N_features
-        
-        #templates initilisation as subgraphs of the dataset after one GCN layer
 
         templates,templates_features=template_initialisation(self.N_templates_nodes,self.N_templates,self.N_features)
         self.templates=nn.Parameter(templates)
         self.templates_features = nn.Parameter(templates_features)
 
         if alpha0 is None:
-            alpha0=torch.Tensor([0.5])
+            alpha0=torch.Tensor([0])
             self.alpha0=nn.Parameter(alpha0)
         else:
             self.alpha0=torch.logit(alpha0)           
 
     def forward(self, x, edge_index):
         alpha=torch.sigmoid(self.alpha0)
-        x=distance_to_template(x,edge_index,self.templates_features,self.templates,alpha)
+        x=distance_to_template(x,edge_index,self.templates_features,self.templates,alpha,2)
         return x
 
 

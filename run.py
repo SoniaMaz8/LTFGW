@@ -9,26 +9,39 @@ from tqdm import tqdm
 
 torch.manual_seed(123456)
 
-dataset_name='citeseer'  #or 'toy_graph'
+dataset_name='citeseer'  #'citeseer' or 'toy_graph'
+model_name='LTFGW'  #'LTFGW' or 'GCN'
+
+criterion = torch.nn.CrossEntropyLoss()  
+optimizer = torch.optim.Adam(model.parameters(), lr=0.01)  
 
 if dataset_name=='citeseer':
     dataset=Citeseer_data()
-    filename_values='results/Citeseer_results.csv'
-    filename_model='models/model_Citeseer.pt'
+
     n_classes=6
 
     train_loader = NeighborLoader(dataset,num_neighbors= [-1],
     batch_size=8,
     input_nodes=dataset.train_mask,shuffle=True)
+    
+    if model_name=='LTFGW':
+      model=GCN_LTFGW(n_classes=n_classes,N_features=dataset.num_features, N_templates=10,N_templates_nodes=10)
+      #filename to save the loss, accuracies and model parameters
+      filename_values='results/Citeseer_results.csv'
+      filename_model='models/model_Citeseer.pt'
+    else:
+      model=GCN_3_layers(n_classes=n_classes,N_features=dataset.num_features,hidden_layer=20)
+      #filename to save the loss, accuracies and model parameters
+      filename_values='results/Citeseer_results_GCN.csv'
+      filename_model='models/model_Citeseer_GCN.pt'
 
-    model=GCN_LTFGW(n_classes=n_classes,N_features=dataset.num_features, N_templates=10,N_templates_nodes=10)
-    criterion = torch.nn.CrossEntropyLoss()  
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.01)    
+  
 
     loss, train_acc=train(model,train_loader,dataset,optimizer,criterion,50,False, filename_values,filename_model)
 
-if dataset_name=='toy_graph':
+elif dataset_name=='toy_graph':
     dataset=torch.load('data/toy_graph1.pt')
+    #filename to save the loss, accuracies and model parameters
     filename_values='results/toy_results.csv'
     filename_model='models/model_toy.pt'  
     n_classes=3

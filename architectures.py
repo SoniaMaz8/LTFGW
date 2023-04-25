@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from torch_geometric.nn import GCNConv, Linear
 from layers import LTFGW
-
+import torch.nn.functional as F
 
 class GCN_LTFGW(nn.Module):
     def __init__(self,n_classes=2,N_features=10, N_templates=10,N_templates_nodes=10,hidden_layer=20,alpha0=None):
