@@ -29,8 +29,9 @@ class GCN_3_layers(nn.Module):
         return  x   
 
 
+
 class GCN_LTFGW(nn.Module):
-    def __init__(self,n_classes=2,N_features=10, N_templates=10,N_templates_nodes=10,hidden_layer=20,alpha_is_param=False):
+    def __init__(self,n_classes=2,N_features=10, N_templates=10,N_templates_nodes=10,hidden_layer=20,alpha0=None):
         """
         n_classes: number of classes for node classification
         """
@@ -41,12 +42,11 @@ class GCN_LTFGW(nn.Module):
         self.N_templates=N_templates
         self.N_templates_nodes=N_templates_nodes
         self.hidden_layer=hidden_layer
-        self.alpha_is_param=alpha_is_param
+        self.alpha0=alpha0
         
-    
         self.conv1=GCNConv(self.N_features,self.hidden_layer)
         self.conv2=GCNConv(self.hidden_layer,self.hidden_layer)   
-        self.LTFGW=LTFGW(self.N_templates,self.N_templates_nodes,self.hidden_layer,self.alpha_is_param)
+        self.LTFGW=LTFGW(self.N_templates,self.N_templates_nodes,self.hidden_layer,self.alpha0)
         self.linear=Linear(self.N_templates+self.hidden_layer, self.n_classes)
 
     def forward(self, x, edge_index):
@@ -58,3 +58,4 @@ class GCN_LTFGW(nn.Module):
         x=self.linear(x)
         x = x.relu()  
         return  x             
+          
