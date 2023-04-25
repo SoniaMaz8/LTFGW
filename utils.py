@@ -92,15 +92,15 @@ def subgraph(x,edge_index,node_idx, order):
 
 
 
-def distance_to_template(x,edge_index,x_T,C_T,k=1,alpha=0.5):
+def distance_to_template(x,edge_index,x_T,C_T,alpha=0.5,k=1):
     """
     Computes the OT distance between each subgraphs of order k of G and the templates
     x : node features of the graph
     edge_index : edge indexes of the graph
     x_T : list of the node features of the templates
     C_T : list of the adjacency matrices of the templates 
-    k : number of neighbours in the subgraphs
     alpha : trade-off parameter for fused gromov-wasserstein distance
+    k : number of neighbours in the subgraphs
     """
     n=len(x)       #number of nodes in the graph
     n_T=len(x_T)   #number of templates
