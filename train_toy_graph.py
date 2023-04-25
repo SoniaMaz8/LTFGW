@@ -29,11 +29,6 @@ def train_epoch(dataset, save=False):
       optimizer.step()  
       return loss, train_acc
 
-#acces csv file to save the results
-
-
- 
-#train
 
 def train(dataset,N_epoch,save):
       ''''
@@ -46,7 +41,7 @@ def train(dataset,N_epoch,save):
             with open(filename, 'a', newline='') as f:
             writer = csv.writer(f)
             writer.writerow([new_column_name]) 
-      for epoch in range(50):      
+      for epoch in range(N_epoch):      
             loss,train_acc = train_epoch(dataset)
             if save:
                   with open(filename, 'a', newline='') as f:
@@ -59,6 +54,8 @@ def train(dataset,N_epoch,save):
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
             }, 'model_toy.pt')
+            
+ train(dataset,50,True)
        
 
 
