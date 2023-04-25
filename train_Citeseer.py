@@ -7,10 +7,12 @@ from torch.optim.lr_scheduler import MultiStepLR
 from tqdm import tqdm
 import csv
 import datetime
-
-dataset=torch.load('data/graph_Citeseer.pt')
+from data.convert_datasets import Citeseer_data
 
 torch.manual_seed(123456)
+
+dataset=Citeseer_data()
+
 
 train_loader = NeighborLoader(dataset,num_neighbors= [-1],
     batch_size=8,
