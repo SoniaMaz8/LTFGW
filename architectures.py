@@ -57,6 +57,5 @@ class GCN_3_layers(nn.Module):
         x=self.conv3(x, edge_index) 
         return  x       
     
-    
- 
+   
           
