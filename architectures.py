@@ -54,8 +54,7 @@ class GCN_3_layers(nn.Module):
         x = x.relu() 
         x=self.conv2(x, edge_index)
         x = x.relu() 
-        x=self.conv3(x, edge_index)
-  #      x = x.relu()  
+        x=self.conv3(x, edge_index) 
         return  x       
     
     
