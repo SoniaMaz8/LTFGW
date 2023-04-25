@@ -36,8 +36,6 @@ class LTFGW(nn.Module):
         self.N_templates= N_templates
         self.N_templates_nodes=N_templates_nodes
         self.N_features=N_features
-        
-        #templates initilisation as subgraphs of the dataset after one GCN layer
 
         templates,templates_features=template_initialisation(self.N_templates_nodes,self.N_templates,self.N_features)
         self.templates=nn.Parameter(templates)
