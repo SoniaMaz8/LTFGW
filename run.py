@@ -3,15 +3,13 @@ from architectures import GCN_LTFGW, GCN_3_layers
 import torch
 from torch.optim.lr_scheduler import MultiStepLR
 from data.convert_datasets import Citeseer_data
-from train_Citeseer import train
-from train_toy_graph import train_toy
 from trainers import train,train_minibatch
 from tqdm import tqdm
 
 torch.manual_seed(123456)
 
-dataset_name='citeseer'  #'citeseer' or 'toy_graph'
-model_name='LTFGW'  #'LTFGW' or 'GCN'
+dataset_name='toy_graph'  #'citeseer' or 'toy_graph'
+model_name='GCN'  #'LTFGW' or 'GCN'
 
 if dataset_name=='citeseer':
     dataset=Citeseer_data()
