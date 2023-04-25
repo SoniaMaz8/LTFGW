@@ -1,13 +1,8 @@
 from architectures import GCN_LTFGW
 import torch
-from tqdm import tqdm
 import csv
 import datetime
-
-
-
-
-
+from tqdm import tqdm
 
 def train_epoch(dataset,model,criterion,optimizer):
       model.train()
@@ -29,7 +24,7 @@ def train(model,dataset,N_epoch,criterion, optimizer,save):
       if save:
             now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
             new_column_name = f'Loss/train_accuracy_{now}'
-            filename = 'loss_history.csv'
+            filename = 'results/loss_history.csv'
             with open(filename, 'a', newline='') as f:
                   writer = csv.writer(f)
                   writer.writerow([new_column_name]) 
@@ -40,12 +35,13 @@ def train(model,dataset,N_epoch,criterion, optimizer,save):
                         writer = csv.writer(f)
                         writer.writerow([epoch,loss.item(),train_acc])  
                         
-            print(f'Epoch: {epoch:03d}, Loss: {loss:.4f},Train Accuracy: {train_acc:.4f}')     
+ #           print(f'Epoch: {epoch:03d}, Loss: {loss:.4f},Train Accuracy: {train_acc:.4f}')     
       if save:
             torch.save({
             'model_state_dict': model.state_dict(),
             'optimizer_state_dict': optimizer.state_dict(),
             }, 'model_toy.pt')
+      return loss, train_acc
             
 
 dataset=torch.load('data/toy_graph1.pt')
@@ -54,7 +50,17 @@ model=GCN_LTFGW(n_classes=3,N_features=3)
 criterion = torch.nn.CrossEntropyLoss()  
 optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
-train(model,dataset,50,criterion,optimizer,False)
+Loss=0
+Train_acc=0
+num_seeds=10
+seeds=torch.randint(100,(num_seeds,))
+for seed in tqdm(seeds):
+  torch.manual_seed(seed)
+  loss, train_acc=train(model,dataset,50,criterion,optimizer,False)
+  Loss+=loss
+  Train_acc+=train_acc
+print('mean loss={}'.format(Loss/num_seeds))
+print('mean train accuracy={}'.format(Train_acc/num_seeds))
        
 
 
