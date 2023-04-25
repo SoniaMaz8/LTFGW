@@ -37,11 +37,7 @@ def train(model,dataset,N_epoch,criterion, optimizer,save):
                         writer = csv.writer(f)
                         writer.writerow([epoch,loss.item(),train_acc])  
             print(f'Epoch: {epoch:03d},time:{end-start:.4f}, Loss: {loss:.4f},Train Accuracy: {train_acc:.4f}')     
-      if save:
-            torch.save({
-            'model_state_dict': model.state_dict(),
-            'optimizer_state_dict': optimizer.state_dict(),
-            }, 'model_toy.pt')
+      torch.save( model.state_dict(), 'models/model_toy.pt')
       return loss, train_acc
             
 
@@ -49,7 +45,7 @@ dataset=torch.load('data/toy_graph1.pt')
   
 Loss=0
 Train_acc=0
-num_seeds=10
+num_seeds=1
 seeds=torch.randint(100,(num_seeds,))
 for seed in tqdm(seeds):
   torch.manual_seed(seed)

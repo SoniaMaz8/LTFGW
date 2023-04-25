@@ -1,5 +1,5 @@
 from torch_geometric.loader import NeighborLoader
-from architectures import GCN_LTFGW
+from architectures import GCN_LTFGW, GCN_3_layers
 import torch
 import time
 import numpy as np
@@ -19,6 +19,7 @@ train_loader = NeighborLoader(dataset,num_neighbors= [-1],
     input_nodes=dataset.train_mask,shuffle=True)
 
 model=GCN_LTFGW(n_classes=6,N_features=dataset.num_features, N_templates=10,N_templates_nodes=10)
+#model=GCN_3_layers(n_classes=6,N_features=dataset.num_features)
 
 criterion = torch.nn.CrossEntropyLoss()  
 optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
@@ -59,10 +60,6 @@ def train(dataset,N_epoch,save):
                         writer.writerow([epoch,loss,train_acc])  
                         
             print(f'Epoch: {epoch:03d}, Loss: {loss:.4f},Train Accuracy: {train_acc:.4f}')     
-      if save:
-            torch.save({
-            'model_state_dict': model.state_dict(),
-            'optimizer_state_dict': optimizer.state_dict(),
-            }, 'model_Citeseer.pt')
+      torch.save(model.state_dict(),'models/model_Citeseer.pt')
             
-train(dataset,50,True)
+train(dataset,50,False)

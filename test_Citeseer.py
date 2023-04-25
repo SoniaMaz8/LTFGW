@@ -1,12 +1,14 @@
-from architectures import GCN_LTFGW
+from architectures import GCN_LTFGW,GCN_3_layers
 import torch
 from tqdm import tqdm
 import csv
 import datetime
+from data.convert_datasets import Citeseer_data
 
-dataset=torch.load('data/toy_graph1.pt')
-model=GCN_LTFGW(n_classes=3,N_features=3)
-model.load_state_dict(torch.load('models/model_toy.pt'))
+dataset=Citeseer_data()
+model=GCN_LTFGW(n_classes=6,N_features=dataset.num_features, N_templates=10,N_templates_nodes=10)
+#model=GCN_3_layers(n_classes=6,N_features=dataset.num_features)
+model.load_state_dict(torch.load('models/model_Citeseer.pt'))
 
 
 def test():
@@ -19,7 +21,3 @@ def test():
 
 test_acc=test()
 print(test_acc)
-
-
-
-
