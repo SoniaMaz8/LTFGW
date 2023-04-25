@@ -3,9 +3,6 @@ import torch.nn as nn
 from utils import distance_to_template
 from torch_geometric.data import Data as GraphData
 
-
-dataset=torch.load('Citeseer_data/graph_Citeseer.pt')
-
 def template_initialisation(N_templates,N_nodes,N_features):
     """"
     Function that initialises templates for the LTFGW layer
