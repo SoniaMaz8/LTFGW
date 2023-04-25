@@ -8,7 +8,7 @@ from tqdm import tqdm
 import csv
 import datetime
 
-dataset=torch.load('Citeseer_data/graph_Citeseer.pt')
+dataset=torch.load('data/graph_Citeseer.pt')
 
 torch.manual_seed(123456)
 
