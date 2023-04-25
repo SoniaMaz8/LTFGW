@@ -4,7 +4,7 @@ from tqdm import tqdm
 import csv
 import datetime
 
-dataset=torch.load('Toy_graphs/toy_graph1.pt')
+dataset=torch.load('data/toy_graph1.pt')
 model=GCN_LTFGW(n_classes=3,N_features=3)
 
 criterion = torch.nn.CrossEntropyLoss()  
