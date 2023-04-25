@@ -47,29 +47,8 @@ for epoch in range(50):
 
    
 
-#torch.save({
-#            'model_state_dict': model.state_dict(),
-#            'optimizer_state_dict': optimizer.state_dict(),
-#            }, 'model_Citeseer.pt')
-
-#print(Train_accuracy)
-#print(Loss)
-
-#np.save(Loss, 'Loss.npy')
-
-#model.load_state_dict(torch.load('model2.pt')['model_state_dict'])
-
-#test_acc = test(dataset)
-#print(f'Test Accuracy 1: {test_acc:.4f}')  
-
-#test_acc = test(dataset2)
-#print(f'Test Accuracy 2: {test_acc:.4f}')  
-
-#model = OT_GNN_layer()
-#model.load_state_dict(torch.load('model1'))
-#model.eval()
-
-
-#for name, param in model.named_parameters():
-#    print(name)
-#    print(param)     
+torch.save({
+            'model_state_dict': model.state_dict(),
+            'optimizer_state_dict': optimizer.state_dict(),
+            }, 'model_Citeseer.pt')
+  
