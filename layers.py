@@ -50,7 +50,7 @@ class LTFGW(nn.Module):
             alpha0=torch.Tensor([0.5])
             self.alpha0=nn.Parameter(alpha0)
         else:
-            self.alpha0=alpha0          
+            self.alpha0=torch.logit(alpha0)           
 
     def forward(self, x, edge_index):
         alpha=torch.sigmoid(self.alpha0)
