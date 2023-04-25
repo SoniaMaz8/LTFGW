@@ -5,6 +5,7 @@ from torch.optim.lr_scheduler import MultiStepLR
 from data.convert_datasets import Citeseer_data
 from train_Citeseer import train
 from train_toy_graph import train_toy
+from trainers import train,train_minibatch
 from tqdm import tqdm
 
 torch.manual_seed(123456)
@@ -35,9 +36,7 @@ if dataset_name=='citeseer':
     criterion = torch.nn.CrossEntropyLoss()  
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)    
 
-  
-
-    loss, train_acc=train(model,train_loader,dataset,optimizer,criterion,50,False, filename_values,filename_model)
+    loss, train_acc=train_minibatch(model,train_loader,dataset,optimizer,criterion,50,False, filename_values,filename_model)
 
 elif dataset_name=='toy_graph':
     dataset=torch.load('data/toy_graph1.pt')
@@ -55,7 +54,7 @@ elif dataset_name=='toy_graph':
         model=GCN_LTFGW(n_classes=3,N_features=3)
         criterion = torch.nn.CrossEntropyLoss()  
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
-        loss, train_acc=train_toy(model,dataset,50,criterion,optimizer,False)
+        loss, train_acc=train(model,dataset,50,criterion,optimizer,False,filename_values,filename_model)
         Loss+=loss
         Train_acc+=train_acc
     print('mean loss={}'.format(Loss/num_seeds))
