@@ -18,9 +18,6 @@ def train_epoch(dataset):
       pred = out.argmax(dim=1)         # Use the class with highest probability
       train_correct = pred[dataset.train_mask] == dataset.y[dataset.train_mask]   #number of correct node predictions
       train_acc = int(train_correct.sum()) / int(dataset.train_mask.sum())  #training_accuracy
-      if save:
-
-            
       loss = criterion(out[dataset.train_mask], dataset.y[dataset.train_mask])  
       loss.backward()  
       optimizer.step()  
