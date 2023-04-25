@@ -4,6 +4,8 @@ import torch
 import time
 import numpy as np
 from torch.optim.lr_scheduler import MultiStepLR
+from tqdm import tqdm
+
 dataset=torch.load('data/graph_Citeseer.pt')
 torch.manual_seed(123456)
 
@@ -22,7 +24,7 @@ def train_epoch():
     model.train()
     total_loss = 0
     total_train_acc=0
-    for data in train_loader:
+    for data in tqdm(train_loader):
         optimizer.zero_grad()
         out = model(data.x,data.edge_index) 
         pred = out.argmax(dim=1) 
