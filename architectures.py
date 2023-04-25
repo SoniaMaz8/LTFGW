@@ -57,19 +57,5 @@ class GCN_3_layers(nn.Module):
         x=self.conv3(x, edge_index)
         x = x.relu()  
         return  x       
-    
-    
-class GCN_GIN(torch.nn.Module):
-    def __init__(self, dim_h):
-        super().__init__()
-        self.conv1 = GINConv(Sequential(Linear(dataset.num_node_features, dim_h),
-                       BatchNorm1d(dim_h), ReLU(),
-                       Linear(dim_h, dim_h), ReLU()))
-        self.lin = Linear(dim_h, dataset.num_classes)
- 
-    def forward(self, x, edge_index):
-        x = self.conv1(x, edge_index)
-        x = x.relu()
-        x = self.lin(x)
-        return x    
+
           
