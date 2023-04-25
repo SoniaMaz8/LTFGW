@@ -55,7 +55,7 @@ def train(dataset,N_epoch,save):
             'optimizer_state_dict': optimizer.state_dict(),
             }, 'model_toy.pt')
             
- train(dataset,50,True)
+train(dataset,50,True)
        
 
 
