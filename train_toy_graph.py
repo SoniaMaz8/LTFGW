@@ -39,8 +39,8 @@ def train(dataset,N_epoch,save):
             new_column_name = f'Loss/train_accuracy_{now}'
             filename = 'loss_history.csv'
             with open(filename, 'a', newline='') as f:
-            writer = csv.writer(f)
-            writer.writerow([new_column_name]) 
+                  writer = csv.writer(f)
+                  writer.writerow([new_column_name]) 
       for epoch in range(N_epoch):      
             loss,train_acc = train_epoch(dataset)
             if save:
