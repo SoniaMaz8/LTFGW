@@ -41,8 +41,6 @@ def train_toy(model,dataset,N_epoch,criterion, optimizer,save):
       return loss, train_acc
             
 
-dataset=torch.load('data/toy_graph1.pt')
-  
 
        
 

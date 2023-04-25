@@ -9,21 +9,7 @@ import csv
 import datetime
 from data.convert_datasets import Citeseer_data
 
-torch.manual_seed(123456)
-
-dataset=Citeseer_data()
-
-train_loader = NeighborLoader(dataset,num_neighbors= [-1],
-    batch_size=8,
-    input_nodes=dataset.train_mask,shuffle=True)
-
-model=GCN_LTFGW(n_classes=6,N_features=dataset.num_features, N_templates=10,N_templates_nodes=10)
-#model=GCN_3_layers(n_classes=6,N_features=dataset.num_features)
-
-criterion = torch.nn.CrossEntropyLoss()  
-optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
-
-def train_epoch(dataset):
+def train_epoch(model,train_loader,data,optimizer,criterion):
     model.train()
     total_loss = 0
     total_train_acc=0
@@ -40,7 +26,7 @@ def train_epoch(dataset):
         optimizer.step()
     return total_loss / len(train_loader), total_train_acc / len(train_loader)  #mean of train accuracy and loss over the mini batches
 
-def train(dataset,N_epoch,save,filename_values,filename_model):
+def train(model,train_loader,dataset,optimizer,criterion,N_epoch,save,filename_values,filename_model):
       ''''
       save: bool, wether to save the parameters after each epoch or not
       filename_values: filename to store the loss and train accuracies
@@ -54,7 +40,7 @@ def train(dataset,N_epoch,save,filename_values,filename_model):
                   writer = csv.writer(f)
                   writer.writerow([new_column_name]) 
       for epoch in range(N_epoch):      
-            loss,train_acc = train_epoch(dataset)
+            loss,train_acc = train_epoch(model,train_loader,dataset,optimizer,criterion)
             if save:
                   with open(filename, 'a', newline='') as f:
                         writer = csv.writer(f)

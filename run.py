@@ -22,11 +22,10 @@ if dataset_name=='citeseer':
     input_nodes=dataset.train_mask,shuffle=True)
 
     model=GCN_LTFGW(n_classes=n_classes,N_features=dataset.num_features, N_templates=10,N_templates_nodes=10)
-
     criterion = torch.nn.CrossEntropyLoss()  
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)    
 
-    loss, train_acc=train(dataset,50,False, filename_values,filename_model)
+    loss, train_acc=train(model,train_loader,dataset,optimizer,criterion,50,False, filename_values,filename_model)
 
 if dataset_name=='toy_graph':
     dataset=torch.load('data/toy_graph1.pt')
