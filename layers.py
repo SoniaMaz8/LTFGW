@@ -46,7 +46,7 @@ class LTFGW(nn.Module):
         self.templates=nn.Parameter(templates)
         self.templates_features = nn.Parameter(templates_features)
 
-        if self.alpha0 is None:
+        if alpha0 is None:
             alpha0=torch.Tensor([0.5])
             self.alpha0=nn.Parameter(alpha0)
         else:
