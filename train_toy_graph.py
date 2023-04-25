@@ -11,10 +11,7 @@ criterion = torch.nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=0.1)
 
 
-def train_epoch(dataset, save=False):
-      ''''
-      save: bool, wether to save the parameters after each epoch or not
-      '''
+def train_epoch(dataset):
       model.train()
       optimizer.zero_grad()  
       out = model(dataset.x,dataset.edge_index) 
