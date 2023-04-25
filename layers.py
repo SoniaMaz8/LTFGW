@@ -3,6 +3,7 @@ import torch.nn as nn
 from utils import distance_to_template
 from torch_geometric.data import Data as GraphData
 
+print('change')
 def template_initialisation(N_templates,N_nodes,N_features):
     """"
     Function that initialises templates for the LTFGW layer
