@@ -94,15 +94,3 @@ def test(model,dataset):
       test_acc = int(test_correct.sum()) / int(dataset.test_mask.sum()) 
       return test_acc
 
-def train_multiple_seeds(model,dataset,N_epoch,save_parameters,filename_values,filename_model,n_classes,N_features,criterion,optimizer):
-    Loss=0
-    Test_acc=0
-    num_seeds=10
-    seeds=torch.range(30,30+num_seeds,1)
-    for seed in tqdm(seeds):
-        torch.manual_seed(seed)
-        loss, train_acc=train(model,dataset,N_epoch,criterion,optimizer,save_parameters,filename_values,filename_model)
-        test_acc=test(model,dataset)
-        Test_acc+=test_acc
-        print(test_acc)
-    return Test_acc/len(seeds)

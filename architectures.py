@@ -31,11 +31,9 @@ class GCN_LTFGW(nn.Module):
         x = F.dropout(x, self.dropout, training=self.training)
         x = x.relu() 
         x=self.conv2(x, edge_index)
-        x = F.dropout(x, self.dropout, training=self.training)
-        x = x.relu()
         y=self.LTFGW(x,edge_index)
         x=torch.hstack([x,y])
-        x=self.conv3(x, edge_index) 
+        x=self.linear(x)
         return  x    
     
 
