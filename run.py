@@ -10,11 +10,11 @@ torch.manual_seed(123456)
 
 #%%Parameters to set
 
-dataset_name='citeseer'  #'citeseer' or 'toy_graph'
-model_name='LTFGW'  #'LTFGW' or 'GCN'
+dataset_name='toy_graph'  #'citeseer' or 'toy_graph'
+model_name='GCN'  #'LTFGW' or 'GCN'
 save_parameters=True  #wether to save the parameters and the model
 N_epoch=50   #number of epochs
-training='mini_batch'     #'complete graph' or 'mini_batch' 
+training='complete_graph'     #'complete graph' or 'mini_batch' 
 lr=0.01  #learning rate
 weight_decay=5e-4
 
