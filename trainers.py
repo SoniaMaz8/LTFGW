@@ -5,6 +5,7 @@ import csv
 import datetime
 import torch.nn.functional as F
 from architectures import GCN_3_layers
+import pandas as pd
 
 def train_epoch(dataset,model,criterion,optimizer):
       model.train()
@@ -42,49 +43,32 @@ def train_minibatch(model,train_loader,dataset,optimizer,criterion,N_epoch,save,
       filename_values: filename to store the loss and train accuracies
       flename_model: filename to store the model parameters
       '''
-      if save:
-            now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            new_column_name = f'Loss/train_accuracy_{now}'
-            filename = filename_values
-            with open(filename, 'a', newline='') as f:
-                  writer = csv.writer(f)
-                  writer.writerow([new_column_name]) 
+      Loss=[]
+      Train_acc=[]      
       for epoch in range(N_epoch):  
             start=time.time()      
             loss,train_acc = train_epoch_minibatch(model,train_loader,dataset,optimizer,criterion)
-            end=time.time()
-            if save:
-                  with open(filename, 'a', newline='') as f:
-                        writer = csv.writer(f)
-                        writer.writerow([epoch,loss,train_acc])  
-                        
+            Loss.append(loss.item())
+            Train_acc.append(train_acc)            
+            end=time.time()   
             print(f'Epoch: {epoch:03d},time:{end-start:.4f}, Loss: {loss:.4f},Train Accuracy: {train_acc:.4f}')     
-      torch.save(model.state_dict(),filename_model)
-      return loss, train_acc
+      return Loss, Train_acc
 
 
 def train(model,dataset,N_epoch,criterion, optimizer,save,filename_values,filename_model):
       ''''
       save: bool, wether to save the parameters after each epoch or not
       '''
-      if save:
-            now = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-            new_column_name = f'Loss/train_accuracy_{now}'
-            filename = filename_values
-            with open(filename, 'a', newline='') as f:
-                  writer = csv.writer(f)
-                  writer.writerow([new_column_name]) 
+      Loss=[]
+      Train_acc=[]
       for epoch in range(N_epoch): 
             start=time.time()     
             loss,train_acc = train_epoch(dataset,model,criterion,optimizer)
             end=time.time()
-            if save:
-                  with open(filename, 'a', newline='') as f:
-                        writer = csv.writer(f)
-                        writer.writerow([epoch,loss.item(),train_acc])  
+            Loss.append(loss.item())
+            Train_acc.append(train_acc)
             print(f'Epoch: {epoch:03d},time:{end-start:.4f}, Loss: {loss:.4f},Train Accuracy: {train_acc:.4f}')     
-      torch.save( model.state_dict(), filename_model)
-      return loss, train_acc
+      return Loss, Train_acc
 
 def test(model,dataset):
       model.eval()

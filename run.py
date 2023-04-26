@@ -7,6 +7,7 @@ from trainers import train,train_minibatch, test
 from tqdm import tqdm
 import torch.nn.functional as F
 import os
+import pandas as pd
 
 torch.manual_seed(123456)
 
@@ -20,7 +21,7 @@ weight_decay=5e-4
 
 criterion = torch.nn.CrossEntropyLoss() 
 
-num_seeds=10
+num_seeds=0   
 
 Test_accuracy=0
 seeds=torch.range(30,30+num_seeds,1)
@@ -55,13 +56,23 @@ for seed in seeds:
         train_loader = NeighborLoader(dataset,num_neighbors= [-1],
         batch_size=8,
         input_nodes=dataset.train_mask,shuffle=True)
-        loss, train_acc=train_minibatch(model,train_loader,dataset,optimizer,criterion,N_epoch,save_parameters,filename_values,filename_model)
-        Test_accuracy+=test(model,dataset)
+        Loss, Train_acc=train_minibatch(model,train_loader,dataset,optimizer,criterion,N_epoch,save_parameters,filename_values,filename_model)
         
-    if training=='complete_graph':
-        loss, train_acc=train(model,dataset,N_epoch,criterion, optimizer,save_parameters,filename_values,filename_model)
-        Test_accuracy+=test(model,dataset)
+    elif training=='complete_graph':
+        Loss, Train_acc=train(model,dataset,N_epoch,criterion, optimizer,save_parameters,filename_values,filename_model)
+        
+    test_acc=test(model,dataset)
+    Test_accuracy+=test_acc
 
+    if save_parameters:
+        df = pd.read_csv(filename_values)
+        print(df)
+        new_row={'seed':seed.item(), 'loss': Loss,'train_accuracy':Train_acc ,'test_accuracy':test_acc}
+        df.loc[len(df)]=new_row
+        df.to_csv(filename_values)
+
+
+#print the average of the test accuracies over the seeds
 print('test_accuracy={}'.format( Test_accuracy/len(seeds)))        
     
 
