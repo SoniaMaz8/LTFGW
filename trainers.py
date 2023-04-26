@@ -3,6 +3,8 @@ import time
 from tqdm import tqdm
 import csv
 import datetime
+import torch.nn.functional as F
+from architectures import GCN_3_layers
 
 def train_epoch(dataset,model,criterion,optimizer):
       model.train()
@@ -83,5 +85,24 @@ def train(model,dataset,N_epoch,criterion, optimizer,save,filename_values,filena
             print(f'Epoch: {epoch:03d},time:{end-start:.4f}, Loss: {loss:.4f},Train Accuracy: {train_acc:.4f}')     
       torch.save( model.state_dict(), filename_model)
       return loss, train_acc
-                  
-            
+
+def test(model,dataset):
+      model.eval()
+      out = model(dataset.x,dataset.edge_index)
+      pred = out.argmax(dim=1)  # Use the class with highest probability.
+      test_correct = pred[dataset.test_mask] == dataset.y[dataset.test_mask]  
+      test_acc = int(test_correct.sum()) / int(dataset.test_mask.sum()) 
+      return test_acc
+
+def train_multiple_seeds(model,dataset,N_epoch,save_parameters,filename_values,filename_model,n_classes,N_features,criterion,optimizer):
+    Loss=0
+    Test_acc=0
+    num_seeds=10
+    seeds=torch.range(30,30+num_seeds,1)
+    for seed in tqdm(seeds):
+        torch.manual_seed(seed)
+        loss, train_acc=train(model,dataset,N_epoch,criterion,optimizer,save_parameters,filename_values,filename_model)
+        test_acc=test(model,dataset)
+        Test_acc+=test_acc
+        print(test_acc)
+    return Test_acc/len(seeds)
