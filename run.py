@@ -10,17 +10,17 @@ torch.manual_seed(123456)
 
 #%%Parameters to set
 
-dataset_name='toy_graph'  #'citeseer' or 'toy_graph'
-model_name='GCN'  #'LTFGW' or 'GCN'
-save_parameters=True  #wether to save the parameters and the model
-N_epoch=50   #number of epochs
-training='complete_graph'     #'complete graph' or 'mini_batch' 
+dataset_name='citeseer'  #'citeseer' or 'toy_graph'
+model_name='LTFGW'  #'LTFGW' or 'GCN'
+save_parameters=False  #wether to save the parameters and the model
+N_epoch=50  #number of epochs
+training='mini_batch'     #'complete graph' or 'mini_batch' 
 lr=0.01  #learning rate
 weight_decay=5e-4
 
 criterion = torch.nn.CrossEntropyLoss() 
 
-num_seeds=0   #number of different seeds to train with
+num_seeds=10  #number of different seeds to train with
 
 #%%Training and testing
 
