@@ -1,5 +1,5 @@
 from torch_geometric.loader import NeighborLoader
-from architectures import GCN_LTFGW, GCN_3_layers
+from architectures import GCN_LTFGW, GCN_3_layers, GCN_LTFGW_end
 import torch
 from data.convert_datasets import Citeseer_data
 from trainers import train,train_minibatch, test
@@ -11,7 +11,7 @@ torch.manual_seed(123456)
 #%%Parameters to set
 
 dataset_name='Citeseer'  #'Citeseer' or 'Toy_graph'
-model_name='GCN'  #'LTFGW' or 'GCN'
+model_name='LTFGW'  #'LTFGW' or 'GCN'
 save=True  #wether to save the parameters and the model
 N_epoch=200  #number of epochs
 training='complete_graph'     #'complete graph' or 'mini_batch' 

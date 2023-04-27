@@ -2,6 +2,7 @@ import torch
 import torch.nn as nn
 from utils import distance_to_template
 from torch_geometric.data import Data as GraphData
+import torch.nn.functional as F
 
 def template_initialisation(N_templates,N_nodes,N_features):
     """"
@@ -50,6 +51,7 @@ class LTFGW(nn.Module):
     def forward(self, x, edge_index):
         alpha=torch.sigmoid(self.alpha0)
         x=distance_to_template(x,edge_index,self.templates_features,self.templates,alpha,2)
+        x = (x - torch.mean(x, dim=0))/torch.std(x, dim=0)
         return x
 
 
