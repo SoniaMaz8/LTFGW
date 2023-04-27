@@ -37,7 +37,7 @@ class GCN_LTFGW(nn.Module):
     
 
 class GCN_3_layers(nn.Module):
-    def __init__(self,n_classes=2,N_features=10,hidden_layer=16,dropout=0.5):
+    def __init__(self,n_classes=2,N_features=10,hidden_layer=20,dropout=0.5):
         """
         n_classes: number of classes for node classification
         """
@@ -55,7 +55,7 @@ class GCN_3_layers(nn.Module):
     def forward(self, x, edge_index):
         x=self.conv1(x, edge_index)
         x=F.relu(x)
-        x = F.dropout(x, self.dropout, training=self.training)
+     #   x = F.dropout(x, self.dropout, training=self.training)
     #    x=self.conv2(x, edge_index)
     #    x=F.relu(x)
     #    x = F.dropout(x, self.dropout, training=self.training)       

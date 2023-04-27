@@ -74,7 +74,7 @@ def train_minibatch(model,train_loader,dataset,optimizer,criterion,N_epoch,save,
             df.at[len(df)-1,'train_accuracy']=Train_acc
             df.at[len(df)-1,'validation_accuracy']=Val_acc
             df.to_pickle(filename_save) 
-        print(f'Epoch: {epoch:03d},time:{end-start:.4f}, Loss: {loss:.4f},Train Accuracy: {train_acc:.4f}')
+        print(f'Epoch: {epoch:03d},time:{end-start:.4f}, Loss: {loss:.4f},Train Accuracy: {train_acc:.4f},Validation Accuracy:{val_acc:.4f}')
     if save:
         df = pd.read_pickle(filename_save)
         max_val=max(df.iloc[len(df)-1]['validation_accuracy'])
@@ -110,7 +110,7 @@ def train(model,dataset,N_epoch,criterion, optimizer,save,filename_save,filename
                 df.at[len(df)-1,'train_accuracy']=Train_acc
                 df.at[len(df)-1,'validation_accuracy']=Val_acc
                 df.to_pickle(filename_save)        
-            print(f'Epoch: {epoch:03d},time:{end-start:.4f}, Loss: {loss:.4f},Train Accuracy: {train_acc:.4f}')  
+            print(f'Epoch: {epoch:03d},time:{end-start:.4f}, Loss: {loss:.4f},Train Accuracy: {train_acc:.4f},Validation Accuracy:{val_acc:.4f}')  
     if save:
         df = pd.read_pickle(filename_save)
         max_val=max(df.iloc[len(df)-1]['validation_accuracy'])
