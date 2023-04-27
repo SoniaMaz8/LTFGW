@@ -115,6 +115,7 @@ def train(model,dataset,N_epoch,criterion, optimizer,save,filename_save,filename
     if save:
         df = pd.read_pickle(filename_save)
         max_val=max(df.iloc[len(df)-1]['validation_accuracy'])
+        print(max_val)
         df.at[len(df)-1,'max_val_accuracy']=max_val
         df.to_pickle(filename_save)  
     return Loss, Train_acc, Val_acc
