@@ -51,7 +51,8 @@ for seed in seeds:
     
     optimizer=torch.optim.Adam(model.parameters(), lr=lr,weight_decay=weight_decay)
     df=pd.read_pickle(filename_save)
-    best_val_perf=df['validation_accuracy'].max()
+    
+    best_val_perf=df['max_val_accuracy'].max()
 
     if training=='mini_batch':
         train_loader = NeighborLoader(dataset,num_neighbors= [-1],
