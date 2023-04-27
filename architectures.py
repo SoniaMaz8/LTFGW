@@ -21,12 +21,13 @@ class GCN_LTFGW(nn.Module):
         self.dropout=dropout
         
         self.conv1=GCNConv(self.N_features,self.hidden_layer)
-        self.conv2=GCNConv(self.N_templates+self.N_features,self.hidden_layer) 
-        self.conv3=GCNConv(self.hidden_layer,self.n_classes)  
-        self.LTFGW=LTFGW(self.N_templates,self.N_templates_nodes,self.N_features,self.alpha0)
-        self.linear=Linear(self.N_templates+self.hidden_layer, self.n_classes)
+        self.conv2=GCNConv(self.N_templates+self.hidden_layer,self.N_templates+self.hidden_layer) 
+        self.conv3=GCNConv(self.N_templates+self.hidden_layer,self.n_classes)  
+        self.LTFGW=LTFGW(self.N_templates,self.N_templates_nodes, self.hidden_layer,self.alpha0)
+        self.linear=Linear(self.N_features, self.hidden_layer)
 
     def forward(self, x, edge_index):
+        x=self.linear(x)
         y=self.LTFGW(x,edge_index)
         x=torch.hstack([x,y])
         x=self.conv2(x, edge_index)

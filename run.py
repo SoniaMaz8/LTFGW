@@ -12,20 +12,20 @@ torch.manual_seed(123456)
 
 dataset_name='citeseer'  #'citeseer' or 'toy_graph'
 model_name='LTFGW'  #'LTFGW' or 'GCN'
-save_parameters=False  #wether to save the parameters and the model
-N_epoch=50  #number of epochs
-training='mini_batch'     #'complete graph' or 'mini_batch' 
+save_parameters=True  #wether to save the parameters and the model
+N_epoch=200  #number of epochs
+training='complete_graph'     #'complete graph' or 'mini_batch' 
 lr=0.01  #learning rate
 weight_decay=5e-4
 
 criterion = torch.nn.CrossEntropyLoss() 
 
-num_seeds=10  #number of different seeds to train with
+num_seeds=0  #number of different seeds to train with
 
 #%%Training and testing
 
 Test_accuracy=0
-seeds=torch.range(30,30+num_seeds,1)
+seeds=torch.range(40,40+num_seeds,1)
 for seed in seeds:
     torch.manual_seed(seed)
 
@@ -40,7 +40,7 @@ for seed in seeds:
         filename_save='results/toy_graph'  
 
     if model_name=='LTFGW':
-        model=GCN_LTFGW(n_classes=n_classes,N_features=dataset.num_features, N_templates=10,N_templates_nodes=10)
+        model=GCN_LTFGW(n_classes=n_classes,N_features=dataset.num_features, N_templates=6,N_templates_nodes=6)
         filename_save=os.path.join( filename_save,'LTFGW.csv')
 
     elif model_name=='GCN':
@@ -56,16 +56,14 @@ for seed in seeds:
         Loss, Train_acc=train_minibatch(model,train_loader,dataset,optimizer,criterion,N_epoch)
         
     elif training=='complete_graph':
-        Loss, Train_acc=train(model,dataset,N_epoch,criterion, optimizer)
+        Loss, Train_acc, Val_acc=train(model,dataset,N_epoch,criterion, optimizer)
         
     test_acc=test(model,dataset)
     Test_accuracy+=test_acc
 
     if save_parameters:
-        print(filename_save)
         df = pd.read_csv(filename_save)
-        print(df)
-        new_row={'seed':seed.item(), 'loss': Loss,'train_accuracy':Train_acc ,'test_accuracy':test_acc,'model_parameters': model.state_dict()}
+        new_row={'seed':seed.item(), 'loss': Loss,'train_accuracy':Train_acc ,'validation_accuracy': Val_acc,'test_accuracy':test_acc,'model_parameters': model.state_dict()}
         df.loc[len(df)]=new_row
         df.to_csv(filename_save)
 
