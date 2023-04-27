@@ -1,5 +1,9 @@
 import time
 from tqdm import tqdm
+import torch
+import os 
+import pandas as pd
+
 
 def train_epoch(dataset,model,criterion,optimizer):
     """"
@@ -43,31 +47,49 @@ def train_epoch_minibatch(model,train_loader,data,optimizer,criterion):
     return total_loss / len(train_loader), total_train_acc / len(train_loader),  total_val_acc / len(train_loader) #mean of train accuracy and loss over the mini batches
 
 
-def train_minibatch(model,train_loader,dataset,optimizer,criterion,N_epoch):
+def train_minibatch(model,train_loader,dataset,optimizer,criterion,N_epoch,save,filename_save,filename_best_model,best_val_perf,seed):
     """"
     train the entire model with minibatches
     """        
     Loss=[]
     Train_acc=[] 
-    Val_acc=[]     
+    Val_acc=[]  
+    if save:
+        df = pd.read_pickle(filename_save)
+        new_row={'seed':seed, 'loss': [],'train_accuracy':[] ,'validation_accuracy': [],'test_accuracy':0}
+        df.loc[len(df)]=new_row  
+        df.to_pickle(filename_save)         
     for epoch in range(N_epoch):  
         start=time.time()      
         loss,train_acc, val_acc = train_epoch_minibatch(model,train_loader,dataset,optimizer,criterion)
         Loss.append(loss)
         Train_acc.append(train_acc)  
-        Val_acc.append(val_acc)          
-        end=time.time()   
+        Val_acc.append(val_acc) 
+        end=time.time()  
+        if save: 
+            if val_acc>best_val_perf:  
+              torch.save(model.state_dict(),filename_best_model)
+            df = pd.read_pickle(filename_save)
+            df.at[len(df)-1,'loss']=Loss
+            df.at[len(df)-1,'train_accuracy']=Train_acc
+            df.at[len(df)-1,'validation_accuracy']=Val_acc
+            df.to_pickle(filename_save) 
         print(f'Epoch: {epoch:03d},time:{end-start:.4f}, Loss: {loss:.4f},Train Accuracy: {train_acc:.4f}')     
     return Loss, Train_acc, Val_acc
 
 
-def train(model,dataset,N_epoch,criterion, optimizer):
+def train(model,dataset,N_epoch,criterion, optimizer,save,filename_save,filename_best_model,best_val_perf,seed):
     """"
     train the entire model on the entire graph
     """         
     Loss=[]
     Train_acc=[]
     Val_acc=[]
+    if save:
+        df = pd.read_pickle(filename_save)
+        new_row={'seed':seed, 'loss': [],'train_accuracy':[] ,'validation_accuracy': [],'test_accuracy':0}
+        df.loc[len(df)]=new_row 
+        df.to_pickle(filename_save)      
     for epoch in tqdm(range(N_epoch)): 
             start=time.time()     
             loss,train_acc, val_acc = train_epoch(dataset,model,criterion,optimizer)
@@ -75,6 +97,14 @@ def train(model,dataset,N_epoch,criterion, optimizer):
             Loss.append(loss.item())
             Train_acc.append(train_acc)
             Val_acc.append(val_acc)
+            if save: 
+                if val_acc>best_val_perf:  
+                    torch.save(model.state_dict(),filename_best_model)
+                df = pd.read_pickle(filename_save)
+                df.at[len(df)-1,'loss']=Loss
+                df.at[len(df)-1,'train_accuracy']=Train_acc
+                df.at[len(df)-1,'validation_accuracy']=Val_acc
+                df.to_pickle(filename_save)        
             print(f'Epoch: {epoch:03d},time:{end-start:.4f}, Loss: {loss:.4f},Train Accuracy: {train_acc:.4f}')     
     return Loss, Train_acc, Val_acc
 
