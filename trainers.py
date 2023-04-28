@@ -103,10 +103,11 @@ def train(model,dataset,N_epoch,criterion, optimizer,save,filename_save,filename
             Train_acc.append(train_acc)
             Val_acc.append(val_acc)
             if save: 
+                df = pd.read_pickle(filename_save)
                 if val_acc>best_val_perf:  
                     torch.save(model.state_dict(),filename_best_model)
                     best_val_perf=val_acc
-                df = pd.read_pickle(filename_save)
+                    df.at[len(df)-1,'max_val_accuracy']=val_acc
                 df.at[len(df)-1,'loss']=Loss
                 df.at[len(df)-1,'train_accuracy']=Train_acc
                 df.at[len(df)-1,'validation_accuracy']=Val_acc
