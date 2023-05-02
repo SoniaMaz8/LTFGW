@@ -46,7 +46,7 @@ labels=torch.tensor([0,0,0,0,1,1,1,1,1,1,2,2,2,2,2,2,2,2,2,2])
 for i in range(n):               #one hot encoding for the features
    feat=torch.zeros(n_feat)
    feat[labels[i]]=1
-  # feat=feat+torch.rand(n_feat)   #noise
+   feat=feat+torch.rand(n_feat)   #noise
    feat_C1.append(feat)
    
 
@@ -72,7 +72,7 @@ torch.manual_seed(32)
 n = 20 #number of nodes
 nc = 3
 ratio = torch.tensor([.3, .3, .4])
-P = 0.6 * torch.eye(3) + 0.02 * torch.ones(3, 3)
+P = 0.6 * torch.eye(3) + 0.01 * torch.ones(3, 3)
 C2 = get_sbm(n, nc, ratio, P)
 
 # get 2d position for nodes
@@ -80,17 +80,17 @@ x2 = MDS(dissimilarity='precomputed', random_state=2,normalized_stress='auto').f
 
 #plot the graph
 
-#plt.figure(2, (10, 5))
-#plt.clf()
-#plt.subplot(1, 2, 1)
-#plot_graph(x2, C2, color='C0')
-#plt.title("Test toy graph")
-#plt.axis("off")
-#plt.subplot(1, 2, 2)
-#plt.imshow(C2, interpolation='nearest')
-#plt.title("Adjacency matrix")
-#plt.axis("off")
-#plt.show()
+plt.figure(2, (10, 5))
+plt.clf()
+plt.subplot(1, 2, 1)
+plot_graph(x2, C2, color='C0')
+plt.title("Test toy graph")
+plt.axis("off")
+plt.subplot(1, 2, 2)
+plt.imshow(C2, interpolation='nearest')
+plt.title("Adjacency matrix")
+plt.axis("off")
+plt.show()
 
 #node features
 
@@ -102,20 +102,27 @@ for i in range(n):               #one hot encoding for the features
    feat[labels[i]]=1
   # feat=feat+torch.rand(n_feat)   #noise
    feat_C2.append(feat)
+
+
    
 
 feat_C2 = torch.stack(feat_C2)  
+feat_C2=feat_C2+torch.normal(mean=torch.zeros(len(feat_C2),3), std=0.1*torch.ones(len(feat_C2),3))
+print(feat_C2)
 
 G=adjacency_to_graph(C2,feat_C2)
 
 G2=GraphData(x=feat_C2, edge_index=G.edge_index,y=labels, num_features=n_feat , num_classes=3)
 
-transform=RandomNodeSplit(num_train_per_class=3,num_val=0,num_test=8)  #split into test set,train set
+transform=RandomNodeSplit(num_train_per_class=4,num_val=3,num_test=8)  #split into test set,train set
 G2=transform(G2)
-#torch.save(G2,'toy_graph2.pt')
+torch.save(G2,'data/toy_graph1.pt')
 
+print(G2.y)
 print(G2.train_mask)
-print(G1.train_mask)
+print(torch.sum(G2.train_mask)/len(G2.train_mask))
+print(G2.test_mask)
+print(G2.val_mask)
 
 
 
