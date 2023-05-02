@@ -29,6 +29,7 @@ class GCN_LTFGW(nn.Module):
         x=self.linear(x)
         y=self.LTFGW(x,edge_index)
         x=torch.hstack([x,y])
+        x=(x - torch.mean(x, dim=0))/torch.std(x, dim=0)
         x=self.conv2(x, edge_index)
         x = x.relu()
         x=self.conv3(x, edge_index)
@@ -83,7 +84,7 @@ class GCN_3_layers(nn.Module):
 
     def forward(self, x, edge_index):
         x=self.conv1(x, edge_index)
-        x=F.relu(x)     
+        x=F.relu(x) 
         x=self.conv3(x, edge_index) 
         return  x   
     
