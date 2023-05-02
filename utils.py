@@ -88,7 +88,8 @@ def subgraph(x,edge_index,node_idx, order):
     sub_G=k_hop_subgraph(node_idx,order,edge_index=edge_index,relabel_nodes=True) 
     x_sub=x[sub_G[0]]
     edges_sub=sub_G[1]
-    return x_sub,edges_sub
+    central_node_index=sub_G[2]
+    return x_sub,edges_sub,central_node_index
 
 
 
@@ -112,10 +113,11 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,k=1):
     n_template=len(x_T[0])
     q=torch.ones(n_template)/n_template
     for i in range(n):
-        x_sub,edges_sub=subgraph(x,edge_index,i,k)
-        x_sub=x_sub.reshape(len(x_sub),n_feat)  #reshape pour utiliser ot.dist        
+        x_sub,edges_sub,central_node_index=subgraph(x,edge_index,i,k)
+        x_sub=x_sub.reshape(len(x_sub),n_feat)  #reshape pour utiliser ot.dist      
         n_sub=len(x_sub)
-        p=torch.ones(n_sub)/n_sub
+        p=torch.ones(n_sub)*k/((n_sub-1)*(k+1))
+        p[central_node_index]=1/(k+1)  #more 
         C_sub=graph_to_adjacency(n_sub,edges_sub).type(torch.float)    
         for j in range(n_T):
           template_features=x_T[j].reshape(len(x_T[j]),n_feat_T)   #reshape pour utiliser ot.dist
