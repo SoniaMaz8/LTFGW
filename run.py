@@ -11,7 +11,7 @@ torch.manual_seed(123456)
 #%%Parameters to set
 
 dataset_name='Toy_graph'  #'Citeseer' or 'Toy_graph'
-model_name='GCN'  # 'GCN', 'GCN_LTFGW', 'LTFGW_GCN' or 'MLP'
+model_name='MLP'  # 'GCN', 'GCN_LTFGW', 'LTFGW_GCN' or 'MLP'
 save=True  #wether to save the parameters and the model
 N_epoch=200 #number of epochs
 training='complete_graph'     #'complete graph' or 'mini_batch' 
@@ -35,16 +35,16 @@ for seed in seeds:
 
     # init model
     if model_name=='LTFGW_GCN':
-        model=LTFGW_GCN(n_classes=n_classes,N_features=dataset.num_features, N_templates=6,N_templates_nodes=6)
+        model=LTFGW_GCN(n_classes=n_classes,n_features=dataset.num_features, n_templates=6,n_templates_nodes=6)
 
     elif model_name=='GCN_LTFGW':
-        model=GCN_LTFGW(n_classes=n_classes,N_features=dataset.num_features, N_templates=6,N_templates_nodes=6, skip_connection=True)
+        model=GCN_LTFGW(n_classes=n_classes,n_features=dataset.num_features, n_templates=6,n_templates_nodes=6, skip_connection=True)
   
     elif model_name=='MLP':
-        model=MLP(n_classes=n_classes)
+        model=MLP(n_classes=n_classes,n_features=dataset.num_features)
 
     elif model_name=='GCN':
-        model=GCN(n_classes=n_classes,N_features=dataset.num_features)
+        model=GCN(n_classes=n_classes,n_features=dataset.num_features)
 
     method=model_name+'_'+training
     filename_save, filename_best_model = get_filenames(dataset_name,method,seed)

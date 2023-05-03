@@ -167,3 +167,16 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k=1):
           distances[i,j]=dist
 
     return distances
+
+
+def plot_TSNE(X_embedded,labels):
+    plt.figure(1)
+    plt.clf()
+    for i in range(len(labels)):
+        if labels[i]==0:
+            plt.scatter(X_embedded[i][0],X_embedded[i][1],c='blue')
+        if labels[i]==1:
+            plt.scatter(X_embedded[i][0],X_embedded[i][1],c='green')  
+        if labels[i]==2:
+            plt.scatter(X_embedded[i][0],X_embedded[i][1],c='red')     
+    plt.show()

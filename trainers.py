@@ -3,15 +3,21 @@ from tqdm import tqdm
 import torch
 import os 
 import pandas as pd
+from sklearn.manifold import TSNE
+from utils import plot_TSNE
 
 
-def train_epoch(dataset,model,criterion,optimizer):
+def train_epoch(dataset,model,criterion,optimizer,epoch):
     """"
     train one epoch on the complete graph
     """
     model.train()
     optimizer.zero_grad()  
     out = model(dataset.x,dataset.edge_index)
+    if epoch%20==0:
+       x_latent=out.detach().numpy()
+       df_x=pd.DataFrame(x_latent)
+       df_x.to_csv('results/TSNE2/latent{}.csv'.format(epoch))
     pred = out.argmax(dim=1)         # Use the class with highest probability
     train_correct = pred[dataset.train_mask] == dataset.y[dataset.train_mask]   #number of correct node predictions
     train_acc = int(train_correct.sum()) / int(dataset.train_mask.sum())  #training_accuracy
@@ -92,7 +98,7 @@ def train(model,dataset,N_epoch,criterion, optimizer,save,filename_save,filename
       df=pd.DataFrame(columns=['loss','train_accuracy','validation_accuracy','test_accuracy','best_validation_accuracy'])    
     for epoch in tqdm(range(N_epoch)): 
             start=time.time()     
-            loss,train_acc, val_acc = train_epoch(dataset,model,criterion,optimizer)
+            loss,train_acc, val_acc = train_epoch(dataset,model,criterion,optimizer,epoch)
             end=time.time()
             Loss.append(loss.item())
             Train_acc.append(train_acc)
