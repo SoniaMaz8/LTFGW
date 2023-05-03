@@ -11,7 +11,7 @@ torch.manual_seed(123456)
 #%%Parameters to set
 
 dataset_name='Toy_graph'  #'Citeseer' or 'Toy_graph'
-model_name='LTFGW_GCN'  # 'GCN', 'GCN_LTFGW', 'LTFGW_GCN' or 'MLP'
+model_name='GCN'  # 'GCN', 'GCN_LTFGW', 'LTFGW_GCN' or 'MLP'
 save=True  #wether to save the parameters and the model
 N_epoch=200 #number of epochs
 training='complete_graph'     #'complete graph' or 'mini_batch' 
