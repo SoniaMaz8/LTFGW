@@ -50,7 +50,7 @@ class GCN_LTFGW(nn.Module):
     
 
 class GCN(nn.Module):
-    def __init__(self,n_classes=2,N_features=10,hidden_layer=20, n_hidden_layers=1):
+    def __init__(self,n_classes=2,N_features=10,hidden_layer=20, n_hidden_layers=0):
         """
         n_classes: number of classes for node classification
         """
@@ -60,21 +60,28 @@ class GCN(nn.Module):
         self.N_features=N_features
         self.hidden_layer=hidden_layer
         self.n_hidden_layers=n_hidden_layers
+        
+        self.first_conv=GCNConv(self.N_features,self.hidden_layer)
 
         # list of GCN layers
-        self.hidden_layer = nn.ModuleList()
+        self.list_hidden_layer = nn.ModuleList()
         for i in range(self.n_hidden_layers):
-            self.hidden_layer.append(GCNConv(self.N_features,self.hidden_layer))
+            self.list_hidden_layer.append(GCNConv(self.hidden_layer,self.hidden_layer))
         
         self.last_conv=GCNConv(self.hidden_layer,self.n_classes)
 
     def forward(self, x, edge_index):
+
+        x=self.first_conv(x,edge_index)
+        x=x.relu()
+
         # go through hidden layers
+
         for i in range(self.n_hidden_layers):
-            x=self.hidden_layer[i](x,edge_index)
+            x=self.list_hidden_layer[i](x,edge_index)
             x=x.relu()
 
-        x=self.conv2(x, edge_index) 
+        x=self.last_conv(x, edge_index) 
         return  x   
     
 
@@ -94,7 +101,7 @@ class LTFGW_GCN(nn.Module):
         self.alpha0=alpha0
         self.q0=q0
         
-        self.conv1=GCNConv(self.N_features, self.hidden_layer)
+        self.conv1=GCNConv(self.N_templates, self.n_classes)
         self.LTFGW=LTFGW(self.N_templates,self.N_templates_nodes, self.N_features,self.alpha0,self.q0)
 
     def forward(self, x, edge_index):
@@ -105,14 +112,14 @@ class LTFGW_GCN(nn.Module):
     
 
 class MLP(nn.Module):
-    def __init__(self,n_classes=2,n_features=10, n_templates=10,n_templates_nodes=10,hidden_layer=20, n_hidden_layers=1):
+    def __init__(self,n_classes=2,n_features=10,hidden_layer=20, n_hidden_layers=1):
         """
         n_classes: number of classes for node classification
         """
         super().__init__()
     
         self.n_classes=n_classes
-        self.n_features=x_features
+        self.n_features=n_features
         self.hidden_layer=hidden_layer
         self.n_hidden_layers=n_hidden_layers
 

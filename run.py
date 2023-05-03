@@ -1,7 +1,6 @@
 from torch_geometric.loader import NeighborLoader
-from architectures import GCN_LTFGW_parallel, GCN_2_layers, MLP,LTFGW_GCN
-from data.convert_datasets import Citeseer_data
-from utils import get_dataset
+from architectures import GCN_LTFGW, GCN, MLP,LTFGW_GCN
+from utils import get_dataset, get_filenames
 from trainers import train,train_minibatch, test
 import os
 import pandas as pd
@@ -12,8 +11,8 @@ torch.manual_seed(123456)
 #%%Parameters to set
 
 dataset_name='Toy_graph'  #'Citeseer' or 'Toy_graph'
-model_name='LTFGW_GCN'  # 'GCN', 'GCN_LTFGW_parallel', 'LTFGW_GCN' or 'MLP'
-save=False  #wether to save the parameters and the model
+model_name='LTFGW_GCN'  # 'GCN', 'GCN_LTFGW', 'LTFGW_GCN' or 'MLP'
+save=True  #wether to save the parameters and the model
 N_epoch=200 #number of epochs
 training='complete_graph'     #'complete graph' or 'mini_batch' 
 lr=0.01  #learning rate
@@ -21,12 +20,13 @@ weight_decay=5e-4
 
 criterion = torch.nn.CrossEntropyLoss() 
 
-num_seeds=0  #number of different seeds to train with
+num_seeds=1 #number of different seeds to train with
 
 #%%Training and testing
 
 Test_accuracy=0
-seeds=torch.range(20,20+num_seeds,1)
+seeds=torch.arange(20,20+num_seeds,1)
+
 for seed in seeds:
     torch.manual_seed(seed)
     
@@ -34,44 +34,39 @@ for seed in seeds:
     dataset, n_classes=get_dataset(dataset_name)
 
     # init model
-    if model_name=='LTFGW':
-        model=GCN_LTFGW(n_classes=n_classes,N_features=dataset.num_features, N_templates=6,N_templates_nodes=6)
+    if model_name=='LTFGW_GCN':
+        model=LTFGW_GCN(n_classes=n_classes,N_features=dataset.num_features, N_templates=6,N_templates_nodes=6)
 
-    elif model_name=='GCN_LTFGW_parallel':
+    elif model_name=='GCN_LTFGW':
         model=GCN_LTFGW(n_classes=n_classes,N_features=dataset.num_features, N_templates=6,N_templates_nodes=6, skip_connection=True)
-
-    elif model_name=='LTFGW_GCN':
-        model=LTFGW_GCN(n_classes=n_classes,N_features=dataset.num_features)
-        filename_save=os.path.join( 'results','LTFGW',str(dataset_name)+ '.pkl')
-        filename_best_model=os.path.join( 'results','LTFGW',str(dataset_name)+ '_best_valid.pt')        
-
+  
     elif model_name=='MLP':
         model=MLP(n_classes=n_classes)
-        filename_save=os.path.join( 'results','LTFGW',str(dataset_name)+ '.pkl')
-        filename_best_model=os.path.join( 'results','LTFGW',str(dataset_name)+ '_best_valid.pt')        
 
     elif model_name=='GCN':
-        model=GCN(n_classes=n_classes,N_features=dataset.num_features,dropout=0.6)
+        model=GCN(n_classes=n_classes,N_features=dataset.num_features)
 
-
+    method=model_name+'_'+training
     filename_save, filename_best_model = get_filenames(dataset_name,method,seed)
+
+    print(filename_save)
     
 
     optimizer=torch.optim.Adam(model.parameters(), lr=lr,weight_decay=weight_decay)
 
     best_val_perf=0
-    if save:
-        df=pd.read_pickle(filename_save)
-        best_val_perf=df['max_val_accuracy'].max()
+   # if save:
+   #     df=pd.read_pickle(filename_save)
+   #     best_val_perf=df['max_val_accuracy'].max()
 
     if training=='mini_batch':
         train_loader = NeighborLoader(dataset,num_neighbors= [-1],
         batch_size=8,
         input_nodes=dataset.train_mask,shuffle=True)
-        Loss, Train_acc,Val_acc=train_minibatch(model,train_loader,dataset,optimizer,criterion,N_epoch,save,filename_save,filename_best_model,best_val_perf,seed)
+        Loss, Train_acc,Val_acc=train_minibatch(model,train_loader,dataset,optimizer,criterion,N_epoch,save,filename_save,filename_best_model,best_val_perf)
         
     elif training=='complete_graph':
-        Loss, Train_acc, Val_acc=train(model,dataset,N_epoch,criterion, optimizer,save,filename_save,filename_best_model,best_val_perf,seed)
+        Loss, Train_acc, Val_acc=train(model,dataset,N_epoch,criterion, optimizer,save,filename_save,filename_best_model,best_val_perf)
         
     test_acc=test(model,dataset)
     Test_accuracy+=test_acc

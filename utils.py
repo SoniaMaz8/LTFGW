@@ -4,11 +4,10 @@ import matplotlib.pyplot as plt
 import networkx as nx
 from torch_geometric.data import Data as GraphData
 from torch_geometric.utils import k_hop_subgraph,to_networkx
+import os
 import ot
 import time
-
-
-#rng = np.random.RandomState(42)
+from data.convert_datasets import Citeseer_data
 
 def get_dataset(dataset_name):
     """ 
@@ -28,7 +27,7 @@ def get_dataset(dataset_name):
         n_classes=6
 
     elif dataset_name=='Toy_graph':
-        dataset=torch.load('data/toy_graph1.pt')
+        dataset=torch.load('data/toy_single_train.pt')
         n_classes=3
 
     return dataset,n_classes
@@ -36,7 +35,6 @@ def get_dataset(dataset_name):
 def get_filenames(dataset_name,method,seed=None):
 
     if seed is None:
-
         filename_save=os.path.join( 'results',method,"{}.pkl".format(dataset_name))
         filename_best_model=os.path.join( 'results',method,"{}_best_valid.pkl".format(dataset_name))   
 
@@ -138,27 +136,34 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k=1):
     alpha : trade-off parameter for fused gromov-wasserstein distance
     k : number of neighbours in the subgraphs
     """
+
     n=len(x)       #number of nodes in the graph
     n_T=len(x_T)   #number of templates
     n_feat=len(x[0])
     n_feat_T=len(x_T[0][0])
+
     if not n_feat==n_feat_T:
         raise ValueError('the templates and the graphs must have the same number of features')
+    
     distances=torch.zeros(n,n_T)
     for i in range(n):
         x_sub,edges_sub,central_node_index=subgraph(x,edge_index,i,k)
         x_sub=x_sub.reshape(len(x_sub),n_feat)  #reshape pour utiliser ot.dist      
         n_sub=len(x_sub)
+
         if n_sub>1:    #more weight on central node
           p=torch.ones(n_sub)*1/((n_sub-1)*(k+2))
           p[central_node_index]=(k+1)/(k+2)  
+
         else:          #if the node is isolated
           p=torch.ones(1)
-        C_sub=graph_to_adjacency(n_sub,edges_sub).type(torch.float)    
+        C_sub=graph_to_adjacency(n_sub,edges_sub).type(torch.float) 
+
         for j in range(n_T):
           template_features=x_T[j].reshape(len(x_T[j]),n_feat_T)   #reshape pour utiliser ot.dist
           M=ot.dist(x_sub,template_features).clone().detach().requires_grad_(True)
           M=M.type(torch.float)  #cost matrix between the features of the subgraph and the template
           dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, C_T[j], p, q[j],alpha=alpha,symmetric=True,max_iter=100)    
           distances[i,j]=dist
+
     return distances

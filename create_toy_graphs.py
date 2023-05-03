@@ -13,7 +13,7 @@ from sklearn.manifold import TSNE
 
 n = 1000   #number of nodes
 nc = 3   #number of clusters
-ratio = torch.tensor([.3, .3, .3])
+ratio = torch.tensor([.333, .333, .334])
 P = 0.05 * torch.eye(3) + 0.01 * torch.ones(3, 3)
 C1 = get_sbm(n, nc, ratio, P)
 
@@ -25,21 +25,21 @@ labels1=torch.zeros(333)
 labels2=torch.ones(333)
 labels3=torch.ones(334)*2
 labels=torch.hstack([labels1,labels2,labels3])
-labels=torch.Tensor.int(labels)
+labels=torch.Tensor(labels).type(torch.LongTensor)
+
 for i in range(n):               #one hot encoding for the features
    feat=torch.zeros(n_feat)
    feat[labels[i]]=1
    feat=feat+2*torch.rand(n_feat)   #noise
    feat_C1.append(feat)
    
-
 feat_C1 = torch.stack(feat_C1)  
 
 G=adjacency_to_graph(C1,feat_C1)
 
 G1=GraphData(x=feat_C1, edge_index=G.edge_index,y=labels, num_features=n_feat , num_classes=3)
 
-transform=RandomNodeSplit(num_val=500,num_test=0)  #split into test set,train set
+transform=RandomNodeSplit(num_val=500,num_test=0)  #split into train set and validation set
 G1=transform(G1)
 torch.save(G1,'data/toy_single_train.pt')
 
@@ -52,7 +52,7 @@ torch.save(G1,'data/toy_single_train.pt')
 
 n = 1000   #number of nodes
 nc = 3   #number of clusters
-ratio = torch.tensor([.3, .3, .3])
+ratio = torch.tensor([.333, .333, .334])
 P = 0.05 * torch.eye(3) + 0.01 * torch.ones(3, 3)
 C2 = get_sbm(n, nc, ratio, P)
 
@@ -64,7 +64,8 @@ labels1=torch.zeros(333)
 labels2=torch.ones(333)
 labels3=torch.ones(334)*2
 labels=torch.hstack([labels1,labels2,labels3])
-labels=torch.Tensor.int(labels)
+labels=torch.Tensor(labels).type(torch.LongTensor)
+
 for i in range(n):               #one hot encoding for the features
    feat=torch.zeros(n_feat)
    feat[labels[i]]=1
