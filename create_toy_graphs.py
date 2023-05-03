@@ -29,7 +29,7 @@ labels=torch.Tensor.int(labels)
 for i in range(n):               #one hot encoding for the features
    feat=torch.zeros(n_feat)
    feat[labels[i]]=1
-   feat=feat+torch.rand(n_feat)   #noise
+   feat=feat+2*torch.rand(n_feat)   #noise
    feat_C1.append(feat)
    
 
@@ -41,7 +41,7 @@ G1=GraphData(x=feat_C1, edge_index=G.edge_index,y=labels, num_features=n_feat , 
 
 transform=RandomNodeSplit(num_val=500,num_test=0)  #split into test set,train set
 G1=transform(G1)
-torch.save(G1,'toy_single_train.pt')
+torch.save(G1,'data/toy_single_train.pt')
 
 
 
@@ -68,7 +68,7 @@ labels=torch.Tensor.int(labels)
 for i in range(n):               #one hot encoding for the features
    feat=torch.zeros(n_feat)
    feat[labels[i]]=1
-   feat=feat+torch.rand(n_feat)   #noise
+   feat=feat+2*torch.rand(n_feat)   #noise
    feat_C2.append(feat)
    
 
@@ -78,7 +78,7 @@ G=adjacency_to_graph(C2,feat_C2)
 
 G2=GraphData(x=feat_C2, edge_index=G.edge_index,y=labels, num_features=n_feat , num_classes=3)
 
-torch.save(G2,'toy_single_test.pt')
+torch.save(G2,'data/toy_single_test.pt')
 
 plt.figure(1, (10, 5))
 plt.subplot(1,2,1)
