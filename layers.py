@@ -45,13 +45,9 @@ class LTFGW(nn.Module):
         self.templates=nn.Parameter(templates)
         self.templates_features = nn.Parameter(templates_features)
 
-        q0=torch.Tensor(N_templates,N_templates_nodes)
-        q0=torch.nn.init.uniform_(q0, a=0.0, b=1.0)
-        self.q0=nn.Parameter(q0)
-
         if q0 is None:
             q0=torch.Tensor(N_templates,N_templates_nodes)
-            q0=torch.nn.init.uniform_(q0, a=0.0, b=1.0)
+            q0=torch.nn.init.uniform_(q0)
             self.q0=nn.Parameter(q0)
         else: 
             self.q0=torch.log(q0)
