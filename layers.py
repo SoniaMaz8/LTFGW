@@ -26,7 +26,7 @@ def template_initialisation(N_templates,N_nodes,N_features):
 
 class LTFGW(nn.Module):
     """ Layer for the local TFWG """
-    def __init__(self, N_templates=10,N_templates_nodes=10,N_features=10,alpha0=None,q0=None):
+    def __init__(self, N_templates=10,N_templates_nodes=10,N_features=10,alpha0=None,train_node_weights=False):
         """
         N_features: number of node features
         N_templates: number of graph templates
@@ -45,12 +45,12 @@ class LTFGW(nn.Module):
         self.templates=nn.Parameter(templates)
         self.templates_features = nn.Parameter(templates_features)
 
-        if q0 is None:
+        if train_node_weights:
             q0=torch.Tensor(N_templates,N_templates_nodes)
             q0=torch.nn.init.uniform_(q0)
             self.q0=nn.Parameter(q0)
         else: 
-            self.q0=torch.log(q0)
+            self.q0=torch.zeros(N_templates,N_templates_nodes)
             
         if alpha0 is None:
             alpha0=torch.Tensor([0])

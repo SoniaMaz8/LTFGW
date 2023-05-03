@@ -10,6 +10,42 @@ import time
 
 #rng = np.random.RandomState(42)
 
+def get_dataset(dataset_name):
+    """ 
+    Function that returns the dataset and the number of classes for a given
+    dataset name
+    
+    Input:
+        dataset_name: name of the dataset
+    Output: 
+        dataset: dataset
+        n_classes: number of classes
+
+    """
+
+    if dataset_name=='Citeseer':
+        dataset=Citeseer_data()
+        n_classes=6
+
+    elif dataset_name=='Toy_graph':
+        dataset=torch.load('data/toy_graph1.pt')
+        n_classes=3
+
+    return dataset,n_classes
+
+def get_filenames(dataset_name,method,seed=None):
+
+    if seed is None:
+
+        filename_save=os.path.join( 'results',method,"{}.pkl".format(dataset_name))
+        filename_best_model=os.path.join( 'results',method,"{}_best_valid.pkl".format(dataset_name))   
+
+    else:   
+        filename_save=os.path.join( 'results',method,"{}_seed{}.pkl".format(dataset_name,seed))
+        filename_best_model=os.path.join( 'results',method,"{}_seed{}_best_valid.pkl".format(dataset_name,seed))
+    return filename_save, filename_best_model
+
+
 def visualize_graph(G, color='b'):
     """"
     visualisation of a torch.geometric graph

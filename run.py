@@ -1,6 +1,7 @@
 from torch_geometric.loader import NeighborLoader
 from architectures import GCN_LTFGW_parallel, GCN_2_layers, MLP,LTFGW_GCN
 from data.convert_datasets import Citeseer_data
+from utils import get_dataset
 from trainers import train,train_minibatch, test
 import os
 import pandas as pd
@@ -28,21 +29,16 @@ Test_accuracy=0
 seeds=torch.range(20,20+num_seeds,1)
 for seed in seeds:
     torch.manual_seed(seed)
+    
+    # load dataset
+    dataset, n_classes=get_dataset(dataset_name)
 
-    if dataset_name=='Citeseer':
-        dataset=Citeseer_data()
-        n_classes=6
-        filename_save='results/Citeseer'
+    # init model
+    if model_name=='LTFGW':
+        model=GCN_LTFGW(n_classes=n_classes,N_features=dataset.num_features, N_templates=6,N_templates_nodes=6)
 
-    elif dataset_name=='Toy_graph':
-        dataset=torch.load('data/toy_single_train.pt')
-        n_classes=3
-        filename_save='results/toy_graph'  
-
-    if model_name=='GCN_LTFGW_parallel':
-        model=GCN_LTFGW_parallel(n_classes=n_classes,N_features=dataset.num_features, N_templates=6,N_templates_nodes=6)
-        filename_save=os.path.join( 'results','LTFGW',str(dataset_name)+ '.pkl')
-        filename_best_model=os.path.join( 'results','LTFGW',str(dataset_name)+ '_best_valid.pt')
+    elif model_name=='GCN_LTFGW_parallel':
+        model=GCN_LTFGW(n_classes=n_classes,N_features=dataset.num_features, N_templates=6,N_templates_nodes=6, skip_connection=True)
 
     elif model_name=='LTFGW_GCN':
         model=LTFGW_GCN(n_classes=n_classes,N_features=dataset.num_features)
@@ -55,9 +51,11 @@ for seed in seeds:
         filename_best_model=os.path.join( 'results','LTFGW',str(dataset_name)+ '_best_valid.pt')        
 
     elif model_name=='GCN':
-        model=GCN_2_layers(n_classes=n_classes,N_features=dataset.num_features)
-        filename_save=os.path.join( 'results','GCN',str(dataset_name)+ '.pkl')
-        filename_best_model=os.path.join( 'results','GCN',str(dataset_name)+ '_best_valid.pt')       
+        model=GCN(n_classes=n_classes,N_features=dataset.num_features,dropout=0.6)
+
+
+    filename_save, filename_best_model = get_filenames(dataset_name,method,seed)
+    
 
     optimizer=torch.optim.Adam(model.parameters(), lr=lr,weight_decay=weight_decay)
 
