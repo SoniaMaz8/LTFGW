@@ -53,14 +53,14 @@ def train_minibatch(model,train_loader,dataset,optimizer,criterion,N_epoch,save,
     Loss=[]
     Train_acc=[] 
     Val_acc=[] 
-    df = pd.read_pkl('results/performances.pkl')
+    df = pd.read_pickle('results/performances.pkl')
     df=df[model_name+'_minibatch',dataset_name]
     best_val_perf=max(df['validation_accuracy'])        
     for epoch in range(N_epoch):  
         start=time.time()      
         loss,train_acc, val_acc = train_epoch_minibatch(model,train_loader,dataset,optimizer,criterion)
         if save:
-            df = pd.read_pkl('results/performances.pkl')
+            df = pd.read_pickle('results/performances.pkl')
             df.at[len(df)-1,'model']=model_name+'_minibatch'
             df.at[len(df)-1,'dataset']=dataset_name
             df.at[len(df)-1,'loss']=loss
@@ -72,8 +72,8 @@ def train_minibatch(model,train_loader,dataset,optimizer,criterion,N_epoch,save,
                     df_model=pd.DataFrame(columns=['seed','model_parameters'])
                     df_model['seed']=seed
                     df_model['model_parameters']=model.state_dict()
-                    df_model.to_pkl(os.path.join('results',str(model_name)+'_'+str(dataset_name)+'.pkl'))
-            df.to_pkl('results/performances.pkl') 
+                    df_model.to_pickle(os.path.join('results',str(model_name)+'_'+str(dataset_name)+'.pkl'))
+            df.to_pickle('results/performances.pkl') 
         Loss.append(loss)
         Train_acc.append(train_acc)  
         Val_acc.append(val_acc) 
@@ -86,14 +86,14 @@ def train_minibatch(model,train_loader,dataset,optimizer,criterion,N_epoch,save,
     return Loss, Train_acc, Val_acc
 
 
-def train(model,dataset,N_epoch,criterion, optimizer,save,filename_save,filename_best_model,seed,dataset_name,model_name):
+def train(model,dataset,N_epoch,criterion, optimizer,save,seed,dataset_name,model_name):
     """"
     train the entire model on the entire graph
     """         
     Loss=[]
     Train_acc=[]
     Val_acc=[] 
-    df = pd.read_pkl('results/performances.pkl')
+    df = pd.read_pickle('results/performances.pkl')
     df=df[str(model_name),str(dataset_name)]
     best_val_perf=max(df['validation_accuracy'])
     for epoch in tqdm(range(N_epoch)): 
@@ -101,7 +101,7 @@ def train(model,dataset,N_epoch,criterion, optimizer,save,filename_save,filename
             loss,train_acc, val_acc = train_epoch(dataset,model,criterion,optimizer,dataset_name,model_name,seed)
             end=time.time()
             if save:
-                df = pd.read_pkl('results/performances.pkl')
+                df = pd.read_pickle('results/performances.pkl')
                 df.at[len(df)-1,'model']=model_name
                 df.at[len(df)-1,'dataset']=dataset_name
                 df.at[len(df)-1,'loss']=loss
@@ -112,8 +112,8 @@ def train(model,dataset,N_epoch,criterion, optimizer,save,filename_save,filename
                     df_model=pd.DataFrame(columns=['seed','model_parameters'])
                     df_model['seed']=seed
                     df_model['model_parameters']=model.state_dict()
-                    df_model.to_pkl(os.path.join('results',str(model_name)+'_'+str(dataset_name)+'.pkl'))
-                df.to_pkl('results/performances.pkl') 
+                    df_model.to_pickle(os.path.join('results',str(model_name)+'_'+str(dataset_name)+'.pkl'))
+                df.to_pickle('results/performances.pkl') 
             Loss.append(loss.item())
             Train_acc.append(train_acc)
             Val_acc.append(val_acc)    
