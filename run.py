@@ -10,10 +10,10 @@ torch.manual_seed(123456)
 
 #%%Parameters to set
 
-dataset_name='Citeseer'  #'Citeseer' or 'Toy_graph'
+dataset_name='Toy_graph'  #'Citeseer' or 'Toy_graph'
 model_name='LTFGW'  #'LTFGW' or 'GCN'
 save=True  #wether to save the parameters and the model
-N_epoch=2000 #number of epochs
+N_epoch=200 #number of epochs
 training='complete_graph'     #'complete graph' or 'mini_batch' 
 lr=0.01  #learning rate
 weight_decay=5e-4
@@ -35,7 +35,7 @@ for seed in seeds:
         filename_save='results/Citeseer'
 
     elif dataset_name=='Toy_graph':
-        dataset=torch.load('data/toy_graph1.pt')
+        dataset=torch.load('data/toy_single_train.pt')
         n_classes=3
         filename_save='results/toy_graph'  
 
