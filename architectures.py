@@ -80,7 +80,7 @@ class GCN(nn.Module):
 
 
 class LTFGW_GCN(nn.Module):
-    def __init__(self,n_classes=2,N_features=10, N_templates=10,N_templates_nodes=10,hidden_layer=20,alpha0=None):
+    def __init__(self,n_classes=2,N_features=10, N_templates=10,N_templates_nodes=10,hidden_layer=20,alpha0=None,q0=None):
         """
         n_classes: number of classes for node classification
         """
@@ -92,11 +92,10 @@ class LTFGW_GCN(nn.Module):
         self.N_templates_nodes=N_templates_nodes
         self.hidden_layer=hidden_layer
         self.alpha0=alpha0
+        self.q0=q0
         
         self.conv1=GCNConv(self.N_features, self.hidden_layer)
-        self.LTFGW=LTFGW(self.N_templates,self.N_templates_nodes, self.hidden_layer,self.alpha0)
-        self.linear=Linear(self.N_templates+self.hidden_layer, self.n_classes)
-        self.batch_norm=torch.nn.BatchNorm1d(self.hidden_layer+self.N_templates)
+        self.LTFGW=LTFGW(self.N_templates,self.N_templates_nodes, self.N_features,self.alpha0,self.q0)
 
     def forward(self, x, edge_index):
         x=self.LTFGW(x,edge_index)
@@ -106,17 +105,16 @@ class LTFGW_GCN(nn.Module):
     
 
 class MLP(nn.Module):
-    def __init__(self,n_classes=2,N_features=10, N_templates=10,N_templates_nodes=10,hidden_layer=20):
+    def __init__(self,n_classes=2,n_features=10, n_templates=10,n_templates_nodes=10,hidden_layer=20, n_hidden_layers=1):
         """
         n_classes: number of classes for node classification
         """
         super().__init__()
     
         self.n_classes=n_classes
-        self.N_features=N_features
-        self.N_templates=N_templates
-        self.N_templates_nodes=N_templates_nodes
+        self.n_features=x_features
         self.hidden_layer=hidden_layer
+        self.n_hidden_layers=n_hidden_layers
 
         # list of Linear layers
         self.hidden_layer = nn.ModuleList()

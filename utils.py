@@ -70,7 +70,6 @@ def plot_graph(x, C, binary=True, color='C0', s=None):
     plt.scatter(x[:, 0], x[:, 1], c=color, s=s, zorder=10, edgecolors='k', cmap='tab10', vmax=9)
 
 def get_sbm(n, nc, ratio, P):
-    torch.manual_seed(32)
     nbpc = torch.round(n * ratio).type(torch.int64)
     n =  torch.sum(nbpc).item()
     C =  torch.zeros(n, n)
