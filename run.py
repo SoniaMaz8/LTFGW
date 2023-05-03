@@ -13,7 +13,7 @@ torch.manual_seed(123456)
 dataset_name='Toy_graph'  #'Citeseer' or 'Toy_graph'
 model_name='LTFGW_GCN'  # 'GCN', 'GCN_LTFGW_parallel', 'LTFGW_GCN' or 'MLP'
 save=False  #wether to save the parameters and the model
-N_epoch=200 #number of epochs
+n_epoch=200 #number of epochs
 training='complete_graph'     #'complete graph' or 'mini_batch' 
 lr=0.01  #learning rate
 weight_decay=5e-4
@@ -41,23 +41,15 @@ for seed in seeds:
 
     if model_name=='GCN_LTFGW_parallel':
         model=GCN_LTFGW_parallel(n_classes=n_classes,N_features=dataset.num_features, N_templates=6,N_templates_nodes=6)
-        filename_save=os.path.join( 'results','LTFGW',str(dataset_name)+ '.pkl')
-        filename_best_model=os.path.join( 'results','LTFGW',str(dataset_name)+ '_best_valid.pt')
 
     elif model_name=='LTFGW_GCN':
-        model=LTFGW_GCN(n_classes=n_classes,N_features=dataset.num_features)
-        filename_save=os.path.join( 'results','LTFGW',str(dataset_name)+ '.pkl')
-        filename_best_model=os.path.join( 'results','LTFGW',str(dataset_name)+ '_best_valid.pt')        
+        model=LTFGW_GCN(n_classes=n_classes,N_features=dataset.num_features)     
 
     elif model_name=='MLP':
-        model=MLP(n_classes=n_classes)
-        filename_save=os.path.join( 'results','LTFGW',str(dataset_name)+ '.pkl')
-        filename_best_model=os.path.join( 'results','LTFGW',str(dataset_name)+ '_best_valid.pt')        
+        model=MLP(n_classes=n_classes)     
 
     elif model_name=='GCN':
-        model=GCN_2_layers(n_classes=n_classes,N_features=dataset.num_features)
-        filename_save=os.path.join( 'results','GCN',str(dataset_name)+ '.pkl')
-        filename_best_model=os.path.join( 'results','GCN',str(dataset_name)+ '_best_valid.pt')       
+        model=GCN_2_layers(n_classes=n_classes,N_features=dataset.num_features)      
 
     optimizer=torch.optim.Adam(model.parameters(), lr=lr,weight_decay=weight_decay)
 
@@ -70,10 +62,10 @@ for seed in seeds:
         train_loader = NeighborLoader(dataset,num_neighbors= [-1],
         batch_size=8,
         input_nodes=dataset.train_mask,shuffle=True)
-        Loss, Train_acc,Val_acc=train_minibatch(model,train_loader,dataset,optimizer,criterion,N_epoch,save,filename_save,filename_best_model,best_val_perf,seed)
+        Loss, Train_acc,Val_acc=train_minibatch(model,train_loader,dataset,optimizer,criterion,n_epoch,save,best_val_perf,seed,dataset_name)
         
     elif training=='complete_graph':
-        Loss, Train_acc, Val_acc=train(model,dataset,N_epoch,criterion, optimizer,save,filename_save,filename_best_model,best_val_perf,seed)
+        Loss, Train_acc, Val_acc=train(model,dataset,n_epoch,criterion, optimizer,save,best_val_perf,seed,dataset_name)
         
     test_acc=test(model,dataset)
     Test_accuracy+=test_acc

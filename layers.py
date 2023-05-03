@@ -5,7 +5,7 @@ from torch_geometric.data import Data as GraphData
 import torch.nn.functional as F
 import pandas as pd
 
-def template_initialisation(N_templates,N_nodes,N_features):
+def template_initialisation(n_templates,n_nodes,n_features):
     """"
     Function that initialises templates for the LTFGW layer
     Input:
@@ -16,9 +16,9 @@ def template_initialisation(N_templates,N_nodes,N_features):
       Templates: list of the adjancecy matrices of the templates
       Templates_features: list of the features of the nodes of each template
     """
-    Templates=torch.randint(0, 2, size=(N_templates,N_nodes, N_nodes))
-    Templates_features=torch.Tensor(N_templates,N_nodes,N_features)
-    noise=torch.Tensor(N_templates,N_nodes,N_nodes)
+    Templates=torch.randint(0, 2, size=(n_templates,n_nodes, n_nodes))
+    Templates_features=torch.Tensor(n_templates,n_nodes,n_features)
+    noise=torch.Tensor(n_templates,n_nodes,n_nodes)
     torch.nn.init.normal_(Templates_features, mean=0.0012, std=2e-02)
     torch.nn.init.normal_(noise,mean=0,std=1e-2)
     return Templates+noise, Templates_features
@@ -26,31 +26,31 @@ def template_initialisation(N_templates,N_nodes,N_features):
 
 class LTFGW(nn.Module):
     """ Layer for the local TFWG """
-    def __init__(self, N_templates=10,N_templates_nodes=10,N_features=10,alpha0=None,q0=None):
+    def __init__(self, n_templates=10,n_templates_nodes=10,n_features=10,alpha0=None,learn_q0=True):
         """
         N_features: number of node features
         N_templates: number of graph templates
         N_templates_nodes: number of nodes in each template
         alpha0: trade-off for the fused gromov-wasserstein distance. If None, alpha is optimised, else it is fixed at the given value.
-        q0: weights on the nodes of the templates. If None, q0 is optimised, else it is fixed at the given value (must sum to 1 along the lines).
+        learn_q0: wether to learn the weights on the nodes of the templates
         """
         super().__init__()
 
-        self.N_templates= N_templates
-        self.N_templates_nodes=N_templates_nodes
-        self.N_features=N_features
-        self.Alphas=[]
+        self.n_templates= n_templates
+        self.n_templates_nodes=n_templates_nodes
+        self.n_features=n_features
 
-        templates,templates_features=template_initialisation(self.N_templates_nodes,self.N_templates,self.N_features)
+        templates,templates_features=template_initialisation(self.n_templates_nodes,self.n_templates,self.n_features)
         self.templates=nn.Parameter(templates)
         self.templates_features = nn.Parameter(templates_features)
 
-        if q0 is None:
-            q0=torch.Tensor(N_templates,N_templates_nodes)
+        if learn_q0:
+            q0=torch.Tensor(n_templates,n_templates_nodes)
             q0=torch.nn.init.uniform_(q0)
-            self.q0=nn.Parameter(q0)
+            q0=nn.Parameter(templates)
         else: 
-            self.q0=torch.log(q0)
+            q0=torch.zeros(n_templates,n_templates_nodes)
+
             
         if alpha0 is None:
             alpha0=torch.Tensor([0])

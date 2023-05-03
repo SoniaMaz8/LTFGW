@@ -5,25 +5,25 @@ from layers import LTFGW
 import torch.nn.functional as F
 
 class GCN_LTFGW_parallel(nn.Module):
-    def __init__(self,n_classes=2,N_features=10, N_templates=10,N_templates_nodes=10,hidden_layer=20,alpha0=None,q0=None):
+    def __init__(self,n_classes=2,n_features=10, n_templates=10,n_templates_nodes=10,hidden_layer=20,alpha0=None,q0=True):
         """
         n_classes: number of classes for node classification
         """
         super().__init__()
     
         self.n_classes=n_classes
-        self.N_features=N_features
-        self.N_templates=N_templates
-        self.N_templates_nodes=N_templates_nodes
+        self.n_features=n_features
+        self.n_templates=n_templates
+        self.n_templates_nodes=n_templates_nodes
         self.hidden_layer=hidden_layer
         self.alpha0=alpha0
         self.q0=q0
         
-        self.conv1=GCNConv(self.N_features, self.hidden_layer)
-        self.conv2=GCNConv(self.N_features, self.hidden_layer) 
-        self.LTFGW=LTFGW(self.N_templates,self.N_templates_nodes, self.hidden_layer,self.alpha0)
-        self.linear=Linear(self.N_templates+self.hidden_layer, self.n_classes)
-        self.batch_norm=torch.nn.BatchNorm1d(self.hidden_layer+self.N_templates)
+        self.conv1=GCNConv(self.n_features, self.hidden_layer)
+        self.conv2=GCNConv(self.n_features, self.hidden_layer) 
+        self.LTFGW=LTFGW(self.n_templates,self.n_templates_nodes, self.hidden_layer,self.alpha0)
+        self.linear=Linear(self.n_templates+self.hidden_layer, self.n_classes)
+        self.batch_norm=torch.nn.BatchNorm1d(self.hidden_layer+self.n_templates)
 
     def forward(self, x, edge_index):
         x_LTFGW=self.conv1(x,edge_index)
@@ -39,17 +39,17 @@ class GCN_LTFGW_parallel(nn.Module):
     
 
 class GCN_2_layers(nn.Module):
-    def __init__(self,n_classes=2,N_features=10,hidden_layer=20):
+    def __init__(self,n_classes=2,n_features=10,hidden_layer=20):
         """
         n_classes: number of classes for node classification
         """
         super().__init__()
     
         self.n_classes=n_classes
-        self.N_features=N_features
+        self.n_features=n_features
         self.hidden_layer=hidden_layer
         
-        self.conv1=GCNConv(self.N_features,self.hidden_layer)
+        self.conv1=GCNConv(self.n_features,self.hidden_layer)
         self.conv2=GCNConv(self.hidden_layer,self.n_classes)
 
     def forward(self, x, edge_index):
@@ -61,22 +61,22 @@ class GCN_2_layers(nn.Module):
 
 
 class LTFGW_GCN(nn.Module):
-    def __init__(self,n_classes=2,N_features=10, N_templates=10,N_templates_nodes=10,hidden_layer=20,alpha0=None,q0=None):
+    def __init__(self,n_classes=2,n_features=10, n_templates=10,n_templates_nodes=10,hidden_layer=20,alpha0=None,q0=None):
         """
         n_classes: number of classes for node classification
         """
         super().__init__()
     
         self.n_classes=n_classes
-        self.N_features=N_features
-        self.N_templates=N_templates
-        self.N_templates_nodes=N_templates_nodes
+        self.n_features=n_features
+        self.n_templates=n_templates
+        self.n_templates_nodes=n_templates_nodes
         self.hidden_layer=hidden_layer
         self.alpha0=alpha0
         self.q0=q0
         
-        self.conv1=GCNConv(self.N_features, self.hidden_layer)
-        self.LTFGW=LTFGW(self.N_templates,self.N_templates_nodes, self.N_features,self.alpha0,self.q0)
+        self.conv1=GCNConv(self.n_features, self.hidden_layer)
+        self.LTFGW=LTFGW(self.n_templates,self.n_templates_nodes, self.n_features,self.alpha0,self.q0)
 
     def forward(self, x, edge_index):
         x=self.LTFGW(x,edge_index)
@@ -86,14 +86,14 @@ class LTFGW_GCN(nn.Module):
     
 
 class MLP(nn.Module):
-    def __init__(self,n_classes=2,N_features=10,hidden_layer=10):
+    def __init__(self,n_classes=2,n_features=10,hidden_layer=10):
         """
         n_classes: number of classes for node classification
         """
         super().__init__()
     
         self.n_classes=n_classes
-        self.N_features=N_features
+        self.N_features=n_features
         self.hidden_layer=hidden_layer
         
         self.linear1=Linear(self.N_features, self.hidden_layer)
