@@ -1,10 +1,10 @@
 from torch_geometric.loader import NeighborLoader
-from architectures import GCN_LTFGW, GCN_3_layers, GCN_LTFGW_end
-import torch
+from architectures import GCN_LTFGW, GCN_2_layers
 from data.convert_datasets import Citeseer_data
 from trainers import train,train_minibatch, test
 import os
 import pandas as pd
+import torch
 
 torch.manual_seed(123456)
 
@@ -13,7 +13,7 @@ torch.manual_seed(123456)
 dataset_name='Citeseer'  #'Citeseer' or 'Toy_graph'
 model_name='LTFGW'  #'LTFGW' or 'GCN'
 save=True  #wether to save the parameters and the model
-N_epoch=200  #number of epochs
+N_epoch=2000 #number of epochs
 training='complete_graph'     #'complete graph' or 'mini_batch' 
 lr=0.01  #learning rate
 weight_decay=5e-4
@@ -25,7 +25,7 @@ num_seeds=0  #number of different seeds to train with
 #%%Training and testing
 
 Test_accuracy=0
-seeds=torch.range(40,40+num_seeds,1)
+seeds=torch.range(20,20+num_seeds,1)
 for seed in seeds:
     torch.manual_seed(seed)
 
@@ -45,10 +45,10 @@ for seed in seeds:
         filename_best_model=os.path.join( 'results','LTFGW',str(dataset_name)+ '_best_valid.pt')
 
     elif model_name=='GCN':
-        model=GCN_3_layers(n_classes=n_classes,N_features=dataset.num_features,dropout=0.6)
+        model=GCN_2_layers(n_classes=n_classes,N_features=dataset.num_features,dropout=0.6)
         filename_save=os.path.join( 'results','GCN',str(dataset_name)+ '.pkl')
         filename_best_model=os.path.join( 'results','GCN',str(dataset_name)+ '_best_valid.pt')
-    
+
     optimizer=torch.optim.Adam(model.parameters(), lr=lr,weight_decay=weight_decay)
     df=pd.read_pickle(filename_save)
     
@@ -70,14 +70,5 @@ for seed in seeds:
 
 print('mean_test_accuracy={}'.format( Test_accuracy/len(seeds)))        
     
-
-
-
-
-
-
-
-
-
 
 
