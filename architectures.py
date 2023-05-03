@@ -76,9 +76,7 @@ class LTFGW_GCN(nn.Module):
         self.q0=q0
         
         self.conv1=GCNConv(self.N_features, self.hidden_layer)
-        self.LTFGW=LTFGW(self.N_templates,self.N_templates_nodes, self.hidden_layer,self.alpha0,self.q0)
-        self.linear=Linear(self.N_templates+self.hidden_layer, self.n_classes)
-        self.batch_norm=torch.nn.BatchNorm1d(self.hidden_layer+self.N_templates)
+        self.LTFGW=LTFGW(self.N_templates,self.N_templates_nodes, self.N_features,self.alpha0,self.q0)
 
     def forward(self, x, edge_index):
         x=self.LTFGW(x,edge_index)

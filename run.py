@@ -12,7 +12,7 @@ torch.manual_seed(123456)
 
 dataset_name='Toy_graph'  #'Citeseer' or 'Toy_graph'
 model_name='LTFGW_GCN'  # 'GCN', 'GCN_LTFGW_parallel', 'LTFGW_GCN' or 'MLP'
-save=True  #wether to save the parameters and the model
+save=False  #wether to save the parameters and the model
 N_epoch=200 #number of epochs
 training='complete_graph'     #'complete graph' or 'mini_batch' 
 lr=0.01  #learning rate
@@ -46,9 +46,13 @@ for seed in seeds:
 
     elif model_name=='LTFGW_GCN':
         model=LTFGW_GCN(n_classes=n_classes,N_features=dataset.num_features)
+        filename_save=os.path.join( 'results','LTFGW',str(dataset_name)+ '.pkl')
+        filename_best_model=os.path.join( 'results','LTFGW',str(dataset_name)+ '_best_valid.pt')        
 
     elif model_name=='MLP':
         model=MLP(n_classes=n_classes)
+        filename_save=os.path.join( 'results','LTFGW',str(dataset_name)+ '.pkl')
+        filename_best_model=os.path.join( 'results','LTFGW',str(dataset_name)+ '_best_valid.pt')        
 
     elif model_name=='GCN':
         model=GCN_2_layers(n_classes=n_classes,N_features=dataset.num_features)
@@ -56,9 +60,11 @@ for seed in seeds:
         filename_best_model=os.path.join( 'results','GCN',str(dataset_name)+ '_best_valid.pt')       
 
     optimizer=torch.optim.Adam(model.parameters(), lr=lr,weight_decay=weight_decay)
-    df=pd.read_pickle(filename_save)
-    
-    best_val_perf=df['max_val_accuracy'].max()
+
+    best_val_perf=0
+    if save:
+        df=pd.read_pickle(filename_save)
+        best_val_perf=df['max_val_accuracy'].max()
 
     if training=='mini_batch':
         train_loader = NeighborLoader(dataset,num_neighbors= [-1],
