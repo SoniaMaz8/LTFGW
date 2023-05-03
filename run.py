@@ -2,6 +2,7 @@ from torch_geometric.loader import NeighborLoader
 from architectures import GCN_LTFGW, GCN_3_layers, GCN_LTFGW_end
 import torch
 from data.convert_datasets import Citeseer_data
+from utils import get_dataset
 from trainers import train,train_minibatch, test
 import os
 import pandas as pd
@@ -28,26 +29,20 @@ Test_accuracy=0
 seeds=torch.range(40,40+num_seeds,1)
 for seed in seeds:
     torch.manual_seed(seed)
+    
+    # load dataset
+    dataset, n_classes=get_dataset(dataset_name)
 
-    if dataset_name=='Citeseer':
-        dataset=Citeseer_data()
-        n_classes=6
-        filename_save='results/Citeseer'
 
-    elif dataset_name=='Toy_graph':
-        dataset=torch.load('data/toy_graph1.pt')
-        n_classes=3
-        filename_save='results/toy_graph'  
-
+    # init model
     if model_name=='LTFGW':
         model=GCN_LTFGW(n_classes=n_classes,N_features=dataset.num_features, N_templates=6,N_templates_nodes=6)
-        filename_save=os.path.join( 'results','LTFGW',str(dataset_name)+ '.pkl')
-        filename_best_model=os.path.join( 'results','LTFGW',str(dataset_name)+ '_best_valid.pt')
 
     elif model_name=='GCN':
         model=GCN_3_layers(n_classes=n_classes,N_features=dataset.num_features,dropout=0.6)
-        filename_save=os.path.join( 'results','GCN',str(dataset_name)+ '.pkl')
-        filename_best_model=os.path.join( 'results','GCN',str(dataset_name)+ '_best_valid.pt')
+
+
+    filename_save, filename_best_model = get_filenames(dataset_name,method,seed)
     
     optimizer=torch.optim.Adam(model.parameters(), lr=lr,weight_decay=weight_decay)
     df=pd.read_pickle(filename_save)
