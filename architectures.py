@@ -13,18 +13,18 @@ class GCN_LTFGW(nn.Module):
         super().__init__()
     
         self.n_classes=n_classes
-        self.N_features=n_features
-        self.N_templates=n_templates
-        self.N_templates_nodes=n_templates_nodes
+        self.n_features=n_features
+        self.n_templates=n_templates
+        self.n_templates_nodes=n_templates_nodes
         self.hidden_layer=hidden_layer
         self.alpha0=alpha0
         self.skip_connection=skip_connection
         
-        self.conv1=GCNConv(self.N_features, self.hidden_layer)
-        self.conv2=GCNConv(self.N_features, self.hidden_layer) 
-        self.LTFGW=LTFGW(self.N_templates,self.N_templates_nodes, self.hidden_layer,self.alpha0)
-        self.linear=Linear(self.N_templates+self.hidden_layer, self.n_classes)
-        self.batch_norm=torch.nn.BatchNorm1d(self.hidden_layer+self.N_templates)
+        self.conv1=GCNConv(self.n_features, self.hidden_layer)
+        self.conv2=GCNConv(self.n_features, self.hidden_layer) 
+        self.LTFGW=LTFGW(self.n_templates,self.n_templates_nodes, self.hidden_layer,self.alpha0)
+        self.linear=Linear(self.n_templates+self.hidden_layer, self.n_classes)
+        self.batch_norm=torch.nn.BatchNorm1d(self.hidden_layer+self.n_templates)
 
     def forward(self, x, edge_index):
 
@@ -44,9 +44,10 @@ class GCN_LTFGW(nn.Module):
         x=self.conv2(x,edge_index)
         x=x.relu()
         
+        x_latent=x
         # final prediction
         x=self.linear(x)
-        return x   
+        return x  , x_latent
    
     
 
@@ -83,13 +84,14 @@ class GCN(nn.Module):
             x=self.list_hidden_layer[i](x,edge_index)
             x=x.relu()
 
+        x_latent=x
         x=self.last_conv(x, edge_index) 
-        return  x  
+        return  x ,x_latent
     
 
 
 class LTFGW_GCN(nn.Module):
-    def __init__(self,n_classes=2,n_features=10, n_templates=10,n_templates_nodes=10,hidden_layer=20,alpha0=None,train_node_weights=True):
+    def __init__(self,n_classes=2,n_features=10, n_templates=10,n_templates_nodes=10,hidden_layer=20,alpha0=None,train_node_weights=True, skip_connection=True):
         """
         n_classes: number of classes for node classification
         """
@@ -102,15 +104,28 @@ class LTFGW_GCN(nn.Module):
         self.hidden_layer=hidden_layer
         self.alpha0=alpha0
         self.train_node_weights=train_node_weights
+        self.skip_connection=skip_connection
         
-        self.conv1=GCNConv(self.n_templates, self.n_classes)
+        self.conv1=GCNConv(self.n_templates, self.hidden_layer)
+        self.conv2=GCNConv(self.hidden_layer+self.n_templates, self.n_classes)
+        self.conv3=GCNConv(self.n_templates, self.n_classes)
         self.LTFGW=LTFGW(self.n_templates,self.n_templates_nodes, self.n_features,self.alpha0,self.train_node_weights)
+        self.batch_norm=torch.nn.BatchNorm1d(self.hidden_layer+self.n_templates)
 
     def forward(self, x, edge_index):
-        x=self.LTFGW(x,edge_index)
-        x=x.relu()
-        x=self.conv1(x,edge_index)
-        return   x
+
+        if self.skip_connection:
+            y=self.LTFGW(x,edge_index)
+            z=self.conv1(x,edge_index)
+            z=z.relu()
+            x = torch.hstack([z,y])
+            x=self.batch_norm(x)
+            x_latent=x
+            x=self.conv2(x,edge_index)
+        else:
+            x=self.LTFGW(x,edge_index)
+            x=self.conv3(x,edge_index)
+        return  x,x_latent
     
 
 class MLP(nn.Module):
@@ -140,8 +155,10 @@ class MLP(nn.Module):
         for i in range(self.n_hidden_layers):
             x=self.list_hidden_layer[i](x)
             x=x.relu()
-            
+
+        x_latent=x 
         x=self.last_linear(x)
-        return  x  
+
+        return  x  , x_latent
    
           

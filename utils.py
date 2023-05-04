@@ -8,6 +8,7 @@ import os
 import ot
 import time
 from data.convert_datasets import Citeseer_data
+import torch.nn.functional as F
 
 def get_dataset(dataset_name):
     """ 
@@ -142,6 +143,8 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k=1):
     n_feat=len(x[0])
     n_feat_T=len(x_T[0][0])
 
+    q=F.normalize(q,p=1,dim=1)
+    
     if not n_feat==n_feat_T:
         raise ValueError('the templates and the graphs must have the same number of features')
     
@@ -152,14 +155,17 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k=1):
         n_sub=len(x_sub)
 
         if n_sub>1:    #more weight on central node
-          p=torch.ones(n_sub)*1/((n_sub-1)*(k+2))
-          p[central_node_index]=(k+1)/(k+2)  
+   #       p=torch.ones(n_sub)*1/((n_sub-1)*(k+2))
+          val=(1-(k+1)/(k+2))/(n_sub-1)
+          p=torch.ones(n_sub)*val
+          p[central_node_index]=(k+1)/(k+2)
 
         else:          #if the node is isolated
           p=torch.ones(1)
-        C_sub=graph_to_adjacency(n_sub,edges_sub).type(torch.float) 
-
+        C_sub=graph_to_adjacency(n_sub,edges_sub).type(torch.float)
+ 
         for j in range(n_T):
+          
           template_features=x_T[j].reshape(len(x_T[j]),n_feat_T)   #reshape pour utiliser ot.dist
           M=ot.dist(x_sub,template_features).clone().detach().requires_grad_(True)
           M=M.type(torch.float)  #cost matrix between the features of the subgraph and the template
@@ -168,14 +174,3 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k=1):
     return distances
 
 
-def plot_TSNE(X_embedded,labels):
-    plt.figure(1)
-    plt.clf()
-    for i in range(len(labels)):
-        if labels[i]==0:
-            plt.scatter(X_embedded[i][0],X_embedded[i][1],c='blue')
-        if labels[i]==1:
-            plt.scatter(X_embedded[i][0],X_embedded[i][1],c='green')  
-        if labels[i]==2:
-            plt.scatter(X_embedded[i][0],X_embedded[i][1],c='red')     
-    plt.show()

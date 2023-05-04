@@ -44,10 +44,10 @@ class LTFGW(nn.Module):
         templates,templates_features=template_initialisation(self.N_templates_nodes,self.N_templates,self.N_features)
         self.templates=nn.Parameter(templates)
         self.templates_features = nn.Parameter(templates_features)
+        self.softmax=nn.Softmax(dim=1)
 
         if train_node_weights:
-            q0=torch.Tensor(N_templates,N_templates_nodes)
-            q0=torch.nn.init.uniform_(q0)
+            q0=torch.zeros(N_templates,N_templates_nodes)
             self.q0=nn.Parameter(q0)
         else: 
             self.q0=torch.zeros(N_templates,N_templates_nodes)
@@ -60,9 +60,8 @@ class LTFGW(nn.Module):
 
     def forward(self, x, edge_index):
         alpha=torch.sigmoid(self.alpha0)
-        q=torch.softmax(self.q0,dim=1)
+        q=self.softmax(self.q0)
         x=distance_to_template(x,edge_index,self.templates_features,self.templates,alpha,q,1)
-        print(q)
         return x
 
 

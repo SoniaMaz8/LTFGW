@@ -4,7 +4,7 @@ import torch
 import os 
 import pandas as pd
 from sklearn.manifold import TSNE
-from utils import plot_TSNE
+
 
 
 def train_epoch(dataset,model,criterion,optimizer,epoch):
@@ -13,11 +13,11 @@ def train_epoch(dataset,model,criterion,optimizer,epoch):
     """
     model.train()
     optimizer.zero_grad()  
-    out = model(dataset.x,dataset.edge_index)
+    out,x_latent = model(dataset.x,dataset.edge_index)
     if epoch%20==0:
-       x_latent=out.detach().numpy()
+       x_latent=x_latent.detach().numpy()
        df_x=pd.DataFrame(x_latent)
-       df_x.to_csv('results/TSNE2/latent{}.csv'.format(epoch))
+       df_x.to_csv('results/TSNE_{}/latent{}.csv'.format(str(model),epoch))
     pred = out.argmax(dim=1)         # Use the class with highest probability
     train_correct = pred[dataset.train_mask] == dataset.y[dataset.train_mask]   #number of correct node predictions
     train_acc = int(train_correct.sum()) / int(dataset.train_mask.sum())  #training_accuracy
@@ -119,9 +119,9 @@ def test(model,dataset):
     test the model
     """      
     model.eval()
-    out = model(dataset.x,dataset.edge_index)
+    out= model(dataset.x,dataset.edge_index)
     pred = out.argmax(dim=1)  # Use the class with highest probability.
-    test_correct = pred[dataset.test_mask] == dataset.y[dataset.test_mask]  
-    test_acc = int(test_correct.sum()) / int(dataset.test_mask.sum()) 
+    test_correct = pred == dataset.y
+    test_acc = int(test_correct.sum())/ 1000
     return test_acc
 
