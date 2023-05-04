@@ -95,22 +95,21 @@ def train(model,dataset,N_epoch,criterion, optimizer,save,filename_save,filename
     Train_acc=[]
     Val_acc=[]
     if save:
-      df=pd.DataFrame(columns=['loss','train_accuracy','validation_accuracy','test_accuracy','best_validation_accuracy'])    
+      df=pd.DataFrame(columns=['loss','train_accuracy','validation_accuracy','test_accuracy','best_validation_accuracy']) 
+      df.to_pickle(filename_save)    
     for epoch in tqdm(range(N_epoch)): 
             start=time.time()     
             loss,train_acc, val_acc = train_epoch(dataset,model,criterion,optimizer,epoch)
             end=time.time()
-            Loss.append(loss.item())
-            Train_acc.append(train_acc)
-            Val_acc.append(val_acc)
+            df=pd.read_pickle(filename_save)
             if save: 
-                df.at[len(df)-1,'loss']=Loss
-                df.at[len(df)-1,'train_accuracy']=Train_acc
-                df.at[len(df)-1,'validation_accuracy']=Val_acc
+                df.at[epoch,'loss']=loss.item()
+                df.at[epoch,'train_accuracy']=train_acc
+                df.at[epoch,'validation_accuracy']=val_acc
                 if val_acc>best_val_perf:  
-                    torch.save(model.state_dict(),filename_best_model)
+                    torch.save({'model_state_dict':model.state_dict(),'optimizer_state_dict': optimizer.state_dict()},filename_best_model)
                     best_val_perf=val_acc
-                    df.at[len(df)-1,'best_validation_accuracy']=val_acc
+                    df.at[epoch,'best_validation_accuracy']=val_acc
                 df.to_pickle(filename_save)        
             print(f'Epoch: {epoch:03d},time:{end-start:.4f}, Loss: {loss:.4f},Train Accuracy: {train_acc:.4f},Validation Accuracy:{val_acc:.4f}')  
     return Loss, Train_acc, Val_acc

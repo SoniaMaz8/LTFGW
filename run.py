@@ -11,9 +11,9 @@ torch.manual_seed(123456)
 #%%Parameters to set
 
 dataset_name='Toy_graph'  #'Citeseer' or 'Toy_graph'
-model_name='MLP'  # 'GCN', 'GCN_LTFGW', 'LTFGW_GCN' or 'MLP'
+model_name='LTFGW_GCN'  # 'GCN', 'GCN_LTFGW', 'LTFGW_GCN' or 'MLP'
 save=True  #wether to save the parameters and the model
-N_epoch=200 #number of epochs
+N_epoch=500 #number of epochs
 training='complete_graph'     #'complete graph' or 'mini_batch' 
 lr=0.01  #learning rate
 weight_decay=5e-4
@@ -48,10 +48,7 @@ for seed in seeds:
 
     method=model_name+'_'+training
     filename_save, filename_best_model = get_filenames(dataset_name,method,seed)
-
-    print(filename_save)
     
-
     optimizer=torch.optim.Adam(model.parameters(), lr=lr,weight_decay=weight_decay)
 
     best_val_perf=0

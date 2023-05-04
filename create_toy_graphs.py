@@ -14,8 +14,9 @@ from sklearn.manifold import TSNE
 n = 1000   #number of nodes
 nc = 3   #number of clusters
 ratio = torch.tensor([.333, .333, .334])
-P = 0.05 * torch.eye(3) + 0.03 * torch.ones(3, 3)
+P = 0.01 * torch.eye(3) + 0.005 * torch.ones(3, 3)
 C1 = get_sbm(n, nc, ratio, P)
+print(torch.sum(C1)/1000)
 
 #Node features
 
@@ -33,7 +34,11 @@ for i in range(n):               #one hot encoding for the features
    feat_C1.append(feat)
    
 feat_C1 = torch.stack(feat_C1) 
-feat_C1=feat_C1+torch.normal(torch.zeros(n,n_feat),2*torch.ones(n,n_feat))  #noise on the features
+feat_C1=feat_C1+torch.normal(torch.zeros(n,n_feat),torch.ones(n,n_feat))  #noise on the features
+
+print(torch.mean(feat_C1))
+print(feat_C1)
+print(torch.std(feat_C1))
 
 
 G=adjacency_to_graph(C1,feat_C1)
@@ -42,7 +47,7 @@ G1=GraphData(x=feat_C1, edge_index=G.edge_index,y=labels, num_features=n_feat , 
 
 transform=RandomNodeSplit(num_val=500,num_test=0)  #split into train set and validation set
 G1=transform(G1)
-torch.save(G1,'data/toy_single_train.pt')
+#torch.save(G1,'data/toy_single_train.pt')
 
 
 
@@ -54,7 +59,7 @@ torch.save(G1,'data/toy_single_train.pt')
 n = 1000   #number of nodes
 nc = 3   #number of clusters
 ratio = torch.tensor([.333, .333, .334])
-P = 0.05 * torch.eye(3) + 0.03 * torch.ones(3, 3)
+P = 0.01 * torch.eye(3) + 0.005 * torch.ones(3, 3)
 C2 = get_sbm(n, nc, ratio, P)
 
 #Node features
@@ -74,13 +79,13 @@ for i in range(n):               #one hot encoding for the features
    
 
 feat_C2 = torch.stack(feat_C2)  
-feat_C2=feat_C2+torch.normal(torch.zeros(n,n_feat),2*torch.ones(n,n_feat))
+feat_C2=feat_C2+torch.normal(torch.zeros(n,n_feat),torch.ones(n,n_feat))
 
 G=adjacency_to_graph(C2,feat_C2)
 
 G2=GraphData(x=feat_C2, edge_index=G.edge_index,y=labels, num_features=n_feat , num_classes=3)
 
-torch.save(G2,'data/toy_single_test.pt')
+#torch.save(G2,'data/toy_single_test.pt')
 
 plt.figure(1, (10, 5))
 plt.subplot(1,2,1)
@@ -93,3 +98,5 @@ plt.title("Adjacency matrix test")
 plt.axis("off")
 plt.savefig('toy_adjacency.png')
 plt.show()
+
+

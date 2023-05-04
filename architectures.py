@@ -84,13 +84,12 @@ class GCN(nn.Module):
             x=x.relu()
 
         x=self.last_conv(x, edge_index) 
-        x_latent=x
-        return  x  , x_latent 
+        return  x  
     
 
 
 class LTFGW_GCN(nn.Module):
-    def __init__(self,n_classes=2,n_features=10, n_templates=10,n_templates_nodes=10,hidden_layer=20,alpha0=None,q0=None):
+    def __init__(self,n_classes=2,n_features=10, n_templates=10,n_templates_nodes=10,hidden_layer=20,alpha0=None,train_node_weights=True):
         """
         n_classes: number of classes for node classification
         """
@@ -102,17 +101,16 @@ class LTFGW_GCN(nn.Module):
         self.n_templates_nodes=n_templates_nodes
         self.hidden_layer=hidden_layer
         self.alpha0=alpha0
-        self.q0=q0
+        self.train_node_weights=train_node_weights
         
         self.conv1=GCNConv(self.n_templates, self.n_classes)
-        self.LTFGW=LTFGW(self.n_templates,self.n_templates_nodes, self.n_features,self.alpha0,self.q0)
+        self.LTFGW=LTFGW(self.n_templates,self.n_templates_nodes, self.n_features,self.alpha0,self.train_node_weights)
 
     def forward(self, x, edge_index):
         x=self.LTFGW(x,edge_index)
-        x_latent=x
         x=x.relu()
         x=self.conv1(x,edge_index)
-        return  x,  x_latent   
+        return   x
     
 
 class MLP(nn.Module):

@@ -19,14 +19,15 @@ def template_initialisation(N_templates,N_nodes,N_features):
     Templates=torch.randint(0, 2, size=(N_templates,N_nodes, N_nodes))
     Templates_features=torch.Tensor(N_templates,N_nodes,N_features)
     noise=torch.Tensor(N_templates,N_nodes,N_nodes)
-    torch.nn.init.normal_(Templates_features, mean=0.0012, std=2e-02)
+    torch.nn.init.normal_(Templates_features, mean=0.3, std=1)
     torch.nn.init.normal_(noise,mean=0,std=1e-2)
-    return Templates+noise, Templates_features
+    Templates=Templates+noise
+    return 0.5*(Templates+torch.transpose(Templates,1,2)), Templates_features
 
 
 class LTFGW(nn.Module):
     """ Layer for the local TFWG """
-    def __init__(self, N_templates=10,N_templates_nodes=10,N_features=10,alpha0=None,train_node_weights=False):
+    def __init__(self, N_templates=10,N_templates_nodes=10,N_features=10,alpha0=None,train_node_weights=True):
         """
         N_features: number of node features
         N_templates: number of graph templates
@@ -39,7 +40,6 @@ class LTFGW(nn.Module):
         self.N_templates= N_templates
         self.N_templates_nodes=N_templates_nodes
         self.N_features=N_features
-        self.Alphas=[]
 
         templates,templates_features=template_initialisation(self.N_templates_nodes,self.N_templates,self.N_features)
         self.templates=nn.Parameter(templates)
@@ -61,7 +61,8 @@ class LTFGW(nn.Module):
     def forward(self, x, edge_index):
         alpha=torch.sigmoid(self.alpha0)
         q=torch.softmax(self.q0,dim=1)
-        x=distance_to_template(x,edge_index,self.templates_features,self.templates,alpha,q,2)
+        x=distance_to_template(x,edge_index,self.templates_features,self.templates,alpha,q,1)
+        print(q)
         return x
 
 

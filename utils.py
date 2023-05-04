@@ -163,9 +163,8 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k=1):
           template_features=x_T[j].reshape(len(x_T[j]),n_feat_T)   #reshape pour utiliser ot.dist
           M=ot.dist(x_sub,template_features).clone().detach().requires_grad_(True)
           M=M.type(torch.float)  #cost matrix between the features of the subgraph and the template
-          dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, C_T[j], p, q[j],alpha=alpha,symmetric=True,max_iter=100)    
+          dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, C_T[j], p, q[j],alpha=alpha,symmetric=True,max_iter=100) 
           distances[i,j]=dist
-
     return distances
 
 
