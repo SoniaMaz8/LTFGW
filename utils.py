@@ -26,12 +26,19 @@ def get_dataset(dataset_name):
     if dataset_name=='Citeseer':
         dataset=Citeseer_data()
         n_classes=6
+        n_features=dataset.num_features
 
-    elif dataset_name=='Toy_graph':
+    elif dataset_name=='Toy_graph_single':
         dataset=torch.load('data/toy_single_train.pt')
         n_classes=3
+        n_features=dataset.num_features
 
-    return dataset,n_classes
+    elif dataset_name=='Toy_graph_multi':
+        dataset=torch.load('data/toy_multi_graph.pt')
+        n_classes=3
+        n_features=dataset[0].num_features
+
+    return dataset,n_classes,n_features
 
 def get_filenames(dataset_name,method,seed=None):
 
@@ -111,7 +118,7 @@ def graph_to_adjacency(n,edges):
     return C+C.T
 
 
-def subgraph(x,edge_index,node_idx, order):
+def subgraph(x,edge_index,node_idx, order,num_nodes):
     """
     Computes the edges and nodes of a subgraph center at node_idx of order k
     C : adjacency matrix of the graph
@@ -119,12 +126,12 @@ def subgraph(x,edge_index,node_idx, order):
     node_idx : index of the node to center the subgraph
     order : order of te subgraph (number of neigbours)
     """
-    sub_G=k_hop_subgraph(node_idx,order,edge_index=edge_index,relabel_nodes=True) 
+
+    sub_G=k_hop_subgraph(node_idx,order,edge_index=edge_index,relabel_nodes=True,num_nodes=num_nodes) 
     x_sub=x[sub_G[0]]
     edges_sub=sub_G[1]
     central_node_index=sub_G[2]
     return x_sub,edges_sub,central_node_index
-
 
 
 def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k=1):
@@ -150,7 +157,7 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k=1):
     
     distances=torch.zeros(n,n_T)
     for i in range(n):
-        x_sub,edges_sub,central_node_index=subgraph(x,edge_index,i,k)
+        x_sub,edges_sub,central_node_index=subgraph(x,edge_index,i,k,n)
         x_sub=x_sub.reshape(len(x_sub),n_feat)  #reshape pour utiliser ot.dist      
         n_sub=len(x_sub)
 
