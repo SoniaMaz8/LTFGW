@@ -2,7 +2,7 @@
 
 import torch
 import matplotlib.pyplot as plt
-from utils import  distance_to_template, get_sbm, subgraph,plot_graph, adjacency_to_graph
+from GNN.utils import  distance_to_template, get_sbm, subgraph,plot_graph, adjacency_to_graph
 from networkx.generators.community import stochastic_block_model as sbm
 from sklearn.manifold import MDS
 from torch_geometric.data import Data as GraphData
