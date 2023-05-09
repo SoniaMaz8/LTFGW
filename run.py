@@ -9,7 +9,7 @@ import numpy as np
 #%%Parameters to set
 
 dataset_name='Toy_graph_multi'  #'Citeseer' or 'Toy_graph_single' or 'Toy_graph_multi'
-model_name='GCN'  # 'GCN', 'GCN_LTFGW', 'LTFGW_GCN' or 'MLP'
+model_name='MLP'  # 'GCN', 'GCN_LTFGW', 'LTFGW_GCN' or 'MLP'
 save=True  #wether to save the parameters and the model
 n_epoch=300 #number of epochs
 training='multi_graph'     #'complete_graph' or 'multi_graph' or 'mini_batch'
@@ -87,6 +87,10 @@ for seed in seeds:
     
     filename_save_test=os.path.join( 'results',method,"test_{}_seed{}.csv".format(dataset_name,first_seed))
     np.savetxt(filename_save_test,Test_accuracy)
+
+#print the performances
+Test_accuracy=torch.tensor(Test_accuracy)
+print('mean_accuracy={},std={}'.format(torch.mean(Test_accuracy),torch.std(Test_accuracy)))
 
       
 
