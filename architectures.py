@@ -141,6 +141,7 @@ class MLP(nn.Module):
         self.n_hidden_layers=n_hidden_layers
 
         self.first_linear=Linear(self.n_features, self.hidden_layer)
+        
         # list of Linear layers
         self.list_hidden_layer = nn.ModuleList()
         for i in range(self.n_hidden_layers):
