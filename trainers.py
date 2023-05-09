@@ -8,7 +8,7 @@ from torch_geometric.loader import DataLoader
 
 
 
-def train_epoch(dataset,model,criterion,optimizer,epoch):
+def train_epoch(dataset,model,criterion,optimizer,epoch,filename_visus):
     """"
     train one epoch on the complete graph
     """
@@ -17,10 +17,10 @@ def train_epoch(dataset,model,criterion,optimizer,epoch):
     out,x_latent = model(dataset.x,dataset.edge_index)
 
     #save for visualisation
-    if epoch%20==0:
+    if epoch%50==0:
        x_latent=x_latent.detach().numpy()
        df_x=pd.DataFrame(x_latent)
-       df_x.to_csv('results/TSNE_{}/latent{}.csv'.format(str(model),epoch))
+       df_x.to_csv(filename_visus)
 
     pred = out.argmax(dim=1)   
 
@@ -37,7 +37,7 @@ def train_epoch(dataset,model,criterion,optimizer,epoch):
     optimizer.step()  
     return loss, train_acc, val_acc
 
-def train(model,dataset,N_epoch,criterion, optimizer,save,filename_save,filename_best_model,best_val_perf):
+def train(model,dataset,N_epoch,criterion, optimizer,save,filename_save,filename_best_model,best_val_perf,filename_visus):
     """"
     train the entire model on the entire graph
     """         
@@ -47,7 +47,7 @@ def train(model,dataset,N_epoch,criterion, optimizer,save,filename_save,filename
       df.to_pickle(filename_save)    
     for epoch in tqdm(range(N_epoch)): 
             start=time.time()     
-            loss,train_acc, val_acc = train_epoch(dataset,model,criterion,optimizer,epoch)
+            loss,train_acc, val_acc = train_epoch(dataset,model,criterion,optimizer,epoch,filename_visus)
             end=time.time()
             df=pd.read_pickle(filename_save)
             if save: 
@@ -67,22 +67,28 @@ def test(model,dataset):
     test the model
     """      
     model.eval()
-    out= model(dataset.x,dataset.edge_index)
+    out,_= model(dataset.x,dataset.edge_index)
     pred = out.argmax(dim=1)  # Use the class with highest probability.
     test_correct = pred == dataset.y
-    test_acc = int(test_correct.sum())/ 1000
+    test_acc = int(test_correct.sum())/ len(dataset.x)
     return test_acc
 
 
-def train_epoch_multi_graph(model,criterion,optimizer,train_loader):
+def train_epoch_multi_graph(model,criterion,optimizer,train_loader,epoch,filename_visus):
 
     model.train()
     optimizer.zero_grad()  
     Loss=[]
     Train_acc=[]
     for data in train_loader:  # Iterate in batches over the training dataset.
-           out,_ = model(data.x, data.edge_index)  # Perform a single forward pass.
+           out,x_latent = model(data.x, data.edge_index)  # Perform a single forward pass.
            pred=out.argmax(dim=1) 
+
+           #save for visualisation
+           if epoch%50==0:
+                x_latent=x_latent.detach().numpy()
+                df_x=pd.DataFrame(x_latent)
+                df_x.to_csv(filename_visus)
 
            train_correct = pred == data.y   #number of correct node predictions
            train_acc = int(train_correct.sum()) / int(len( data.y))  #training_accuracy
@@ -119,7 +125,7 @@ def validation_epoch_multi_graph(model,val_loader):
 
 
 
-def train_multi_graph(model,criterion,optimizer,n_epoch,save,filename_save,filename_best_model,train_loader,val_loader):
+def train_multi_graph(model,criterion,optimizer,n_epoch,save,filename_save,filename_best_model,train_loader,val_loader,filename_visus):
 
     best_val_perf=0
     if save:
@@ -130,7 +136,7 @@ def train_multi_graph(model,criterion,optimizer,n_epoch,save,filename_save,filen
       
       #training
       start=time.time()
-      loss,train_acc=train_epoch_multi_graph(model,criterion,optimizer,train_loader)
+      loss,train_acc=train_epoch_multi_graph(model,criterion,optimizer,train_loader,epoch,filename_visus)
       end=time.time()
 
       #validation
@@ -146,7 +152,22 @@ def train_multi_graph(model,criterion,optimizer,n_epoch,save,filename_save,filen
             torch.save({'model_state_dict':model.state_dict(),'optimizer_state_dict': optimizer.state_dict()},filename_best_model)
             best_val_perf=val_acc
             df.at[epoch,'best_validation_accuracy']=val_acc
-            df.to_pickle(filename_save)        
+            df.to_pickle(filename_save) 
+
+def test_multigraph(model,dataset):
+    """"
+    test the model
+    """      
+    model.eval()
+    Test_acc=[]
+    for data in dataset:
+        out,_= model(data.x,data.edge_index)
+        pred = out.argmax(dim=1)
+        test_correct = pred == data.y
+        test_acc = int(test_correct.sum())/ len(data.x)
+        Test_acc.append(test_acc)
+    Test_acc=torch.tensor(Test_acc)
+    return  torch.mean(Test_acc) 
        
 
     

@@ -1,37 +1,44 @@
 from torch_geometric.loader import NeighborLoader, DataLoader
 from architectures import GCN_LTFGW, GCN, MLP,LTFGW_GCN
 from utils import get_dataset, get_filenames
-from trainers import train, test, train_multi_graph
+from trainers import train, test, train_multi_graph, test_multigraph
 import os
 import pandas as pd
 import torch
+import numpy as np
 
 torch.manual_seed(123456)
 
 #%%Parameters to set
 
 dataset_name='Toy_graph_multi'  #'Citeseer' or 'Toy_graph_single' or 'Toy_graph_multi'
-model_name='LTFGW_GCN'  # 'GCN', 'GCN_LTFGW', 'LTFGW_GCN' or 'MLP'
+model_name='GCN'  # 'GCN', 'GCN_LTFGW', 'LTFGW_GCN' or 'MLP'
 save=True  #wether to save the parameters and the model
 n_epoch=300 #number of epochs
-training='multi_graph'     #'complete graph' or 'multi_graph' or 'mini_batch'
+training='multi_graph'     #'complete_graph' or 'multi_graph' or 'mini_batch'
 lr=0.01  #learning rate
 weight_decay=5e-4
 
 criterion = torch.nn.CrossEntropyLoss() 
 
-num_seeds=1 #number of different seeds to train with
+num_seeds=10 #number of different seeds to train with
 
 #%%Training and testing
 
-Test_accuracy=0
-seeds=torch.arange(20,20+num_seeds,1)
+Test_accuracy=[]
+first_seed=20
+seeds=torch.arange(first_seed,first_seed+num_seeds,1)
+
 
 for seed in seeds:
     torch.manual_seed(seed)
     
     # load dataset
     dataset, n_classes, n_features=get_dataset(dataset_name)
+
+    if dataset_name=='Toy_graph_single':
+       dataset_train,dataset_test=dataset
+       dataset=dataset_train
 
     # init model
     if model_name=='LTFGW_GCN':
@@ -47,7 +54,7 @@ for seed in seeds:
         model=GCN(n_classes=n_classes,n_features=n_features)
 
     method=model_name+'_'+training
-    filename_save, filename_best_model = get_filenames(dataset_name,method,seed)
+    filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,seed)
     
     optimizer=torch.optim.Adam(model.parameters(), lr=lr,weight_decay=weight_decay)
 
@@ -60,12 +67,31 @@ for seed in seeds:
  #       train_minibatch(model,train_loader,dataset,optimizer,criterion,n_epoch,save,filename_save,filename_best_model,best_val_perf)
         
     if training=='complete_graph':
-        train(model,dataset,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,best_val_perf)
+        train(model,dataset,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,best_val_perf,filename_visus)
 
     elif training=='multi_graph':
         generator = torch.Generator().manual_seed(seed.item())
         train_dataset,val_dataset,test_dataset=torch.utils.data.random_split(dataset,[600,200,200],generator=generator)
+        torch.save(test_dataset,'test_data.pt')
         train_loader=DataLoader(train_dataset,batch_size=100,shuffle=True)
         val_loader=DataLoader(val_dataset,batch_size=100,shuffle=True)
-        train_multi_graph(model,criterion,optimizer,n_epoch,save,filename_save,filename_best_model,train_loader,val_loader)
+        train_multi_graph(model,criterion,optimizer,n_epoch,save,filename_save,filename_best_model,train_loader,val_loader,filename_visus)
+
+    checkpoint = torch.load(filename_best_model)
+    model.load_state_dict(checkpoint['model_state_dict'])
+
+    if training=='multi_graph':
+      test_acc=test_multigraph(model,test_dataset)
+      Test_accuracy.append(test_acc)
+
+    elif training=='complete_graph' and dataset_name=='Toy_graph_single':
+      test_acc=test(model,dataset_test)
+      Test_accuracy.append(test_acc)
+    
+    filename_save_test=os.path.join( 'results',method,"test_{}_seed{}.csv".format(dataset_name,first_seed))
+    np.savetxt(filename_save_test,Test_accuracy)
+
+      
+
+    
 

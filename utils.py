@@ -29,9 +29,11 @@ def get_dataset(dataset_name):
         n_features=dataset.num_features
 
     elif dataset_name=='Toy_graph_single':
-        dataset=torch.load('data/toy_single_train.pt')
+        dataset_train=torch.load('data/toy_single_train.pt')
+        dataset_test=torch.load('data/toy_single_test.pt')
+        dataset=[dataset_train,dataset_test]
         n_classes=3
-        n_features=dataset.num_features
+        n_features=dataset_train.num_features
 
     elif dataset_name=='Toy_graph_multi':
         dataset=torch.load('data/toy_multi_graph.pt')
@@ -44,12 +46,14 @@ def get_filenames(dataset_name,method,seed=None):
 
     if seed is None:
         filename_save=os.path.join( 'results',method,"{}.pkl".format(dataset_name))
-        filename_best_model=os.path.join( 'results',method,"{}_best_valid.pkl".format(dataset_name))   
+        filename_best_model=os.path.join( 'results',method,"{}_best_valid.pkl".format(dataset_name)) 
+        filename_visus=os.path.join( 'results',method,"{}_visus.pkl".format(dataset_name)) 
 
     else:   
         filename_save=os.path.join( 'results',method,"{}_seed{}.pkl".format(dataset_name,seed))
         filename_best_model=os.path.join( 'results',method,"{}_seed{}_best_valid.pkl".format(dataset_name,seed))
-    return filename_save, filename_best_model
+        filename_visus=os.path.join( 'results',method,"{}_seed{}_visus.pkl".format(dataset_name,seed))
+    return filename_save, filename_best_model,filename_visus
 
 
 def visualize_graph(G, color='b'):
