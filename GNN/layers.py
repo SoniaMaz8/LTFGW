@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from utils import distance_to_template
+from GNN.utils import distance_to_template
 from torch_geometric.data import Data as GraphData
 import torch.nn.functional as F
 import pandas as pd

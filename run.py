@@ -1,6 +1,6 @@
 from torch_geometric.loader import NeighborLoader, DataLoader
-from architectures import GCN_LTFGW, GCN, MLP,LTFGW_GCN
-from utils import get_dataset, get_filenames
+import GNN
+from GNN.utils import get_dataset, get_filenames
 from trainers import train, test, train_multi_graph, test_multigraph
 import os
 import pandas as pd

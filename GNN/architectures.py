@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from torch_geometric.nn import GCNConv, Linear
-from layers import LTFGW
+from GNN.layers import LTFGW
 import torch.nn.functional as F
 from sklearn.manifold import TSNE
 
