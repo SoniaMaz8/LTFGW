@@ -1,13 +1,10 @@
 from torch_geometric.loader import NeighborLoader, DataLoader
-import GNN
+from GNN.architectures import *
 from GNN.utils import get_dataset, get_filenames
 from trainers import train, test, train_multi_graph, test_multigraph
 import os
-import pandas as pd
 import torch
 import numpy as np
-
-torch.manual_seed(123456)
 
 #%%Parameters to set
 
