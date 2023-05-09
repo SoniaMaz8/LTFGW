@@ -1,7 +1,7 @@
 from torch_geometric.loader import NeighborLoader, DataLoader
 from GNN.architectures import *
 from GNN.utils import get_dataset, get_filenames
-from trainers import train, test, train_multi_graph, test_multigraph
+from main.trainers import train, test, train_multi_graph, test_multigraph
 import os
 import torch
 import numpy as np

@@ -16,12 +16,6 @@ def train_epoch(dataset,model,criterion,optimizer,epoch,filename_visus):
     optimizer.zero_grad()  
     out,x_latent = model(dataset.x,dataset.edge_index)
 
-    #save for visualisation
-    if epoch%50==0:
-       x_latent=x_latent.detach().numpy()
-       df_x=pd.DataFrame(x_latent)
-       df_x.to_csv(filename_visus)
-
     pred = out.argmax(dim=1)   
 
     #train    
@@ -35,7 +29,8 @@ def train_epoch(dataset,model,criterion,optimizer,epoch,filename_visus):
     loss = criterion(out[dataset.train_mask], dataset.y[dataset.train_mask])  
     loss.backward()  
     optimizer.step()  
-    return loss, train_acc, val_acc
+
+    return loss, train_acc, val_acc, x_latent
 
 def train(model,dataset,N_epoch,criterion, optimizer,save,filename_save,filename_best_model,best_val_perf,filename_visus):
     """"
@@ -43,22 +38,37 @@ def train(model,dataset,N_epoch,criterion, optimizer,save,filename_save,filename
     """         
 
     if save:
+      #create dataframe to save performances
       df=pd.DataFrame(columns=['loss','train_accuracy','validation_accuracy','test_accuracy','best_validation_accuracy']) 
-      df.to_pickle(filename_save)    
+      df.to_pickle(filename_save)
+
     for epoch in tqdm(range(N_epoch)): 
             start=time.time()     
-            loss,train_acc, val_acc = train_epoch(dataset,model,criterion,optimizer,epoch,filename_visus)
+            loss,train_acc, val_acc, x_latent = train_epoch(dataset,model,criterion,optimizer,epoch,filename_visus)
             end=time.time()
             df=pd.read_pickle(filename_save)
+
             if save: 
+                #add performances to the dataframe
                 df.at[epoch,'loss']=loss.item()
                 df.at[epoch,'train_accuracy']=train_acc
                 df.at[epoch,'validation_accuracy']=val_acc
+
                 if val_acc>best_val_perf:  
+
+                    #save best model parameters
                     torch.save({'model_state_dict':model.state_dict(),'optimizer_state_dict': optimizer.state_dict()},filename_best_model)
                     best_val_perf=val_acc
                     df.at[epoch,'best_validation_accuracy']=val_acc
-                df.to_pickle(filename_save)        
+
+                    #save latent embedding for visualisation
+                    x_latent=x_latent.detach().numpy()
+                    df_x=pd.DataFrame(x_latent)
+                    df_x.to_csv(filename_visus)
+
+                df.to_pickle(filename_save) 
+
+            #print performances           
             print(f'Epoch: {epoch:03d},time:{end-start:.4f}, Loss: {loss:.4f},Train Accuracy: {train_acc:.4f},Validation Accuracy:{val_acc:.4f}')  
 
 
@@ -84,12 +94,6 @@ def train_epoch_multi_graph(model,criterion,optimizer,train_loader,epoch,filenam
            out,x_latent = model(data.x, data.edge_index)  # Perform a single forward pass.
            pred=out.argmax(dim=1) 
 
-           #save for visualisation
-           if epoch%50==0:
-                x_latent=x_latent.detach().numpy()
-                df_x=pd.DataFrame(x_latent)
-                df_x.to_csv(filename_visus)
-
            train_correct = pred == data.y   #number of correct node predictions
            train_acc = int(train_correct.sum()) / int(len( data.y))  #training_accuracy
             
@@ -105,7 +109,7 @@ def train_epoch_multi_graph(model,criterion,optimizer,train_loader,epoch,filenam
     Loss=torch.Tensor(Loss)
     Train_acc=torch.Tensor(Train_acc)
 
-    return torch.mean(Loss), torch.mean(Train_acc)
+    return torch.mean(Loss), torch.mean(Train_acc), x_latent
 
 
 def validation_epoch_multi_graph(model,val_loader):
@@ -129,6 +133,7 @@ def train_multi_graph(model,criterion,optimizer,n_epoch,save,filename_save,filen
 
     best_val_perf=0
     if save:
+      #create dataframe to save the performances
       df=pd.DataFrame(columns=['loss','train_accuracy','validation_accuracy','test_accuracy','best_validation_accuracy']) 
       df.to_pickle(filename_save)  
 
@@ -136,7 +141,7 @@ def train_multi_graph(model,criterion,optimizer,n_epoch,save,filename_save,filen
       
       #training
       start=time.time()
-      loss,train_acc=train_epoch_multi_graph(model,criterion,optimizer,train_loader,epoch,filename_visus)
+      loss,train_acc, x_latent=train_epoch_multi_graph(model,criterion,optimizer,train_loader,epoch,filename_visus)
       end=time.time()
 
       #validation
@@ -145,14 +150,22 @@ def train_multi_graph(model,criterion,optimizer,n_epoch,save,filename_save,filen
       print(f'Epoch: {epoch:03d},time:{end-start:.4f}, Loss: {loss:.4f},Train Accuracy: {train_acc:.4f},Validation Accuracy:{val_acc:.4f}') 
 
       if save: 
+        #add the performances to the dataframe
         df.at[epoch,'loss']=loss.item()
         df.at[epoch,'train_accuracy']=train_acc
         df.at[epoch,'validation_accuracy']=val_acc
-        if val_acc>best_val_perf:  
+
+        if val_acc>best_val_perf:
+            #save best model parameters 
             torch.save({'model_state_dict':model.state_dict(),'optimizer_state_dict': optimizer.state_dict()},filename_best_model)
             best_val_perf=val_acc
             df.at[epoch,'best_validation_accuracy']=val_acc
             df.to_pickle(filename_save) 
+            
+            #save latent embedding for visualisation
+            x_latent=x_latent.detach().numpy()
+            df_x=pd.DataFrame(x_latent)
+            df_x.to_csv(filename_visus)
 
 def test_multigraph(model,dataset):
     """"
