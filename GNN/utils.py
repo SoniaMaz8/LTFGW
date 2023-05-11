@@ -159,6 +159,7 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k=1):
     n_feat=len(x[0])
     n_feat_T=len(x_T[0][0])
 
+    #normalize q for gromov-wasserstein
     q=F.normalize(q,p=1,dim=1)
     
     if not n_feat==n_feat_T:
@@ -171,14 +172,15 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k=1):
         n_sub=len(x_sub)
 
         if n_sub>1:    #more weight on central node
-   #       p=torch.ones(n_sub)*1/((n_sub-1)*(k+2))
           val=(1-(k+1)/(k+2))/(n_sub-1)
           p=torch.ones(n_sub)*val
           p[central_node_index]=(k+1)/(k+2)
-          p=F.normalize(p,p=1,dim=0)
+          p=F.normalize(p,p=1,dim=0)    #normalize p for gromov-wasserstein
 
         else:          #if the node is isolated
           p=torch.ones(1)
+          p=F.normalize(p,p=1,dim=0)  #normalize p for gromov-wasserstein
+
         C_sub=graph_to_adjacency(n_sub,edges_sub).type(torch.float)
  
         for j in range(n_T):
@@ -186,15 +188,24 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k=1):
           template_features=x_T[j].reshape(len(x_T[j]),n_feat_T)   #reshape pour utiliser ot.dist
           M=ot.dist(x_sub,template_features).clone().detach().requires_grad_(True)
           M=M.type(torch.float)  #cost matrix between the features of the subgraph and the template
+
+          #more normalization
           qj=q[j]/torch.sum(q[j])
           p=p/torch.sum(p)
-     #     p_nump=p.numpy()
-     #     sum_p=p_nump.sum(0)
-   #       print(f'p={sum_p:.8f}')
-   #       q_nump=qj.detach().numpy()
-   #       sum_q=q_nump.sum(0)
-   #       print(f'q={sum_q:.8f}')
-   #       print(abs(sum_q-sum_p) < np.float64(1.5 * 10**(-7)))
+
+          #ensure that p and q have the same sum
+          p_nump=p.numpy()
+          p_nump=np.asarray(p_nump, dtype=np.float64)
+          sum_p=p_nump.sum(0)
+          q_nump=qj.detach().numpy()
+          q_nump=np.asarray(q_nump, dtype=np.float64)
+          sum_q=q_nump.sum(0)
+          if not abs(sum_q-sum_p) < np.float64(1.5 * 10**(-7)):
+              if sum_q>sum_p:
+                  p[0]+=abs(sum_q-sum_p)
+              else:
+                  qj[0]+=abs(sum_q-sum_p)   
+
           dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, C_T[j], p, qj,alpha=alpha,symmetric=True,max_iter=100) 
           distances[i,j]=dist
     return distances
