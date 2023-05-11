@@ -8,7 +8,7 @@ from torch_geometric.loader import DataLoader
 
 
 
-def train_epoch(dataset,model,criterion,optimizer,epoch,filename_visus):
+def train_epoch(dataset,model,criterion,optimizer):
     """"
     train one epoch on the complete graph
     """
@@ -44,7 +44,7 @@ def train(model,dataset,N_epoch,criterion, optimizer,save,filename_save,filename
 
     for epoch in tqdm(range(N_epoch)): 
             start=time.time()     
-            loss,train_acc, val_acc, x_latent = train_epoch(dataset,model,criterion,optimizer,epoch,filename_visus)
+            loss,train_acc, val_acc, x_latent = train_epoch(dataset,model,criterion,optimizer)
             end=time.time()
             df=pd.read_pickle(filename_save)
 
@@ -84,19 +84,21 @@ def test(model,dataset):
     return test_acc
 
 
-def train_epoch_multi_graph(model,criterion,optimizer,train_loader,epoch,filename_visus):
+def train_epoch_multi_graph(model,criterion,optimizer,train_loader):
 
     model.train()
     optimizer.zero_grad()  
     Loss=[]
     Train_acc=[]
     for data in train_loader:  # Iterate in batches over the training dataset.
+
            out,x_latent = model(data.x, data.edge_index)  # Perform a single forward pass.
+    
            pred=out.argmax(dim=1) 
 
            train_correct = pred == data.y   #number of correct node predictions
            train_acc = int(train_correct.sum()) / int(len( data.y))  #training_accuracy
-            
+
            loss = criterion(out, data.y)
 
            loss.backward()  
@@ -141,7 +143,7 @@ def train_multi_graph(model,criterion,optimizer,n_epoch,save,filename_save,filen
       
       #training
       start=time.time()
-      loss,train_acc, x_latent=train_epoch_multi_graph(model,criterion,optimizer,train_loader,epoch,filename_visus)
+      loss,train_acc, x_latent=train_epoch_multi_graph(model,criterion,optimizer,train_loader)
       end=time.time()
 
       #validation
@@ -181,6 +183,11 @@ def test_multigraph(model,dataset):
         Test_acc.append(test_acc)
     Test_acc=torch.tensor(Test_acc)
     return  torch.mean(Test_acc) 
+
+
+
+
+
        
 
     

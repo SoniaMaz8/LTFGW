@@ -14,4 +14,3 @@ def Citeseer_data():
   n_feat=len(features[0])
   G=GraphData(x=features, edge_index=edges,y=label, num_features=n_feat , num_classes=6,train_mask = g.ndata['train_mask'],val_mask=g.ndata['val_mask'],test_mask = g.ndata['test_mask'])
   return(G)
-

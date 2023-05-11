@@ -77,7 +77,6 @@ class GCN(nn.Module):
         x=self.first_conv(x,edge_index)
         x=x.relu()
 
-
         # go through hidden layers
 
         for i in range(self.n_hidden_layers):
@@ -106,7 +105,7 @@ class LTFGW_GCN(nn.Module):
         self.train_node_weights=train_node_weights
         self.skip_connection=skip_connection
         
-        self.conv1=GCNConv(self.n_templates, self.hidden_layer)
+        self.conv1=GCNConv(self.n_features, self.hidden_layer)
         self.conv2=GCNConv(self.hidden_layer+self.n_templates, self.n_classes)
         self.conv3=GCNConv(self.n_templates, self.n_classes)
         self.LTFGW=LTFGW(self.n_templates,self.n_templates_nodes, self.n_features,self.alpha0,self.train_node_weights)

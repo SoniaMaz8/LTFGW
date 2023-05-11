@@ -8,17 +8,24 @@ import numpy as np
 
 #%%Parameters to set
 
-dataset_name='Toy_graph_multi'  #'Citeseer' or 'Toy_graph_single' or 'Toy_graph_multi'
-model_name='MLP'  # 'GCN', 'GCN_LTFGW', 'LTFGW_GCN' or 'MLP'
+dataset_name='mutag'  #'Citeseer' or 'Toy_graph_single' or 'Toy_graph_multi' or 'mutag'
+model_name='LTFGW_GCN'  # 'GCN', 'GCN_LTFGW', 'LTFGW_GCN' or 'MLP'
 save=True  #wether to save the parameters and the model
 n_epoch=300 #number of epochs
 training='multi_graph'     #'complete_graph' or 'multi_graph' or 'mini_batch'
 lr=0.01  #learning rate
 weight_decay=5e-4
+random_split=[112,38,38]
+#random_split=[600,200,200]
+
+n_templates=7
+n_templates_nodes=7
+
+batch_size=5
 
 criterion = torch.nn.CrossEntropyLoss() 
 
-num_seeds=10 #number of different seeds to train with
+num_seeds=1 #number of different seeds to train with
 
 #%%Training and testing
 
@@ -39,7 +46,7 @@ for seed in seeds:
 
     # init model
     if model_name=='LTFGW_GCN':
-        model=LTFGW_GCN(n_classes=n_classes,n_features=n_features, n_templates=3,n_templates_nodes=3)
+        model=LTFGW_GCN(n_classes=n_classes,n_features=n_features, n_templates=n_templates,n_templates_nodes=n_templates_nodes)
 
     elif model_name=='GCN_LTFGW':
         model=GCN_LTFGW(n_classes=n_classes,n_features=n_features, n_templates=6,n_templates_nodes=6, skip_connection=True)
@@ -68,10 +75,9 @@ for seed in seeds:
 
     elif training=='multi_graph':
         generator = torch.Generator().manual_seed(seed.item())
-        train_dataset,val_dataset,test_dataset=torch.utils.data.random_split(dataset,[600,200,200],generator=generator)
-        torch.save(test_dataset,'test_data.pt')
-        train_loader=DataLoader(train_dataset,batch_size=100,shuffle=True)
-        val_loader=DataLoader(val_dataset,batch_size=100,shuffle=True)
+        train_dataset,val_dataset,test_dataset=torch.utils.data.random_split(dataset,random_split,generator=generator)
+        train_loader=DataLoader(train_dataset,batch_size=batch_size,shuffle=True)
+        val_loader=DataLoader(val_dataset,batch_size=batch_size,shuffle=True)
         train_multi_graph(model,criterion,optimizer,n_epoch,save,filename_save,filename_best_model,train_loader,val_loader,filename_visus)
 
     checkpoint = torch.load(filename_best_model)

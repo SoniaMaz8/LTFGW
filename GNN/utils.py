@@ -7,7 +7,7 @@ from torch_geometric.utils import k_hop_subgraph,to_networkx
 import os
 import ot
 import time
-from data.convert_datasets import Citeseer_data
+from convert_datasets import Citeseer_data
 import torch.nn.functional as F
 
 def get_dataset(dataset_name):
@@ -38,6 +38,11 @@ def get_dataset(dataset_name):
     elif dataset_name=='Toy_graph_multi':
         dataset=torch.load('data/toy_multi_graph.pt')
         n_classes=3
+        n_features=dataset[0].num_features
+
+    elif dataset_name=='mutag':
+        dataset=torch.load('data/mutag.pt')
+        n_classes=7
         n_features=dataset[0].num_features
 
     return dataset,n_classes,n_features
@@ -170,6 +175,7 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k=1):
           val=(1-(k+1)/(k+2))/(n_sub-1)
           p=torch.ones(n_sub)*val
           p[central_node_index]=(k+1)/(k+2)
+          p=F.normalize(p,p=1,dim=0)
 
         else:          #if the node is isolated
           p=torch.ones(1)
@@ -180,7 +186,16 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k=1):
           template_features=x_T[j].reshape(len(x_T[j]),n_feat_T)   #reshape pour utiliser ot.dist
           M=ot.dist(x_sub,template_features).clone().detach().requires_grad_(True)
           M=M.type(torch.float)  #cost matrix between the features of the subgraph and the template
-          dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, C_T[j], p, q[j],alpha=alpha,symmetric=True,max_iter=100) 
+          qj=q[j]/torch.sum(q[j])
+          p=p/torch.sum(p)
+     #     p_nump=p.numpy()
+     #     sum_p=p_nump.sum(0)
+   #       print(f'p={sum_p:.8f}')
+   #       q_nump=qj.detach().numpy()
+   #       sum_q=q_nump.sum(0)
+   #       print(f'q={sum_q:.8f}')
+   #       print(abs(sum_q-sum_p) < np.float64(1.5 * 10**(-7)))
+          dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, C_T[j], p, qj,alpha=alpha,symmetric=True,max_iter=100) 
           distances[i,j]=dist
     return distances
 
