@@ -19,7 +19,7 @@ def template_initialisation(N_templates,N_nodes,N_features):
     Templates=torch.randint(0, 2, size=(N_templates,N_nodes, N_nodes))
     Templates_features=torch.Tensor(N_templates,N_nodes,N_features)
     noise=torch.Tensor(N_templates,N_nodes,N_nodes)
-    torch.nn.init.normal_(Templates_features, mean=0.3, std=1)
+    torch.nn.init.normal_(Templates_features, mean=1, std=1e-2)
     torch.nn.init.normal_(noise,mean=0,std=1e-2)
     Templates=Templates+noise
     return 0.5*(Templates+torch.transpose(Templates,1,2)), Templates_features

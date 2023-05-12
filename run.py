@@ -1,3 +1,5 @@
+#%%
+
 from torch_geometric.loader import NeighborLoader, DataLoader
 from GNN.architectures import *
 from GNN.utils import get_dataset, get_filenames
@@ -10,8 +12,8 @@ import numpy as np
 
 dataset_name='mutag'  #'Citeseer' or 'Toy_graph_single' or 'Toy_graph_multi' or 'mutag'
 model_name='LTFGW_GCN'  # 'GCN', 'GCN_LTFGW', 'LTFGW_GCN' or 'MLP'
-save=True  #wether to save the parameters and the model
-n_epoch=300 #number of epochs
+save=False  #wether to save the parameters and the model
+n_epoch=500 #number of epochs
 training='multi_graph'     #'complete_graph' or 'multi_graph' or 'mini_batch'
 lr=0.01  #learning rate
 weight_decay=5e-4
@@ -98,7 +100,6 @@ for seed in seeds:
 Test_accuracy=torch.tensor(Test_accuracy)
 print('mean_accuracy={},std={}'.format(torch.mean(Test_accuracy),torch.std(Test_accuracy)))
 
-      
 
-    
 
+# %%
