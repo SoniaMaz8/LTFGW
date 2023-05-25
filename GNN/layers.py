@@ -4,8 +4,10 @@ from GNN.utils import distance_to_template
 from torch_geometric.data import Data as GraphData
 import torch.nn.functional as F
 import pandas as pd
+from torch_geometric.utils import subgraph
 
-def template_initialisation(N_templates,N_nodes,N_features):
+
+def template_initialisation(N_nodes,N_templates,N_features):
     """"
     Function that initialises templates for the LTFGW layer
     Input:
@@ -19,7 +21,7 @@ def template_initialisation(N_templates,N_nodes,N_features):
     Templates=torch.randint(0, 2, size=(N_templates,N_nodes, N_nodes))
     Templates_features=torch.Tensor(N_templates,N_nodes,N_features)
     noise=torch.Tensor(N_templates,N_nodes,N_nodes)
-    torch.nn.init.normal_(Templates_features, mean=1, std=1e-2)
+    torch.nn.init.normal_(Templates_features, mean=0.005, std=0.0067)
     torch.nn.init.normal_(noise,mean=0,std=1e-2)
     Templates=Templates+noise
     return 0.5*(Templates+torch.transpose(Templates,1,2)), Templates_features
@@ -27,7 +29,7 @@ def template_initialisation(N_templates,N_nodes,N_features):
 
 class LTFGW(nn.Module):
     """ Layer for the local TFWG """
-    def __init__(self, N_templates=10,N_templates_nodes=10,N_features=10,alpha0=None,train_node_weights=True):
+    def __init__(self,N_nodes, N_templates=10,N_templates_nodes=10,N_features=10,alpha0=None,train_node_weights=True):
         """
         N_features: number of node features
         N_templates: number of graph templates
@@ -53,7 +55,7 @@ class LTFGW(nn.Module):
             self.q0=torch.zeros(N_templates,N_templates_nodes)
             
         if alpha0 is None:
-            alpha0=torch.Tensor([0])
+            alpha0=torch.zeros(N_nodes)
             self.alpha0=nn.Parameter(alpha0)
         else:
             self.alpha0=torch.logit(alpha0)           

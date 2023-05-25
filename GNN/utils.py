@@ -7,7 +7,7 @@ from torch_geometric.utils import k_hop_subgraph,to_networkx
 import os
 import ot
 import time
-from convert_datasets import Citeseer_data
+from convert_datasets import Citeseer_data, Cornell
 import torch.nn.functional as F
 
 def get_dataset(dataset_name):
@@ -20,6 +20,8 @@ def get_dataset(dataset_name):
     Output: 
         dataset: dataset
         n_classes: number of classes
+        n_features: number of node features
+        test_graph: wether there is a separate graph for testing
 
     """
 
@@ -27,6 +29,7 @@ def get_dataset(dataset_name):
         dataset=Citeseer_data()
         n_classes=6
         n_features=dataset.num_features
+        test_graph=False
 
     elif dataset_name=='Toy_graph_single':
         dataset_train=torch.load('data/toy_single_train.pt')
@@ -34,18 +37,27 @@ def get_dataset(dataset_name):
         dataset=[dataset_train,dataset_test]
         n_classes=3
         n_features=dataset_train.num_features
+        test_graph=True
 
     elif dataset_name=='Toy_graph_multi':
         dataset=torch.load('data/toy_multi_graph.pt')
         n_classes=3
         n_features=dataset[0].num_features
+        test_graph=None
 
     elif dataset_name=='mutag':
         dataset=torch.load('data/mutag.pt')
         n_classes=7
         n_features=dataset[0].num_features
+        test_graph=None
 
-    return dataset,n_classes,n_features
+    elif dataset_name=='cornell':
+       dataset=torch.load('data/cornell.pt')
+       n_classes=5
+       n_features=dataset.num_features
+       test_graph=False
+
+    return dataset,n_classes,n_features, test_graph
 
 def get_filenames(dataset_name,method,seed=None):
 
@@ -58,7 +70,8 @@ def get_filenames(dataset_name,method,seed=None):
         filename_save=os.path.join( 'results',method,"{}_seed{}.pkl".format(dataset_name,seed))
         filename_best_model=os.path.join( 'results',method,"{}_seed{}_best_valid.pkl".format(dataset_name,seed))
         filename_visus=os.path.join( 'results',method,"{}_seed{}_visus.pkl".format(dataset_name,seed))
-    return filename_save, filename_best_model,filename_visus
+
+    return filename_save, filename_best_model, filename_visus
 
 
 def visualize_graph(G, color='b'):
@@ -175,7 +188,7 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k=1):
           val=(1-(k+1)/(k+2))/(n_sub-1)
           p=torch.ones(n_sub)*val
           p[central_node_index]=(k+1)/(k+2)
-          p=F.normalize(p,p=1,dim=0)    #normalize p for gromov-wasserstein
+          p=F.normalize(p,p=1,dim=0)    #normalize for gromov-wasserstein
 
         else:          #if the node is isolated
           p=torch.ones(1)
@@ -206,8 +219,19 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k=1):
               else:
                   qj[0]+=abs(sum_q-sum_p)   
 
-          dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, C_T[j], p, qj,alpha=alpha,symmetric=True,max_iter=100) 
+          dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, C_T[j], p, qj,alpha=alpha[i],symmetric=True,max_iter=100) 
           distances[i,j]=dist
     return distances
 
 
+
+def moving_average(series, window_size):
+
+    n = len(series)
+    smoothed_series = np.empty(n)
+    smoothed_series[:] = np.nan
+
+    for i in range(window_size - 1, n):
+        smoothed_series[i] = np.mean(series[i - window_size + 1:i + 1])
+
+    return smoothed_series
