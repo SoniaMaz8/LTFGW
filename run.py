@@ -70,7 +70,6 @@ lr=args['lr'] #learning rate
 weight_decay=args['wd']
 train_node_weights=args['train_node_weights']
 num_train_per_class=10
-seeds=args['seeds']
 
 #general layer arguments
 
