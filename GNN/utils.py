@@ -7,7 +7,7 @@ from torch_geometric.utils import k_hop_subgraph,to_networkx
 import os
 import ot
 import time
-from convert_datasets import Citeseer_data, Cornell
+from data.convert_datasets import Citeseer_data, Cornell
 import torch.nn.functional as F
 
 def get_dataset(dataset_name):
@@ -30,6 +30,7 @@ def get_dataset(dataset_name):
         n_classes=6
         n_features=dataset.num_features
         test_graph=False
+        graph_type='single_graph'
 
     elif dataset_name=='Toy_graph_single':
         dataset_train=torch.load('data/toy_single_train.pt')
@@ -38,26 +39,30 @@ def get_dataset(dataset_name):
         n_classes=3
         n_features=dataset_train.num_features
         test_graph=True
+        graph_type='single_graph'
 
     elif dataset_name=='Toy_graph_multi':
         dataset=torch.load('data/toy_multi_graph.pt')
         n_classes=3
         n_features=dataset[0].num_features
         test_graph=None
+        graph_type='multi_graph'
 
     elif dataset_name=='mutag':
         dataset=torch.load('data/mutag.pt')
         n_classes=7
         n_features=dataset[0].num_features
         test_graph=None
+        graph_type='multi_graph'
 
     elif dataset_name=='cornell':
        dataset=torch.load('data/cornell.pt')
        n_classes=5
        n_features=dataset.num_features
        test_graph=False
+       graph_type='single_graph'
 
-    return dataset,n_classes,n_features, test_graph
+    return dataset,n_classes,n_features, test_graph, graph_type
 
 def get_filenames(dataset_name,method,seed=None):
 
@@ -235,3 +240,53 @@ def moving_average(series, window_size):
         smoothed_series[i] = np.mean(series[i - window_size + 1:i + 1])
 
     return smoothed_series
+
+
+def train_val_test_mask(n, train_prop=.6, val_prop=.2):
+    """ randomly splits label into train/valid/test splits """
+    indices=torch.arange(0,n,1)
+    train_num = int(n * train_prop)
+    valid_num = int(n * val_prop)
+    perm = torch.as_tensor(np.random.permutation(n), dtype=torch.int64)
+    train_indices = perm[:train_num]
+    val_indices = perm[train_num:train_num + valid_num]
+    test_indices = perm[train_num + valid_num:]
+    train_mask = torch.zeros(n)
+    train_mask[train_indices]=1
+    val_mask = torch.zeros(n)
+    val_mask[val_indices]=1
+    test_mask = torch.zeros(n)
+    test_mask[test_indices]=1        
+    return train_mask==1, val_mask==1, test_mask==1
+
+def transform_random_split(dataset,train_prop=0.6,val_prop=0.2):
+    n=len(dataset.y)
+    train_mask,val_mask,test_mask=train_val_test_mask(n,train_prop,val_prop)
+    return GraphData(x=dataset.x,y=dataset.y,edge_index=dataset.edge_index,train_mask=train_mask,val_mask=val_mask,test_mask=test_mask)
+
+def index_to_mask(index, size):
+    mask = torch.zeros(size, dtype=torch.bool)
+    mask[index] = 1
+    return mask
+
+def random_planetoid_splits(data, num_classes, percls_trn=20, val_lb=500, seed=12134):
+    index=[i for i in range(0,data.y.shape[0])]
+    train_idx=[]
+    rnd_state = np.random.RandomState(seed)
+    for c in range(num_classes):
+        class_idx = np.where(data.y.cpu() == c)[0]
+        if len(class_idx)<percls_trn:
+            train_idx.extend(class_idx)
+        else:
+            train_idx.extend(rnd_state.choice(class_idx, percls_trn,replace=False))
+    rest_index = [i for i in index if i not in train_idx]
+    val_idx=rnd_state.choice(rest_index,val_lb,replace=False)
+    test_idx=[i for i in rest_index if i not in val_idx]
+    #print(test_idx)
+
+    data.train_mask = index_to_mask(train_idx,size=data.num_nodes)
+    data.val_mask = index_to_mask(val_idx,size=data.num_nodes)
+    data.test_mask = index_to_mask(test_idx,size=data.num_nodes)
+    
+    return data
+
