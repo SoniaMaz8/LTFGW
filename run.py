@@ -1,47 +1,103 @@
 #%%
 
-
 from torch_geometric.loader import NeighborLoader, DataLoader
 from GNN.architectures import *
 
-from GNN.utils import get_dataset, get_filenames
+from GNN.utils import *
 from main.trainers import train, test, train_multi_graph, test_multigraph
 import os
 import torch
 import numpy as np
 import torch_geometric.transforms as T
+import argparse
 
 #%%Parameters to set
 
-dataset_name='cornell'  #'Citeseer' or 'Toy_graph_single' or 'Toy_graph_multi' or 'mutag' or 'cornell'
-model_name='LTFGW_MLP'  # 'GCN', 'GCN_LTFGW', 'LTFGW_GCN' or 'MLP'  or 'LTFGW_MLP'
-save=True  #wether to save the parameters and the model
-n_epoch=1000 #number of epochs
-training='complete_graph'     #'complete_graph' or 'multi_graph' or 'mini_batch'
-lr=0.05 #learning rate
-weight_decay=5e-4
-random_split=[112,38,38]
-#random_split=[600,200,200]
+parser = argparse.ArgumentParser(description='Process some integers.')
 
-n_templates=10
-n_templates_nodes=3
+parser = argparse.ArgumentParser(description='Process some integers.')
 
-hidden_layer=64
-n_hidden_layer=0
+parser.add_argument('-dataset', type=str, default='cornell',
+                    help='name of the dataset to use')
+parser.add_argument('-model', type=str, default='MLP',
+                    help='name of the model to use')
+parser.add_argument('-nepochs', type=int, default=1000,
+                    help='number of epochs')
+parser.add_argument('-graph_type', type=str, default='single_graph',
+                    help='number of epochs')
+parser.add_argument('-lr', type=float, default=0.05,
+                    help='learning rate')
+parser.add_argument('-wd', type=float, default=5e-4,
+                    help='weight decay')
+parser.add_argument('-n_templates', type=int, default=15,
+                    help='number of templates for LTFGW')
+parser.add_argument('-n_templates_nodes', type=int, default=5,
+                    help='number of templates nodes for LTFGW')
+parser.add_argument('-hidden_layer', type=int, default=64,
+                    help='hidden dimention')
+parser.add_argument('-n_hidden_layer', type=int, default=0,
+                    help='number of hidden layers')
+parser.add_argument('-batch_size', type=int, default=3,
+                    help='batch size if multi graph')
+parser.add_argument('-first_seed', type=int, default=20,
+                    help='first seed to train with')
+parser.add_argument('-number_of_seeds', type=int, default=1,
+                    help='number of seeds to train with, starting from the first')
+parser.add_argument('-train_node_weights', type=bool, default=True,
+                    help='wether to train the template node weights')
+parser.add_argument('-save', type=bool, default=True,
+                    help='wether to save the results')
+parser.add_argument('-random_split', type=list, default=[600,200,200],
+                    help='size of train/val/test for multigraph')
+#parser.add_argument('-seeds', type=list, default=[1941488137,4198936517,983997847,4023022221,4019585660,2108550661,1648766618,629014539,3212139042,2424918363],
+#                    help='seeds to use for splits')
 
-batch_size=5
-first_seed=21
 
-train_node_weights=True
 
-criterion = torch.nn.CrossEntropyLoss() 
 
-num_seeds=10 #number of different seeds to train with
+args = vars(parser.parse_args())
+
+#general arguments
+
+dataset_name=args['dataset']  #'Citeseer' or 'Toy_graph_single' or 'Toy_graph_multi' or 'mutag' or 'cornell'
+model_name=args['model']  # 'GCN', 'GCN_LTFGW', 'LTFGW_GCN' or 'MLP'  or 'LTFGW_MLP'
+save=args['save']  #wether to save the parameters and the model
+
+
+#training arguments
+n_epoch=args['nepochs'] #number of epochs
+lr=args['lr'] #learning rate
+weight_decay=args['wd']
+train_node_weights=args['train_node_weights']
+num_train_per_class=10
+seeds=args['seeds']
+
+#general layer arguments
+
+hidden_layer=args['hidden_layer']
+n_hidden_layer=args['n_hidden_layer']
+
+#args for LTFGW
+
+n_templates=args['n_templates']
+n_templates_nodes=args['n_templates_nodes']
+
+#seeds
+
+first_seed=args['first_seed']
+num_seeds=args['number_of_seeds'] #number of different seeds to train with
+
+#arguments for multigraphs
+
+batch_size=args['batch_size']
+random_split=args['random_split']
+
 
 #%%Training and testing
 
+criterion = torch.nn.CrossEntropyLoss() 
+
 Test_accuracy=[]
-#SEEDS=[1941488137,4198936517,983997847,4023022221,4019585660,2108550661,1648766618,629014539,3212139042,2424918363]
 seeds=torch.arange(first_seed,first_seed+num_seeds,1)
 
 
@@ -49,7 +105,7 @@ for seed in seeds:
     torch.manual_seed(seed)
     
     # load dataset
-    dataset, n_classes, n_features, test_graph=get_dataset(dataset_name)
+    dataset, n_classes, n_features, test_graph, graph_type=get_dataset(dataset_name)
 
     n_nodes=len(dataset.x)
 
@@ -76,27 +132,23 @@ for seed in seeds:
         model=LTFGW_MLP(n_nodes=n_nodes,n_classes=n_classes,n_features=n_features, n_templates=n_templates,n_templates_nodes=n_templates_nodes,hidden_layer=hidden_layer)
 
 
-    method=model_name+'_'+training
+    method=model_name+'_'+graph_type
     filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,seed)
     
     optimizer=torch.optim.Adam(model.parameters(), lr=lr,weight_decay=weight_decay)
 
     best_val_perf=0
-
- #   if training=='mini_batch':
- #       train_loader = NeighborLoader(dataset,num_neighbors= [-1],
- #       batch_size=8,
- #       input_nodes=dataset.train_mask,shuffle=True)
- #       train_minibatch(model,train_loader,dataset,optimizer,criterion,n_epoch,save,filename_save,filename_best_model,best_val_perf)
         
-    if training=='complete_graph':
-        generator = torch.Generator().manual_seed(seed.item())
-        transform=T.RandomNodeSplit(split='random',num_val=int(0.2*len(dataset.x)),num_test=int(0.2*len(dataset.x)))
-        dataset=transform(dataset)
+    if graph_type=='single_graph':
+        dataset=transform_random_split(dataset)
+        dataset_test=dataset
+        percls_trn=int(round(0.6*len(dataset.y)/n_classes))
+        val_lb=int(round(0.2*len(dataset.y)))
+        dataset=random_planetoid_splits(dataset, 5, percls_trn=percls_trn, val_lb=val_lb, seed=seed)
         torch.save(dataset,'dataset')
         train(model,dataset,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,best_val_perf,filename_visus)
 
-    elif training=='multi_graph':
+    elif graph_type=='multi_graph':
         generator = torch.Generator().manual_seed(seed.item())
         train_dataset,val_dataset,test_dataset=torch.utils.data.random_split(dataset,random_split,generator=generator)
         train_loader=DataLoader(train_dataset,batch_size=batch_size,shuffle=True)
@@ -106,11 +158,11 @@ for seed in seeds:
     checkpoint = torch.load(filename_best_model)
     model.load_state_dict(checkpoint['model_state_dict'])
 
-    if training=='multi_graph':
+    if graph_type=='multi_graph':
       test_acc=test_multigraph(model,dataset_test)
       Test_accuracy.append(test_acc)
 
-    elif training=='complete_graph':
+    elif graph_type=='single_graph':
         test_acc=test(model,dataset_test,test_graph)
         Test_accuracy.append(test_acc)    
     

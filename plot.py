@@ -126,7 +126,7 @@ plt.title('mutag - smoothed validation')
 
 # %% CORNELL
 
-df=pd.read_pickle('results/MLP_complete_graph/cornell_seed21.pkl')
+df=pd.read_pickle('results/MLP_single_graph/cornell_seed20.pkl')
 df_LTFGW=pd.read_pickle('results/LTFGW_MLP_complete_graph/cornell_seed21.pkl')
 loss=df['loss']
 validation=df['validation_accuracy']
