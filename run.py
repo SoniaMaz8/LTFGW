@@ -13,9 +13,7 @@ import argparse
 
 #%%Parameters to set
 
-parser = argparse.ArgumentParser(description='Process some integers.')
-
-parser = argparse.ArgumentParser(description='Process some integers.')
+parser = argparse.ArgumentParser(description='Graph node classification')
 
 parser.add_argument('-dataset', type=str, default='cornell',
                     help='name of the dataset to use')
@@ -37,7 +35,7 @@ parser.add_argument('-hidden_layer', type=int, default=64,
                     help='hidden dimention')
 parser.add_argument('-n_hidden_layer', type=int, default=0,
                     help='number of hidden layers')
-parser.add_argument('-batch_size', type=int, default=3,
+parser.add_argument('-batch_size', type=int, default=5,
                     help='batch size if multi graph')
 parser.add_argument('-first_seed', type=int, default=20,
                     help='first seed to train with')
@@ -132,7 +130,7 @@ for seed in seeds:
 
 
     method=model_name+'_'+graph_type
-    filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,seed)
+    filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,seed)
     
     optimizer=torch.optim.Adam(model.parameters(), lr=lr,weight_decay=weight_decay)
 
@@ -144,7 +142,7 @@ for seed in seeds:
         percls_trn=int(round(0.6*len(dataset.y)/n_classes))
         val_lb=int(round(0.2*len(dataset.y)))
         dataset=random_planetoid_splits(dataset, 5, percls_trn=percls_trn, val_lb=val_lb, seed=seed)
-        torch.save(dataset,'dataset')
+        torch.save(dataset,'dataset_seed{}'.format(seed))
         train(model,dataset,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,best_val_perf,filename_visus)
 
     elif graph_type=='multi_graph':
