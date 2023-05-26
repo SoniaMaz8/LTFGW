@@ -147,10 +147,10 @@ for seed in seeds:
     best_val_perf=0
         
     if graph_type=='single_graph':
-        dataset_test=dataset
         percls_trn=int(round(0.6*len(dataset.y)/n_classes))
         val_lb=int(round(0.2*len(dataset.y)))
         dataset=random_planetoid_splits(dataset, n_classes, percls_trn=percls_trn, val_lb=val_lb, seed=seed)
+        dataset_test=dataset
         torch.save(dataset,'dataset_seed{}'.format(seed))
         train(model,dataset,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,best_val_perf,filename_visus)
 
