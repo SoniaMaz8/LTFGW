@@ -202,10 +202,8 @@ class LTFGW_MLP(nn.Module):
         self.skip_connection=skip_connection
         self.n_nodes=n_nodes
 
-        self.dropout1=torch.nn.Dropout(0.5)
         self.dropout2=torch.nn.Dropout(0.5)
         
-        self.Linear1_a=Linear(self.n_features, self.hidden_layer)
         self.Linear1=Linear(self.n_features, self.hidden_layer)
         self.Linear2=Linear(self.hidden_layer+self.n_templates, self.n_classes)
         self.Linear3=Linear(self.n_templates, self.n_classes)
@@ -215,11 +213,9 @@ class LTFGW_MLP(nn.Module):
 
     def forward(self, x, edge_index):
 
-   #     x=self.dropout1(x)
         x=self.Linear1(x)
         
         if self.skip_connection:
-        #    y=self.Linear1_a(x)
             y=self.LTFGW(x,edge_index)
             x = torch.hstack([x,y])
             x=self.batch_norm(x)

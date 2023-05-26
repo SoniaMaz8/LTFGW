@@ -34,12 +34,12 @@ def train_epoch(dataset,model,criterion,optimizer):
 
     return loss, train_acc, val_acc, x_latent,loss_val
 
-def train(model,dataset,N_epoch,criterion, optimizer,save,filename_save,filename_best_model,best_val_perf,filename_visus):
+def train(model,dataset,N_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus):
     """"
     train the entire model on the entire graph
     """     
 
-    torch.save(dataset,'dataset_cornell_masks.pt')    
+    best_val_perf=0  
 
     if save:
       #create dataframe to save performances
