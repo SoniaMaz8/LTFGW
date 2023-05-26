@@ -58,6 +58,7 @@ class LTFGW(nn.Module):
             alpha0=torch.zeros(N_nodes)
             self.alpha0=nn.Parameter(alpha0)
         else:
+            alpha0=torch.ones(N_nodes)*alpha0
             self.alpha0=torch.logit(alpha0)           
 
     def forward(self, x, edge_index):

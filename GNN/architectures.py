@@ -203,7 +203,7 @@ class LTFGW_MLP(nn.Module):
         self.n_nodes=n_nodes
 
         self.dropout1=torch.nn.Dropout(0.5)
-        self.dropout2=torch.nn.Dropout(0.7)
+        self.dropout2=torch.nn.Dropout(0.5)
         
         self.Linear1_a=Linear(self.n_features, self.hidden_layer)
         self.Linear1=Linear(self.n_features, self.hidden_layer)
