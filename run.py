@@ -53,8 +53,6 @@ parser.add_argument('-alpha0', type=float, default=None,
 #                    help='seeds to use for splits')
 
 
-
-
 args = vars(parser.parse_args())
 
 #general arguments
@@ -69,7 +67,6 @@ n_epoch=args['nepochs'] #number of epochs
 lr=args['lr'] #learning rate
 weight_decay=args['wd']
 train_node_weights=args['train_node_weights']
-num_train_per_class=10
 
 #general layer arguments
 
@@ -136,7 +133,8 @@ for seed in seeds:
         model=LTFGW_MLP(n_nodes=n_nodes,n_classes=n_classes,n_features=n_features, n_templates=n_templates,n_templates_nodes=n_templates_nodes,hidden_layer=hidden_layer,alpha0=alpha0)
 
 
-    method=model_name+'_'+graph_type
+    method=model_name+'_'+method
+
     if alpha0==None:
       filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0,seed)
     else:
@@ -144,7 +142,6 @@ for seed in seeds:
     
     optimizer=torch.optim.Adam(model.parameters(), lr=lr,weight_decay=weight_decay)
 
-    best_val_perf=0
         
     if graph_type=='single_graph':
         percls_trn=int(round(0.6*len(dataset.y)/n_classes))
@@ -152,7 +149,7 @@ for seed in seeds:
         dataset=random_planetoid_splits(dataset, n_classes, percls_trn=percls_trn, val_lb=val_lb, seed=seed)
         dataset_test=dataset
         torch.save(dataset,'dataset_seed{}'.format(seed))
-        train(model,dataset,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,best_val_perf,filename_visus)
+        train(model,dataset,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus)
 
     elif graph_type=='multi_graph':
         generator = torch.Generator().manual_seed(seed.item())
