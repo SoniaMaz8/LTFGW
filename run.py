@@ -172,7 +172,7 @@ for seed in seeds:
         test_acc=test(model,dataset_test,test_graph)
         Test_accuracy.append(test_acc)    
     
-    filename_save_test=os.path.join( 'results',method,"test_{}_seed{}.csv".format(dataset_name,first_seed))
+    filename_save_test=os.path.join( 'results',method,"test_{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}.csv".format(dataset_name,first_seed))
     np.savetxt(filename_save_test,Test_accuracy)
 
 #print the performances
