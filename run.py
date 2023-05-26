@@ -47,6 +47,8 @@ parser.add_argument('-save', type=bool, default=True,
                     help='wether to save the results')
 parser.add_argument('-random_split', type=list, default=[600,200,200],
                     help='size of train/val/test for multigraph')
+parser.add_argument('-alpha0', type=float, default=None,
+                    help='alpha0 for LTFGW')
 #parser.add_argument('-seeds', type=list, default=[1941488137,4198936517,983997847,4023022221,4019585660,2108550661,1648766618,629014539,3212139042,2424918363],
 #                    help='seeds to use for splits')
 
@@ -78,6 +80,7 @@ n_hidden_layer=args['n_hidden_layer']
 
 n_templates=args['n_templates']
 n_templates_nodes=args['n_templates_nodes']
+alpha0=args['alpha0']
 
 #seeds
 
@@ -126,11 +129,11 @@ for seed in seeds:
         model=GCN(n_classes=n_classes,n_features=n_features,hidden_layer=hidden_layer,n_hidden_layers=n_hidden_layer)
 
     elif model_name=='LTFGW_MLP':
-        model=LTFGW_MLP(n_nodes=n_nodes,n_classes=n_classes,n_features=n_features, n_templates=n_templates,n_templates_nodes=n_templates_nodes,hidden_layer=hidden_layer)
+        model=LTFGW_MLP(n_nodes=n_nodes,n_classes=n_classes,n_features=n_features, n_templates=n_templates,n_templates_nodes=n_templates_nodes,hidden_layer=hidden_layer,alpha0=alpha0)
 
 
     method=model_name+'_'+graph_type
-    filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,seed)
+    filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,seed,alpha0)
     
     optimizer=torch.optim.Adam(model.parameters(), lr=lr,weight_decay=weight_decay)
 
