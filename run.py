@@ -80,7 +80,11 @@ n_hidden_layer=args['n_hidden_layer']
 
 n_templates=args['n_templates']
 n_templates_nodes=args['n_templates_nodes']
-alpha0=torch.as_tensor([args['alpha0']])
+
+if not args['alpha0']==None:
+  alpha0=torch.as_tensor([args['alpha0']])
+else:
+  alpha0=args['alpha0']
 
 #seeds
 
@@ -133,7 +137,10 @@ for seed in seeds:
 
 
     method=model_name+'_'+graph_type
-    filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0.item(),seed)
+    if alpha0==None:
+      filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0,seed)
+    else:
+       filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0.item(),seed)
     
     optimizer=torch.optim.Adam(model.parameters(), lr=lr,weight_decay=weight_decay)
 
