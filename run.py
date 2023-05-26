@@ -133,7 +133,7 @@ for seed in seeds:
         model=LTFGW_MLP(n_nodes=n_nodes,n_classes=n_classes,n_features=n_features, n_templates=n_templates,n_templates_nodes=n_templates_nodes,hidden_layer=hidden_layer,alpha0=alpha0)
 
 
-    method=model_name+'_'+method
+    method=model_name+'_'+graph_type
 
     if alpha0==None:
       filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0,seed)
