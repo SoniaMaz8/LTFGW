@@ -29,42 +29,55 @@ def template_initialisation(N_nodes,N_templates,N_features):
 
 class LTFGW(nn.Module):
     """ Layer for the local TFWG """
-    def __init__(self,N_nodes, N_templates=10,N_templates_nodes=10,N_features=10,alpha0=None,train_node_weights=True):
+    def __init__(self,n_nodes, n_templates=10,n_templates_nodes=10,n_features=10,k=1,alpha0=None,train_node_weights=True,local_alpha=True):
         """
-        N_features: number of node features
-        N_templates: number of graph templates
-        N_templates_nodes: number of nodes in each template
+        n_features: number of node features
+        n_templates: number of graph templates
+        n_templates_nodes: number of nodes in each template
         alpha0: trade-off for the fused gromov-wasserstein distance. If None, alpha is optimised, else it is fixed at the given value.
         q0: weights on the nodes of the templates. If None, q0 is optimised, else it is fixed at the given value (must sum to 1 along the lines).
+        local alpha: wether to learn one tradeoff parameter for the FGW for each node or for the whole graph 
         """
         super().__init__()
 
-        self.N_templates= N_templates
-        self.N_templates_nodes=N_templates_nodes
-        self.N_features=N_features
+        self.n_templates= n_templates
+        self.n_templates_nodes=n_templates_nodes
+        self.n_features=n_features
+        self.k=k
 
-        templates,templates_features=template_initialisation(self.N_templates_nodes,self.N_templates,self.N_features)
+        self.local_alpha=local_alpha
+
+        templates,templates_features=template_initialisation(self.n_templates_nodes,self.n_templates,self.n_features)
         self.templates=nn.Parameter(templates)
         self.templates_features = nn.Parameter(templates_features)
         self.softmax=nn.Softmax(dim=1)
 
         if train_node_weights:
-            q0=torch.zeros(N_templates,N_templates_nodes)
+            q0=torch.zeros(n_templates,n_templates_nodes)
             self.q0=nn.Parameter(q0)
         else: 
-            self.q0=torch.zeros(N_templates,N_templates_nodes)
+            self.q0=torch.zeros(n_templates,n_templates_nodes)
             
+        #initialize the tradeoff parameter alpha
         if alpha0 is None:
-            alpha0=torch.zeros(N_nodes)
-            self.alpha0=nn.Parameter(alpha0)
+            if self.local_alpha:
+                alpha0=torch.zeros(n_nodes)
+                self.alpha0=nn.Parameter(alpha0)
+            else:
+                alpha0=torch.Tensor([0])
+                self.alpha0=nn.Parameter(alpha0)
         else:
-            alpha0=torch.ones(N_nodes)*alpha0
-            self.alpha0=torch.logit(alpha0)           
+            if self.local_alpha:
+                alpha0=torch.ones(n_nodes)*alpha0
+                self.alpha0=torch.logit(alpha0) 
+            else:
+                alpha0=torch.zeros(n_nodes)
+                self.alpha0=torch.logit(alpha0) 
 
     def forward(self, x, edge_index):
         alpha=torch.sigmoid(self.alpha0)
         q=self.softmax(self.q0)
-        x=distance_to_template(x,edge_index,self.templates_features,self.templates,alpha,q,1)
+        x=distance_to_template(x,edge_index,self.templates_features,self.templates,alpha,q,self.k,self.local_alpha)
         return x
 
 

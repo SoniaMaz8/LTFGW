@@ -161,7 +161,7 @@ def subgraph(x,edge_index,node_idx, order,num_nodes):
     return x_sub,edges_sub,central_node_index
 
 
-def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k=1):
+def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k,local_alpha):
     """
     Computes the OT distance between each subgraphs of order k of G and the templates
     x : node features of the graph
@@ -223,8 +223,10 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k=1):
                   p[0]+=abs(sum_q-sum_p)
               else:
                   qj[0]+=abs(sum_q-sum_p)   
-
-          dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, C_T[j], p, qj,alpha=alpha[i],symmetric=True,max_iter=100) 
+          if local_alpha: 
+             dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, C_T[j], p, qj,alpha=alpha[i],symmetric=True,max_iter=100) 
+          else:
+             dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, C_T[j], p, qj,alpha=alpha,symmetric=True,max_iter=100) 
           distances[i,j]=dist
     return distances
 
