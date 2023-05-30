@@ -53,6 +53,8 @@ parser.add_argument('-local_alpha', type=str, default='True',
                     help='wether to learn one alpha for each node in LTFGW or one for the whole graph')
 parser.add_argument('-k', type=int, default=1,
                     help='nomber of hops (order of the neighbourhood) in LTFGW')
+parser.add_argument('-dropout', type=float, default=0.5,
+                    help='dropout rate')
 #parser.add_argument('-seeds', type=list, default=[1941488137,4198936517,983997847,4023022221,4019585660,2108550661,1648766618,629014539,3212139042,2424918363],
 #                    help='seeds to use for splits')
 
@@ -70,6 +72,7 @@ n_epoch=args['nepochs'] #number of epochs
 lr=args['lr'] #learning rate
 weight_decay=args['wd']
 train_node_weights=args['train_node_weights']=='True'
+dropout=args['dropout']
 
 #general layer arguments
 hidden_layer=args['hidden_layer']
@@ -131,7 +134,7 @@ for seed in seeds:
         model=GCN(n_classes=n_classes,n_features=n_features,hidden_layer=hidden_layer,n_hidden_layers=n_hidden_layer)
 
     elif model_name=='LTFGW_MLP':
-        model=LTFGW_MLP(n_nodes=n_nodes,n_classes=n_classes,n_features=n_features, n_templates=n_templates,n_templates_nodes=n_templates_nodes,hidden_layer=hidden_layer,k=k,alpha0=alpha0,local_alpha=local_alpha)
+        model=LTFGW_MLP(n_nodes=n_nodes,n_classes=n_classes,n_features=n_features, n_templates=n_templates,n_templates_nodes=n_templates_nodes,hidden_layer=hidden_layer,k=k,dropout=dropout,alpha0=alpha0,local_alpha=local_alpha)
 
     elif model_name=='LTFGW_MLP_dropout':
        model=LTFGW_MLP_dropout(n_nodes=n_nodes,n_classes=n_classes,n_features=n_features, n_templates=n_templates,n_templates_nodes=n_templates_nodes,hidden_layer=hidden_layer,k=k,alpha0=alpha0,local_alpha=local_alpha)
@@ -140,9 +143,9 @@ for seed in seeds:
     method=model_name+'_'+graph_type
 
     if alpha0==None:
-      filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0,local_alpha,k,seed)
+      filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0,local_alpha,k,dropout,seed)
     else:
-       filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0.item(),local_alpha,k,seed)
+       filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0.item(),local_alpha,k,dropout,seed)
     
     optimizer=torch.optim.Adam(model.parameters(), lr=lr,weight_decay=weight_decay)
 
