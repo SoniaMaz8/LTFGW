@@ -233,3 +233,62 @@ class LTFGW_MLP(nn.Module):
 
         return  x,x_latent
    
+
+class LTFGW_MLP_dropout(nn.Module):
+    def __init__(self,n_nodes,n_classes=2,n_features=10, n_templates=10,n_templates_nodes=10,hidden_layer=10,k=1,alpha0=None,train_node_weights=True, skip_connection=True,local_alpha=True):
+        """
+        n_classes: number of classes for node classification
+        n_features: number of features for each node
+        n_templates: number of templates to use for LTFGW
+        n_templates_nodes: number of nodes for each template for LTFGW
+        hidden_layer: number of hidden dimensions
+        alpha0: alpha paramameter for Fused Gromov Wasserstein, if None it is learned
+        train_node_weights: wether to learn node weights on the templates for LFTGW
+        skip_connection: wether to put MLP and LTFGW in parallel
+        local alpha: wether to learn one tradeoff parameter for the FGW for each node or for the whole graph 
+
+        """
+        super().__init__()
+    
+        self.n_classes=n_classes
+        self.n_features=n_features
+        self.n_templates=n_templates
+        self.n_templates_nodes=n_templates_nodes
+        self.hidden_layer=hidden_layer
+        self.alpha0=alpha0
+        self.train_node_weights=train_node_weights
+        self.skip_connection=skip_connection
+        self.n_nodes=n_nodes
+        self.local_alpha=local_alpha
+        self.k=k
+
+        self.dropout1=torch.nn.Dropout(0.5)
+        self.dropout2=torch.nn.Dropout(0.5)
+        
+        self.Linear1=Linear(self.n_features, self.hidden_layer)
+        self.Linear2=Linear(self.hidden_layer+self.n_templates, self.n_classes)
+        self.Linear3=Linear(self.n_templates, self.n_classes)
+        self.LTFGW=LTFGW(self.n_nodes,self.n_templates,self.n_templates_nodes, self.hidden_layer,k,self.alpha0,self.train_node_weights,self.local_alpha)
+        self.batch_norm=torch.nn.BatchNorm1d(self.hidden_layer+self.n_templates)
+        
+
+    def forward(self, x, edge_index):
+
+        x=self.dropout1(x)
+        x=self.Linear1(x)
+        
+        if self.skip_connection:
+            y=self.LTFGW(x,edge_index)
+            x = torch.hstack([x,y])
+            x=self.batch_norm(x)
+            x=x.relu()
+            x=self.dropout2(x)
+            x=self.Linear2(x)
+            x_latent=x
+
+        else:
+            x=self.LTFGW(x,edge_index)
+            x=self.Linear3(x)
+
+        return  x,x_latent
+   

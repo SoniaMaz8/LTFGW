@@ -133,6 +133,10 @@ for seed in seeds:
     elif model_name=='LTFGW_MLP':
         model=LTFGW_MLP(n_nodes=n_nodes,n_classes=n_classes,n_features=n_features, n_templates=n_templates,n_templates_nodes=n_templates_nodes,hidden_layer=hidden_layer,k=k,alpha0=alpha0,local_alpha=local_alpha)
 
+    elif model_name=='LTFGW_MLP_dropout':
+       model=LTFGW_MLP_dropout(n_nodes=n_nodes,n_classes=n_classes,n_features=n_features, n_templates=n_templates,n_templates_nodes=n_templates_nodes,hidden_layer=hidden_layer,k=k,alpha0=alpha0,local_alpha=local_alpha)
+       
+
     method=model_name+'_'+graph_type
 
     if alpha0==None:
