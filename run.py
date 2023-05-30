@@ -136,9 +136,9 @@ for seed in seeds:
     method=model_name+'_'+graph_type
 
     if alpha0==None:
-      filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0,seed)
+      filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0,local_alpha,k,seed)
     else:
-       filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0.item(),seed)
+       filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0.item(),local_alpha,k,seed)
     
     optimizer=torch.optim.Adam(model.parameters(), lr=lr,weight_decay=weight_decay)
 
@@ -169,7 +169,7 @@ for seed in seeds:
         test_acc=test(model,dataset_test,test_graph)
         Test_accuracy.append(test_acc)    
     
-    filename_save_test=os.path.join( 'results',method,"test_{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}.csv".format(dataset_name,first_seed,lr,n_templates,n_templates_nodes,alpha0))
+    filename_save_test=os.path.join( 'results',method,"test_{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_local_alpha{}.csv".format(dataset_name,first_seed,lr,n_templates,n_templates_nodes,alpha0,k,local_alpha))
     np.savetxt(filename_save_test,Test_accuracy)
 
 #print the performances

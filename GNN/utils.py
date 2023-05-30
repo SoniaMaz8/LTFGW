@@ -64,7 +64,7 @@ def get_dataset(dataset_name):
 
     return dataset,n_classes,n_features, test_graph, graph_type
 
-def get_filenames(dataset_name,method,lr,n_temp,n_nodes,alpha0,seed=None):
+def get_filenames(dataset_name,method,lr,n_temp,n_nodes,alpha0,local_alpha,k,seed=None):
 
     if seed is None:
         filename_save=os.path.join( 'results',method,"{}.pkl".format(dataset_name))
@@ -72,9 +72,9 @@ def get_filenames(dataset_name,method,lr,n_temp,n_nodes,alpha0,seed=None):
         filename_visus=os.path.join( 'results',method,"{}_visus.pkl".format(dataset_name)) 
 
     else:   
-        filename_save=os.path.join( 'results',method,"{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}.pkl".format(dataset_name,seed,lr,n_temp,n_nodes,alpha0))
-        filename_best_model=os.path.join( 'results',method,"{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_best_valid.pkl".format(dataset_name,seed,lr,n_temp,n_nodes,alpha0))
-        filename_visus=os.path.join( 'results',method,"{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_visus.pkl".format(dataset_name,seed,lr,n_temp,n_nodes,alpha0))
+        filename_save=os.path.join( 'results',method,"{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_localalpha{}.pkl".format(dataset_name,seed,lr,n_temp,n_nodes,alpha0,k,local_alpha))
+        filename_best_model=os.path.join( 'results',method,"{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_localalpha{}_best_valid.pkl".format(dataset_name,seed,lr,n_temp,n_nodes,alpha0,k,local_alpha))
+        filename_visus=os.path.join( 'results',method,"{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_localalpha{}_visus.pkl".format(dataset_name,seed,lr,n_temp,n_nodes,alpha0,k,local_alpha))
 
     return filename_save, filename_best_model, filename_visus
 
