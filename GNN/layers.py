@@ -29,7 +29,7 @@ def template_initialisation(N_nodes,N_templates,N_features):
 
 class LTFGW(nn.Module):
     """ Layer for the local TFWG """
-    def __init__(self,n_nodes, n_templates=10,n_templates_nodes=10,n_features=10,k=1,alpha0=None,train_node_weights=True,local_alpha=True):
+    def __init__(self,n_nodes, n_templates=10,n_templates_nodes=10,n_features=10,k=1,alpha0=None,train_node_weights=True,local_alpha=True,shortest_path=False):
         """
         n_features: number of node features
         n_templates: number of graph templates
@@ -44,6 +44,7 @@ class LTFGW(nn.Module):
         self.n_templates_nodes=n_templates_nodes
         self.n_features=n_features
         self.k=k
+        self.shortest_path=shortest_path
 
         self.local_alpha=local_alpha
 
@@ -77,7 +78,7 @@ class LTFGW(nn.Module):
     def forward(self, x, edge_index):
         alpha=torch.sigmoid(self.alpha0)
         q=self.softmax(self.q0)
-        x=distance_to_template(x,edge_index,self.templates_features,self.templates,alpha,q,self.k,self.local_alpha)
+        x=distance_to_template(x,edge_index,self.templates_features,self.templates,alpha,q,self.k,self.local_alpha,self.shortest_path)
         return x
 
 

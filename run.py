@@ -55,6 +55,8 @@ parser.add_argument('-k', type=int, default=1,
                     help='nomber of hops (order of the neighbourhood) in LTFGW')
 parser.add_argument('-dropout', type=float, default=0.5,
                     help='dropout rate')
+parser.add_argument('-shortest_path', type=str, default='False',
+                    help='wether to use the shortest path cost matrix in TFGW')
 #parser.add_argument('-seeds', type=list, default=[1941488137,4198936517,983997847,4023022221,4019585660,2108550661,1648766618,629014539,3212139042,2424918363],
 #                    help='seeds to use for splits')
 
@@ -83,6 +85,7 @@ n_templates=args['n_templates']
 n_templates_nodes=args['n_templates_nodes']
 local_alpha=args['local_alpha']=='True'
 k=args['k']
+shortest_path=args['shortest_path']=='True'
 
 if not args['alpha0']==None:
   alpha0=torch.as_tensor([args['alpha0']])
@@ -134,7 +137,7 @@ for seed in seeds:
         model=GCN(n_classes=n_classes,n_features=n_features,hidden_layer=hidden_layer,n_hidden_layers=n_hidden_layer)
 
     elif model_name=='LTFGW_MLP':
-        model=LTFGW_MLP(n_nodes=n_nodes,n_classes=n_classes,n_features=n_features, n_templates=n_templates,n_templates_nodes=n_templates_nodes,hidden_layer=hidden_layer,k=k,dropout=dropout,alpha0=alpha0,local_alpha=local_alpha)
+        model=LTFGW_MLP(n_nodes=n_nodes,n_classes=n_classes,n_features=n_features, n_templates=n_templates,n_templates_nodes=n_templates_nodes,hidden_layer=hidden_layer,k=k,dropout=dropout,alpha0=alpha0,local_alpha=local_alpha,shortest_path=shortest_path)
 
     elif model_name=='LTFGW_MLP_dropout':
        model=LTFGW_MLP_dropout(n_nodes=n_nodes,n_classes=n_classes,n_features=n_features, n_templates=n_templates,n_templates_nodes=n_templates_nodes,hidden_layer=hidden_layer,k=k,alpha0=alpha0,local_alpha=local_alpha)

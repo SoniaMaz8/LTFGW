@@ -137,7 +137,7 @@ def adjacency_to_graph(C,F):
     return GraphData(x=F,edge_index=edge_index)
 
 
-def graph_to_adjacency(n,edges,shortest_path=False): 
+def graph_to_adjacency(n,edges,shortest_path): 
     """"
     adjacency matrix of a graph given its nodes and edges in a torch.geometric format
     n : number of nodes
@@ -153,7 +153,7 @@ def graph_to_adjacency(n,edges,shortest_path=False):
     else:
         graph=csr_matrix(C)
         dist_matrix=function_shortest_path(graph) 
-        return dist_matrix
+        return torch.Tensor(dist_matrix)
 
 
 def subgraph(x,edge_index,node_idx, order,num_nodes):
@@ -172,7 +172,7 @@ def subgraph(x,edge_index,node_idx, order,num_nodes):
     return x_sub,edges_sub,central_node_index
 
 
-def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k,local_alpha):
+def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k,local_alpha,shortest_path):
     """
     Computes the OT distance between each subgraphs of order k of G and the templates
     x : node features of the graph
@@ -181,6 +181,7 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k,local_alpha):
     C_T : list of the adjacency matrices of the templates 
     alpha : trade-off parameter for fused gromov-wasserstein distance
     k : number of neighbours in the subgraphs
+    shortest_path: wether to use the shortest path matrix in LTFGW
     """
 
     n=len(x)       #number of nodes in the graph
@@ -195,6 +196,7 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k,local_alpha):
         raise ValueError('the templates and the graphs must have the same number of features')
     
     distances=torch.zeros(n,n_T)
+
     for i in range(n):
         x_sub,edges_sub,central_node_index=subgraph(x,edge_index,i,k,n)
         x_sub=x_sub.reshape(len(x_sub),n_feat)  #reshape pour utiliser ot.dist      
@@ -210,7 +212,9 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k,local_alpha):
           p=torch.ones(1)
           p=F.normalize(p,p=1,dim=0)  #normalize p for gromov-wasserstein
 
-        C_sub=graph_to_adjacency(n_sub,edges_sub).type(torch.float)
+        C_sub=graph_to_adjacency(n_sub,edges_sub,shortest_path).type(torch.float)
+        if not shortest_path:
+          C_sub=torch.exp(-C_sub)
  
         for j in range(n_T):
           
@@ -234,11 +238,19 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k,local_alpha):
                   p[0]+=abs(sum_q-sum_p)
               else:
                   qj[0]+=abs(sum_q-sum_p)  
-                   
-          if local_alpha: 
-             dist=ot.gromov.fused_gromov_wasserstein2(M, torch.exp(-C_sub), torch.exp(-C_T[j]), p, qj,alpha=alpha[i],symmetric=True,max_iter=100) 
+
+          #cost matrix of the template j
+          if not shortest_path:
+              Cj=torch.exp(-C_T[j])
           else:
-             dist=ot.gromov.fused_gromov_wasserstein2(M, torch.exp(-C_sub), torch.exp(-C_T[j]), p, qj,alpha=alpha,symmetric=True,max_iter=100) 
+              Cj=C_T[j]
+          
+          #2 cases wether alpha is local or global
+          if local_alpha: 
+             dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, Cj, p, qj,alpha=alpha[i],symmetric=True,max_iter=100) 
+          else:
+             dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, Cj, p, qj,alpha=alpha,symmetric=True,max_iter=100) 
+
           distances[i,j]=dist
     return distances
 
