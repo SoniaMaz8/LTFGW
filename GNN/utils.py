@@ -69,17 +69,17 @@ def get_dataset(dataset_name):
 
     return dataset,n_classes,n_features, test_graph, graph_type
 
-def get_filenames(dataset_name,method,lr,n_temp,n_nodes,alpha0,local_alpha,k,dropout,seed=None):
+def get_filenames(dataset_name,method,lr,n_temp,n_nodes,alpha0,local_alpha,k,dropout,shortest_path,seed=None):
 
     if seed is None:
-        filename_save=os.path.join( 'results',method,"{}.pkl".format(dataset_name))
-        filename_best_model=os.path.join( 'results',method,"{}_best_valid.pkl".format(dataset_name)) 
-        filename_visus=os.path.join( 'results',method,"{}_visus.pkl".format(dataset_name)) 
+        filename_save=os.path.join( 'new_results',method,"{}.pkl".format(dataset_name))
+        filename_best_model=os.path.join( 'new_results',method,"{}_best_valid.pkl".format(dataset_name)) 
+        filename_visus=os.path.join( 'new_results',method,"{}_visus.pkl".format(dataset_name)) 
 
     else:   
-        filename_save=os.path.join( 'results',method,"{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_localalpha{}_dropout{}.pkl".format(dataset_name,seed,lr,n_temp,n_nodes,alpha0,k,local_alpha,dropout))
-        filename_best_model=os.path.join( 'results',method,"{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_localalpha{}_dropout{}_best_valid.pkl".format(dataset_name,seed,lr,n_temp,n_nodes,alpha0,k,local_alpha,dropout))
-        filename_visus=os.path.join( 'results',method,"{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_localalpha{}_dropout{}_visus.pkl".format(dataset_name,seed,lr,n_temp,n_nodes,alpha0,k,local_alpha,dropout))
+        filename_save=os.path.join( 'new_results',method,"{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_localalpha{}_dropout{}_shortest_path{}.pkl".format(dataset_name,seed,lr,n_temp,n_nodes,alpha0,k,local_alpha,dropout,shortest_path))
+        filename_best_model=os.path.join( 'new_results',method,"{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_localalpha{}_dropout{}_shortest_path{}_best_valid.pkl".format(dataset_name,seed,lr,n_temp,n_nodes,alpha0,k,local_alpha,dropout,shortest_path))
+        filename_visus=os.path.join( 'new_results',method,"{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_localalpha{}_dropout{}_shortest_path{}_visus.pkl".format(dataset_name,seed,lr,n_temp,n_nodes,alpha0,k,local_alpha,dropout,shortest_path))
 
     return filename_save, filename_best_model, filename_visus
 
@@ -197,6 +197,7 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k,local_alpha,shortest_pat
     
     distances=torch.zeros(n,n_T)
 
+    #iteration for each subgraph
     for i in range(n):
         x_sub,edges_sub,central_node_index=subgraph(x,edge_index,i,k,n)
         x_sub=x_sub.reshape(len(x_sub),n_feat)  #reshape pour utiliser ot.dist      
@@ -216,6 +217,7 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k,local_alpha,shortest_pat
         if not shortest_path:
           C_sub=torch.exp(-C_sub)
  
+        #iteration for each template
         for j in range(n_T):
           
           template_features=x_T[j].reshape(len(x_T[j]),n_feat_T)   #reshape pour utiliser ot.dist
