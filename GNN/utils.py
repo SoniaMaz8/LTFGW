@@ -9,6 +9,9 @@ import ot
 import time
 from data.convert_datasets import Citeseer_data, Cornell
 import torch.nn.functional as F
+from scipy.sparse.csgraph import shortest_path as function_shortest_path
+from scipy.sparse import csr_matrix
+from torch_geometric.utils import to_undirected
 
 def get_dataset(dataset_name):
     """ 
@@ -57,6 +60,8 @@ def get_dataset(dataset_name):
 
     elif dataset_name=='cornell':
        dataset=torch.load('data/cornell.pt')
+       edges=to_undirected(dataset.edge_index)
+       dataset=GraphData(x=dataset.x,y=dataset.y,edge_index=edges,num_features=dataset.num_features, num_classes=5)
        n_classes=5
        n_features=dataset.num_features
        test_graph=False
@@ -132,7 +137,7 @@ def adjacency_to_graph(C,F):
     return GraphData(x=F,edge_index=edge_index)
 
 
-def graph_to_adjacency(n,edges): 
+def graph_to_adjacency(n,edges,shortest_path=False): 
     """"
     adjacency matrix of a graph given its nodes and edges in a torch.geometric format
     n : number of nodes
@@ -142,7 +147,13 @@ def graph_to_adjacency(n,edges):
     """
     C=torch.sparse_coo_tensor(edges, np.ones(len(edges[0])),size=(n, n))
     C=C.to_dense()
-    return C+C.T
+    C=0.5*(C+C.T)
+    if not shortest_path:
+        return C
+    else:
+        graph=csr_matrix(C)
+        dist_matrix=function_shortest_path(graph) 
+        return dist_matrix
 
 
 def subgraph(x,edge_index,node_idx, order,num_nodes):
@@ -210,7 +221,7 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k,local_alpha):
           #more normalization
           qj=q[j]/torch.sum(q[j])
           p=p/torch.sum(p)
-
+          
           #ensure that p and q have the same sum
           p_nump=p.numpy()
           p_nump=np.asarray(p_nump, dtype=np.float64)
@@ -222,11 +233,12 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k,local_alpha):
               if sum_q>sum_p:
                   p[0]+=abs(sum_q-sum_p)
               else:
-                  qj[0]+=abs(sum_q-sum_p)   
+                  qj[0]+=abs(sum_q-sum_p)  
+                   
           if local_alpha: 
-             dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, C_T[j], p, qj,alpha=alpha[i],symmetric=True,max_iter=100) 
+             dist=ot.gromov.fused_gromov_wasserstein2(M, torch.exp(-C_sub), torch.exp(-C_T[j]), p, qj,alpha=alpha[i],symmetric=True,max_iter=100) 
           else:
-             dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, C_T[j], p, qj,alpha=alpha,symmetric=True,max_iter=100) 
+             dist=ot.gromov.fused_gromov_wasserstein2(M, torch.exp(-C_sub), torch.exp(-C_T[j]), p, qj,alpha=alpha,symmetric=True,max_iter=100) 
           distances[i,j]=dist
     return distances
 
