@@ -49,7 +49,7 @@ parser.add_argument('-random_split', type=list, default=[600,200,200],
                     help='size of train/val/test for multigraph')
 parser.add_argument('-alpha0', type=float, default=None,
                     help='alpha0 for LTFGW')
-parser.add_argument('-local_alpha', type=str, default='True',
+parser.add_argument('-local_alpha', type=str, default='False',
                     help='wether to learn one alpha for each node in LTFGW or one for the whole graph')
 parser.add_argument('-k', type=int, default=1,
                     help='nomber of hops (order of the neighbourhood) in LTFGW')
