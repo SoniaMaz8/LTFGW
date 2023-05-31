@@ -179,7 +179,7 @@ for seed in seeds:
         test_acc=test(model,dataset_test,test_graph)
         Test_accuracy.append(test_acc)    
     
-    filename_save_test=os.path.join( 'results',method,"test_{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_local_alpha{}_dropout{}.csv".format(dataset_name,first_seed,lr,n_templates,n_templates_nodes,alpha0,k,local_alpha,dropout))
+    filename_save_test=os.path.join( 'new_results',method,"test_{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_local_alpha{}_dropout{}.csv".format(dataset_name,first_seed,lr,n_templates,n_templates_nodes,alpha0,k,local_alpha,dropout))
     np.savetxt(filename_save_test,Test_accuracy)
 
 #print the performances
