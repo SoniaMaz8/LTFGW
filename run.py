@@ -146,9 +146,9 @@ for seed in seeds:
     method=model_name+'_'+graph_type
 
     if alpha0==None:
-      filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0,local_alpha,k,dropout,seed)
+      filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0,local_alpha,k,dropout,shortest_path,seed)
     else:
-       filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0.item(),local_alpha,k,dropout,seed)
+       filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0.item(),local_alpha,k,shortest_path,dropout,seed)
     
     optimizer=torch.optim.Adam(model.parameters(), lr=lr,weight_decay=weight_decay)
 
