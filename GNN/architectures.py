@@ -95,7 +95,7 @@ class GCN(nn.Module):
 
 
 class LTFGW_GCN(nn.Module):
-    def __init__(self,n_classes=2,n_features=10, n_templates=10,n_templates_nodes=10,hidden_layer=10,drop=0.5,alpha0=None,local_alpha=False,shortest_path=False,train_node_weights=True, skip_connection=True):
+    def __init__(self,n_nodes,n_classes=2,n_features=10, n_templates=10,n_templates_nodes=10,hidden_layer=10,drop=0.5,k=1,alpha0=None,local_alpha=False,shortest_path=False,train_node_weights=True, skip_connection=True):
         """
         n_classes: number of classes for node classification
         """
@@ -103,6 +103,7 @@ class LTFGW_GCN(nn.Module):
     
         self.n_classes=n_classes
         self.n_features=n_features
+        self.n_nodes=n_nodes
         self.n_templates=n_templates
         self.n_templates_nodes=n_templates_nodes
         self.hidden_layer=hidden_layer
@@ -112,22 +113,22 @@ class LTFGW_GCN(nn.Module):
         self.local_alpha=local_alpha
         self.shortest_path=shortest_path
         self.drop=drop
+        self.k=k
         
         self.dropout=torch.nn.Dropout(self.drop)
         self.conv1=GCNConv(self.n_features, self.hidden_layer)
         self.conv2=GCNConv(self.hidden_layer+self.n_templates, self.n_classes)
         self.conv3=GCNConv(self.n_templates, self.n_classes)
-        self.LTFGW=LTFGW(self.n_templates,self.n_templates_nodes, self.hidden_layer,self.alpha0,self.train_node_weights,self.local_alpha,self.shortest_path)
+        self.LTFGW=LTFGW(self.n_nodes,self.n_templates,self.n_templates_nodes, self.hidden_layer,self.k,self.alpha0,self.train_node_weights,self.local_alpha,self.shortest_path)
         self.batch_norm=torch.nn.BatchNorm1d(self.hidden_layer+self.n_templates)
         self.linear=Linear(self.n_features,self.hidden_layer)
         
 
     def forward(self, x, edge_index):
-
  
         if self.skip_connection:
             y=self.linear(x)
-            y=self.LTFGW(x,edge_index)
+            y=self.LTFGW(y,edge_index)
             z=self.conv1(x,edge_index)
             z=z.relu()
             x = torch.hstack([z,y])
