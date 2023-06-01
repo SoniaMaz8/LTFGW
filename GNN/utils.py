@@ -59,7 +59,7 @@ def get_dataset(dataset_name):
         graph_type='multi_graph'
 
     elif dataset_name=='cornell':
-       dataset=torch.load('data/cornell.pt')
+       dataset=torch.load('data/cornell_undirected.pt')
        edges=to_undirected(dataset.edge_index)
        dataset=GraphData(x=dataset.x,y=dataset.y,edge_index=edges,num_features=dataset.num_features, num_classes=5)
        n_classes=5

@@ -158,7 +158,7 @@ for seed in seeds:
         val_lb=int(round(0.2*len(dataset.y)))
         dataset=random_planetoid_splits(dataset, n_classes, percls_trn=percls_trn, val_lb=val_lb, seed=seed)
         dataset_test=dataset
-        torch.save(dataset,'dataset_seed{}'.format(seed))
+        torch.save(dataset,'splits/dataset_seed{}'.format(seed))
         train(model,dataset,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus)
 
     elif graph_type=='multi_graph':
