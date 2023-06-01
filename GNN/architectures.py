@@ -178,7 +178,7 @@ class MLP(nn.Module):
     
 
 class LTFGW_MLP(nn.Module):
-    def __init__(self,n_nodes,n_classes=2,n_features=10, n_templates=10,n_templates_nodes=10,hidden_layer=10,k=1,alpha0=None,train_node_weights=True, skip_connection=True,local_alpha=True):
+    def __init__(self,n_nodes,n_classes=2,n_features=10, n_templates=10,n_templates_nodes=10,hidden_layer=10,k=1,dropout=0.5,alpha0=None,train_node_weights=True, skip_connection=True,local_alpha=True):
         """
         n_classes: number of classes for node classification
         n_features: number of features for each node
@@ -204,8 +204,9 @@ class LTFGW_MLP(nn.Module):
         self.n_nodes=n_nodes
         self.local_alpha=local_alpha
         self.k=k
+        self.drop=dropout
 
-        self.dropout2=torch.nn.Dropout(0.5)
+        self.dropout2=torch.nn.Dropout(self.drop)
         
         self.Linear1=Linear(self.n_features, self.hidden_layer)
         self.Linear2=Linear(self.hidden_layer+self.n_templates, self.n_classes)

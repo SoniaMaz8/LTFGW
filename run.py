@@ -53,6 +53,8 @@ parser.add_argument('-local_alpha', type=str, default='True',
                     help='wether to learn one alpha for each node in LTFGW or one for the whole graph')
 parser.add_argument('-k', type=int, default=1,
                     help='nomber of hops (order of the neighbourhood) in LTFGW')
+parser.add_argument('-dropout', type=float, default=0.5,
+                    help='dropout')
 #parser.add_argument('-seeds', type=list, default=[1941488137,4198936517,983997847,4023022221,4019585660,2108550661,1648766618,629014539,3212139042,2424918363],
 #                    help='seeds to use for splits')
 
@@ -80,6 +82,7 @@ n_templates=args['n_templates']
 n_templates_nodes=args['n_templates_nodes']
 local_alpha=args['local_alpha']=='True'
 k=args['k']
+drop=args['dropout']
 
 if not args['alpha0']==None:
   alpha0=torch.as_tensor([args['alpha0']])
@@ -131,14 +134,14 @@ for seed in seeds:
         model=GCN(n_classes=n_classes,n_features=n_features,hidden_layer=hidden_layer,n_hidden_layers=n_hidden_layer)
 
     elif model_name=='LTFGW_MLP':
-        model=LTFGW_MLP(n_nodes=n_nodes,n_classes=n_classes,n_features=n_features, n_templates=n_templates,n_templates_nodes=n_templates_nodes,hidden_layer=hidden_layer,k=k,alpha0=alpha0,local_alpha=local_alpha)
+        model=LTFGW_MLP(n_nodes=n_nodes,n_classes=n_classes,n_features=n_features, n_templates=n_templates,n_templates_nodes=n_templates_nodes,hidden_layer=hidden_layer,k=k,dropout=drop,alpha0=alpha0,local_alpha=local_alpha)
 
     method=model_name+'_'+graph_type
 
     if alpha0==None:
-      filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0,local_alpha,k,seed)
+      filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0,local_alpha,drop,k,seed)
     else:
-       filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0.item(),local_alpha,k,seed)
+       filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0.item(),local_alpha,drop,k,seed)
     
     optimizer=torch.optim.Adam(model.parameters(), lr=lr,weight_decay=weight_decay)
 
@@ -169,7 +172,7 @@ for seed in seeds:
         test_acc=test(model,dataset_test,test_graph)
         Test_accuracy.append(test_acc)    
     
-    filename_save_test=os.path.join( 'results',method,"test_{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_local_alpha{}.csv".format(dataset_name,first_seed,lr,n_templates,n_templates_nodes,alpha0,k,local_alpha))
+    filename_save_test=os.path.join( 'results',method,"test_{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_local_alpha{}_dropout.csv".format(dataset_name,first_seed,lr,n_templates,n_templates_nodes,alpha0,k,local_alpha,drop))
     np.savetxt(filename_save_test,Test_accuracy)
 
 #print the performances
