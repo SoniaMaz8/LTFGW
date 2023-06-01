@@ -238,18 +238,12 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k,local_alpha,shortest_pat
                   p[0]+=abs(sum_q-sum_p)
               else:
                   qj[0]+=abs(sum_q-sum_p)  
-
-          #cost matrix of the template j
-          if not shortest_path:
-              Cj=torch.exp(-C_T[j])
-          else:
-              Cj=C_T[j]
-          
+ 
           #2 cases wether alpha is local or global
           if local_alpha: 
-             dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, Cj, p, qj,alpha=alpha[i],symmetric=True,max_iter=100) 
+             dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, C_T[j], p, qj,alpha=alpha[i],symmetric=True,max_iter=100) 
           else:
-             dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, Cj, p, qj,alpha=alpha,symmetric=True,max_iter=100) 
+             dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, C_T[j], p, qj,alpha=alpha,symmetric=True,max_iter=100) 
 
           distances[i,j]=dist
     return distances
