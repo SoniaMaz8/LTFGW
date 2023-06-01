@@ -214,8 +214,6 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k,local_alpha,shortest_pat
           p=F.normalize(p,p=1,dim=0)  #normalize p for gromov-wasserstein
 
         C_sub=graph_to_adjacency(n_sub,edges_sub,shortest_path).type(torch.float)
-        if not shortest_path:
-          C_sub=torch.exp(-C_sub)
  
         #iteration for each template
         for j in range(n_T):
