@@ -125,7 +125,7 @@ for seed in seeds:
 
     # init model
     if model_name=='LTFGW_GCN':
-        model=LTFGW_GCN(n_classes=n_classes,n_features=n_features, n_templates=n_templates,n_templates_nodes=n_templates_nodes,hidden_layer=hidden_layer,train_node_weights=train_node_weights)
+        model=LTFGW_GCN(n_nodes=n_nodes,n_classes=n_classes,n_features=n_features, n_templates=n_templates,n_templates_nodes=n_templates_nodes,hidden_layer=hidden_layer,drop=dropout,k=k,local_alpha=local_alpha,shortest_path=shortest_path,train_node_weights=train_node_weights)
 
     elif model_name=='GCN_LTFGW':
         model=GCN_LTFGW(n_classes=n_classes,n_features=n_features, n_templates=6,n_templates_nodes=6, skip_connection=True)
