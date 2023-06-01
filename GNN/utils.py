@@ -67,6 +67,15 @@ def get_dataset(dataset_name):
        test_graph=False
        graph_type='single_graph'
 
+    elif dataset_name=='chameleon':
+       dataset=torch.load('data/chameleon.pt')
+     #  edges=to_undirected(dataset.edge_index)
+     #  dataset=GraphData(x=dataset.x,y=dataset.y,edge_index=edges,num_features=dataset.num_features, num_classes=5)
+       n_classes=5
+       n_features=dataset.num_features
+       test_graph=False
+       graph_type='single_graph'
+
     return dataset,n_classes,n_features, test_graph, graph_type
 
 def get_filenames(dataset_name,method,lr,n_temp,n_nodes,alpha0,local_alpha,k,dropout,shortest_path,seed=None):
