@@ -59,7 +59,7 @@ def get_dataset(dataset_name):
         graph_type='multi_graph'
 
     elif dataset_name=='cornell':
-       dataset=torch.load('data/cornell_undirected.pt')
+       dataset=torch.load('data/cornell.pt')
        edges=to_undirected(dataset.edge_index)
        dataset=GraphData(x=dataset.x,y=dataset.y,edge_index=edges,num_features=dataset.num_features, num_classes=5)
        n_classes=5
@@ -214,6 +214,7 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k,local_alpha,shortest_pat
           p=F.normalize(p,p=1,dim=0)  #normalize p for gromov-wasserstein
 
         C_sub=graph_to_adjacency(n_sub,edges_sub,shortest_path).type(torch.float)
+        print(C_sub)
  
         #iteration for each template
         for j in range(n_T):
