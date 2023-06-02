@@ -4,7 +4,7 @@ from torch_geometric.loader import NeighborLoader, DataLoader
 from GNN.architectures import *
 
 from GNN.utils import *
-from main.trainers import train, test, train_multi_graph, test_multigraph
+from main.trainers import *
 import os
 import torch
 import numpy as np
@@ -22,7 +22,7 @@ parser.add_argument('-model', type=str, default='MLP',
 parser.add_argument('-nepochs', type=int, default=1000,
                     help='number of epochs')
 parser.add_argument('-graph_type', type=str, default='single_graph',
-                    help='number of epochs')
+                    help='type of graph in : single_graph, multi_graph, mini_batch')
 parser.add_argument('-lr', type=float, default=0.05,
                     help='learning rate')
 parser.add_argument('-wd', type=float, default=5e-4,
@@ -49,7 +49,7 @@ parser.add_argument('-random_split', type=list, default=[600,200,200],
                     help='size of train/val/test for multigraph')
 parser.add_argument('-alpha0', type=float, default=None,
                     help='alpha0 for LTFGW')
-parser.add_argument('-local_alpha', type=str, default='True',
+parser.add_argument('-local_alpha', type=str, default='False',
                     help='wether to learn one alpha for each node in LTFGW or one for the whole graph')
 parser.add_argument('-k', type=int, default=1,
                     help='nomber of hops (order of the neighbourhood) in LTFGW')
@@ -67,6 +67,7 @@ args = vars(parser.parse_args())
 dataset_name=args['dataset']  #'Citeseer' or 'Toy_graph_single' or 'Toy_graph_multi' or 'mutag' or 'cornell'
 model_name=args['model']  # 'GCN', 'GCN_LTFGW', 'LTFGW_GCN' or 'MLP'  or 'LTFGW_MLP'
 save=args['save']=='True'  #wether to save the parameters and the model
+graph_type=args['graph_type']
 
 
 #training arguments
@@ -125,7 +126,7 @@ for seed in seeds:
 
     # init model
     if model_name=='LTFGW_GCN':
-        model=LTFGW_GCN(n_classes=n_classes,n_features=n_features, n_templates=n_templates,n_templates_nodes=n_templates_nodes,hidden_layer=hidden_layer,train_node_weights=train_node_weights)
+        model=LTFGW_GCN(n_nodes,n_classes=n_classes,n_features=n_features, n_templates=n_templates,n_templates_nodes=n_templates_nodes,hidden_layer=hidden_layer,drop=drop,train_node_weights=train_node_weights,shortest_path=shortest_path,k=k,local_alpha=local_alpha)
 
     elif model_name=='GCN_LTFGW':
         model=GCN_LTFGW(n_classes=n_classes,n_features=n_features, n_templates=6,n_templates_nodes=6, skip_connection=True)
@@ -164,6 +165,14 @@ for seed in seeds:
         val_loader=DataLoader(val_dataset,batch_size=batch_size,shuffle=False)
         train_multi_graph(model,criterion,optimizer,n_epoch,save,filename_save,filename_best_model,train_loader,val_loader,filename_visus)
 
+    elif graph_type=='mini_batch':
+        percls_trn=int(round(0.6*len(dataset.y)/n_classes))
+        val_lb=int(round(0.2*len(dataset.y)))
+        dataset=random_planetoid_splits(dataset, n_classes, percls_trn=percls_trn, val_lb=val_lb, seed=seed)    
+        loader=NeighborLoader(dataset,num_neighbors=[-1]*2,input_nodes=dataset.train_mask)
+        loader_val=NeighborLoader(dataset,num_neighbors=[-1]*2,input_nodes=dataset.val_mask)
+        train_minibatch(model,dataset,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus,loader,loader_val)
+
     checkpoint = torch.load(filename_best_model)
     model.load_state_dict(checkpoint['model_state_dict'])
 
@@ -173,7 +182,12 @@ for seed in seeds:
 
     elif graph_type=='single_graph':
         test_acc=test(model,dataset_test,test_graph)
-        Test_accuracy.append(test_acc)    
+        Test_accuracy.append(test_acc)   
+
+    elif graph_type=='mini_batch':
+        loader=NeighborLoader(dataset,num_neighbors=-1,input_nodes=dataset.test_mask)
+        test_acc=test_minibatch(model,loader)
+        Test_accuracy.append(test_acc)   
     
     filename_save_test=os.path.join( 'results',method,"test_{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_local_alpha{}_dropout{}_shortest_path{}.csv".format(dataset_name,first_seed,lr,n_templates,n_templates_nodes,alpha0,k,local_alpha,drop,shortest_path))
     np.savetxt(filename_save_test,Test_accuracy)

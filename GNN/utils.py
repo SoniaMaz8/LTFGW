@@ -64,6 +64,13 @@ def get_dataset(dataset_name):
        test_graph=False
        graph_type='single_graph'
 
+    elif dataset_name=='chameleon':
+       dataset=torch.load('data/chameleon.pt')
+       n_classes=5
+       n_features=dataset.num_features
+       test_graph=False
+       graph_type='mini_batch'
+
     return dataset,n_classes,n_features, test_graph, graph_type
 
 def get_filenames(dataset_name,method,lr,n_temp,n_nodes,alpha0,local_alpha,k,dropout,shortest_path,seed=None):

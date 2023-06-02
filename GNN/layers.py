@@ -7,7 +7,7 @@ import pandas as pd
 from torch_geometric.utils import subgraph
 
 
-def template_initialisation(N_nodes,N_templates,N_features):
+def template_initialisation(n_nodes,n_templates,n_features):
     """"
     Function that initialises templates for the LTFGW layer
     Input:
@@ -18,9 +18,9 @@ def template_initialisation(N_nodes,N_templates,N_features):
       Templates: list of the adjancecy matrices of the templates
       Templates_features: list of the features of the nodes of each template
     """
-    Templates=torch.randint(0, 2, size=(N_templates,N_nodes, N_nodes))
-    Templates_features=torch.Tensor(N_templates,N_nodes,N_features)
-    noise=torch.Tensor(N_templates,N_nodes,N_nodes)
+    Templates=torch.randint(0, 2, size=(n_templates,n_nodes, n_nodes))
+    Templates_features=torch.Tensor(n_templates,n_nodes,n_features)
+    noise=torch.Tensor(n_templates,n_nodes,n_nodes)
     torch.nn.init.normal_(Templates_features, mean=0.005, std=0.0067)
     torch.nn.init.normal_(noise,mean=0,std=1e-2)
     Templates=Templates+noise
