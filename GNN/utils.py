@@ -9,6 +9,8 @@ import ot
 import time
 from data.convert_datasets import Citeseer_data, Cornell
 import torch.nn.functional as F
+from scipy.sparse import csr_matrix
+from scipy.sparse.csgraph import shortest_path as function_shortest_path
 
 def get_dataset(dataset_name):
     """ 
@@ -64,7 +66,7 @@ def get_dataset(dataset_name):
 
     return dataset,n_classes,n_features, test_graph, graph_type
 
-def get_filenames(dataset_name,method,lr,n_temp,n_nodes,alpha0,local_alpha,dropout,k,seed=None):
+def get_filenames(dataset_name,method,lr,n_temp,n_nodes,alpha0,local_alpha,k,dropout,shortest_path,seed=None):
 
     if seed is None:
         filename_save=os.path.join( 'results',method,"{}.pkl".format(dataset_name))
@@ -72,9 +74,9 @@ def get_filenames(dataset_name,method,lr,n_temp,n_nodes,alpha0,local_alpha,dropo
         filename_visus=os.path.join( 'results',method,"{}_visus.pkl".format(dataset_name)) 
 
     else:   
-        filename_save=os.path.join( 'results',method,"{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_localalpha{}_dropout{}.pkl".format(dataset_name,seed,lr,n_temp,n_nodes,alpha0,k,local_alpha,dropout))
-        filename_best_model=os.path.join( 'results',method,"{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_localalpha{}_dropout{}_best_valid.pkl".format(dataset_name,seed,lr,n_temp,n_nodes,alpha0,k,local_alpha,dropout))
-        filename_visus=os.path.join( 'results',method,"{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_localalpha{}_dropout{}_visus.pkl".format(dataset_name,seed,lr,n_temp,n_nodes,alpha0,k,local_alpha,dropout))
+        filename_save=os.path.join( 'results',method,"{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_localalpha{}_dropout{}_shortest_path{}.pkl".format(dataset_name,seed,lr,n_temp,n_nodes,alpha0,k,local_alpha,dropout,shortest_path))
+        filename_best_model=os.path.join( 'results',method,"{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_localalpha{}_dropout{}_shortest_path{}_best_valid.pkl".format(dataset_name,seed,lr,n_temp,n_nodes,alpha0,k,local_alpha,dropout,shortest_path))
+        filename_visus=os.path.join( 'results',method,"{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_localalpha{}_dropout{}_shortest_path{}_visus.pkl".format(dataset_name,seed,lr,n_temp,n_nodes,alpha0,k,local_alpha,dropout,shortest_path))
 
     return filename_save, filename_best_model, filename_visus
 
@@ -132,7 +134,7 @@ def adjacency_to_graph(C,F):
     return GraphData(x=F,edge_index=edge_index)
 
 
-def graph_to_adjacency(n,edges): 
+def graph_to_adjacency(n,edges,shortest_path): 
     """"
     adjacency matrix of a graph given its nodes and edges in a torch.geometric format
     n : number of nodes
@@ -142,7 +144,15 @@ def graph_to_adjacency(n,edges):
     """
     C=torch.sparse_coo_tensor(edges, np.ones(len(edges[0])),size=(n, n))
     C=C.to_dense()
-    return C+C.T
+    C=C+C.T
+    if not shortest_path:
+        return C
+    else:
+        graph=csr_matrix(C)
+        dist_matrix=function_shortest_path(graph)
+        return torch.Tensor(dist_matrix)
+
+   
 
 
 def subgraph(x,edge_index,node_idx, order,num_nodes):
@@ -161,7 +171,7 @@ def subgraph(x,edge_index,node_idx, order,num_nodes):
     return x_sub,edges_sub,central_node_index
 
 
-def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k,local_alpha):
+def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k,local_alpha,shortest_path):
     """
     Computes the OT distance between each subgraphs of order k of G and the templates
     x : node features of the graph
@@ -199,7 +209,7 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k,local_alpha):
           p=torch.ones(1)
           p=F.normalize(p,p=1,dim=0)  #normalize p for gromov-wasserstein
 
-        C_sub=graph_to_adjacency(n_sub,edges_sub).type(torch.float)
+        C_sub=graph_to_adjacency(n_sub,edges_sub,shortest_path).type(torch.float)
  
         for j in range(n_T):
           
