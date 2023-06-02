@@ -214,10 +214,105 @@ def test_multigraph(model,dataset):
     Test_acc=torch.tensor(Test_acc)
     return  torch.mean(Test_acc) 
 
+def train_epoch_minibatch(data,criterion,optimizer,model,loader):
+    model.train()
+    total_loss =[]
+    total_train_acc=0
+    for data in loader:
+      
+        optimizer.zero_grad()
+        out,_ = model(data.x,data.edge_index) 
+        pred = out.argmax(dim=1) 
+        train_correct = pred[data.train_mask] == data.y[data.train_mask]   
+        train_acc = int(train_correct.sum()) / int(data.train_mask.sum())  
+        total_train_acc+=train_acc
+        loss = criterion(out[data.train_mask], data.y[data.train_mask])
+        total_loss.append(loss)
+
+    mean_loss = torch.mean(torch.stack(total_loss))
+    mean_loss.backward()
+    optimizer.step()
+      
+
+    return  mean_loss, total_train_acc / len(loader)
+
+def validation_epoch_minibatch(model,loader,criterion):
+    """"
+    test the model
+    test_graph: True if the test is done on the whole dataset, False if it is a subset of the dataset
+    """      
+    model.eval()
+    total_val_acc=0
+    total_loss_val=0
+    for data in loader:
+       out,_= model(data.x,data.edge_index)
+       pred = out.argmax(dim=1)  # Use the class with highest probability.
+       val_correct = pred[data.val_mask] == data.y[data.val_mask]   
+       val_acc = int(val_correct.sum()) / int(data.val_mask.sum())  
+       total_val_acc+=val_acc
+       loss_val=criterion(out[data.val_mask], data.y[data.val_mask])
+       total_loss_val+=loss_val
+
+    return val_acc/len(loader),total_loss_val/len(loader)
+
+
+            
+def train_minibatch(model,dataset,N_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus,loader,loader_val):
+    """"
+    train the entire model on the entire graph
+    """     
+
+    best_val_perf=0  
+
+    if save:
+      #create dataframe to save performances
+      df=pd.DataFrame(columns=['loss','loss_validation','train_accuracy','validation_accuracy','test_accuracy','best_validation_accuracy']) 
+      df.to_pickle(filename_save)
+
+    for epoch in tqdm(range(N_epoch)): 
+            start=time.time()     
+            loss,train_acc =train_epoch_minibatch(dataset,criterion,optimizer,model,loader)
+            val_acc,loss_val =validation_epoch_minibatch(model,loader_val,criterion)
+            end=time.time()
+
+            if save: 
+                df=pd.read_pickle(filename_save)
+                #add performances to the dataframe
+                df.at[epoch,'loss']=loss.item()
+                df.at[epoch,'train_accuracy']=train_acc
+                df.at[epoch,'validation_accuracy']=val_acc
+                df.at[epoch,'loss_validation']=loss_val.item()
+
+                if val_acc>best_val_perf:  
+
+                    #save best model parameters
+                    torch.save({'model_state_dict':model.state_dict(),'optimizer_state_dict': optimizer.state_dict()},filename_best_model)
+                    best_val_perf=val_acc
+                    df.at[epoch,'best_validation_accuracy']=val_acc
+
+                    #save latent embedding for visualisation
+  #                  x_latent=x_latent.detach().numpy()
+  #                  df_x=pd.DataFrame(x_latent)
+  #                  df_x.to_csv(filename_visus)
+
+                df.to_pickle(filename_save) 
+
+            #print performances           
+            print(f'Epoch: {epoch:03d},time:{end-start:.4f}, Loss: {loss:.4f},Loss validation: {loss_val:.4f},Train Accuracy: {train_acc:.4f},Validation Accuracy:{val_acc:.4f}') 
 
 
 
-
-       
-
-    
+def test_minibatch(model,loader):
+    """"
+    test the model
+    test_graph: True if the test is done on the whole dataset, False if it is a subset of the dataset
+    """      
+    model.eval()
+    total_test_acc=0
+    for data in tqdm(loader):
+       out,_= model(data.x,data.edge_index)
+       pred = out.argmax(dim=1)  # Use the class with highest probability.
+       test_correct = pred[data.test_mask] == data.y[data.test_mask]   
+       test_acc = int(test_correct.sum()) / int(data.train_mask.sum())  
+       total_test_acc+=test_acc
+    return test_acc/len(loader)
