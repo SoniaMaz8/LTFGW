@@ -135,7 +135,8 @@ for seed in seeds:
         model=MLP(n_classes=n_classes,n_features=n_features,hidden_layer=hidden_layer)
 
     elif model_name=='GCN':
-        model=GCN(n_classes=n_classes,n_features=n_features,hidden_layer=hidden_layer,n_hidden_layers=n_hidden_layer)
+      #  model=GCN(n_classes=n_classes,n_features=n_features,hidden_layer=hidden_layer,n_hidden_layers=n_hidden_layer,drop=drop)
+        model=GCN_Net(hidden_layer, drop,n_features,n_classes)
 
     elif model_name=='LTFGW_MLP':
         model=LTFGW_MLP(n_nodes=n_nodes,n_classes=n_classes,n_features=n_features, n_templates=n_templates,n_templates_nodes=n_templates_nodes,hidden_layer=hidden_layer,k=k,dropout=drop,alpha0=alpha0,local_alpha=local_alpha,shortest_path=shortest_path)

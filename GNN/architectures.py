@@ -55,7 +55,7 @@ class GCN_LTFGW(nn.Module):
     
 
 class GCN(nn.Module):
-    def __init__(self,n_classes=2,n_features=10,hidden_layer=10, n_hidden_layers=0):
+    def __init__(self,n_classes=2,n_features=10,hidden_layer=10, n_hidden_layers=0,drop=0.5):
         """
         n_classes: number of classes for node classification
         """
@@ -65,9 +65,10 @@ class GCN(nn.Module):
         self.n_features=n_features
         self.hidden_layer=hidden_layer
         self.n_hidden_layers=n_hidden_layers
+        self.dropout=drop
 
         self.first_conv=GCNConv(self.n_features,self.hidden_layer)
-        self.dropout=torch.nn.Dropout(p=0.5)
+        self.dropout=torch.nn.Dropout(p=self.dropout)
 
         # list of GCN layers
         self.list_hidden_layer = nn.ModuleList()
@@ -245,3 +246,20 @@ class LTFGW_MLP(nn.Module):
 
         return  x,x_latent
    
+
+class GCN_Net(torch.nn.Module):
+    def __init__(self, num_hidden, drop,n_features,n_classes):
+        super(GCN_Net, self).__init__()
+        self.conv1 = GCNConv(n_features,num_hidden)
+        self.conv2 = GCNConv(num_hidden, n_classes)
+        self.dropout = drop
+
+    def reset_parameters(self):
+        self.conv1.reset_parameters()
+        self.conv2.reset_parameters()
+
+    def forward(self, x, edge_index):
+        x = F.relu(self.conv1(x, edge_index))
+        x = F.dropout(x, p=self.dropout, training=self.training)
+        x = self.conv2(x, edge_index)
+        return F.log_softmax(x, dim=1),x

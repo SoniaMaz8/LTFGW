@@ -26,13 +26,34 @@ def train_epoch(dataset,model,criterion,optimizer):
     val_correct=pred[dataset.val_mask] == dataset.y[dataset.val_mask]
     val_acc= int(val_correct.sum()) / int(dataset.val_mask.sum())
 
-    loss = criterion(out[dataset.train_mask], dataset.y[dataset.train_mask])
+   # loss = criterion(out[dataset.train_mask], dataset.y[dataset.train_mask])
+    loss=F.nll_loss(out[dataset.train_mask], dataset.y[dataset.train_mask])
  
     loss_val=  criterion(out[dataset.val_mask], dataset.y[dataset.val_mask])
     loss.backward()  
     optimizer.step()  
 
     return loss, train_acc, val_acc, x_latent,loss_val
+
+def val_epoch(dataset,model,criterion):
+    """"
+    train one epoch on the complete graph
+    """
+    model.eval()
+    out,_ = model(dataset.x,dataset.edge_index)
+
+    pred = out.argmax(dim=1)  
+
+    #validation
+    val_correct=pred[dataset.val_mask] == dataset.y[dataset.val_mask]
+    val_acc= int(val_correct.sum()) / int(dataset.val_mask.sum())
+
+   # loss = criterion(out[dataset.train_mask], dataset.y[dataset.train_mask])
+ 
+    loss_val=  criterion(out[dataset.val_mask], dataset.y[dataset.val_mask])
+ 
+
+    return loss_val, val_acc
 
 def train(model,dataset,N_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus):
     """"
@@ -49,6 +70,7 @@ def train(model,dataset,N_epoch,criterion, optimizer,save,filename_save,filename
     for epoch in tqdm(range(N_epoch)): 
             start=time.time()     
             loss,train_acc, val_acc, x_latent,loss_val = train_epoch(dataset,model,criterion,optimizer)
+            loss_val, val_acc=  val_epoch(dataset,model,criterion)
             end=time.time()
 
             if save: 
