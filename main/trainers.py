@@ -26,8 +26,8 @@ def train_epoch(dataset,model,criterion,optimizer):
     val_correct=pred[dataset.val_mask] == dataset.y[dataset.val_mask]
     val_acc= int(val_correct.sum()) / int(dataset.val_mask.sum())
 
-   # loss = criterion(out[dataset.train_mask], dataset.y[dataset.train_mask])
-    loss=F.nll_loss(out[dataset.train_mask], dataset.y[dataset.train_mask])
+    loss = criterion(out[dataset.train_mask], dataset.y[dataset.train_mask])
+   # loss=F.nll_loss(out[dataset.train_mask], dataset.y[dataset.train_mask])
  
     loss_val=  criterion(out[dataset.val_mask], dataset.y[dataset.val_mask])
     loss.backward()  
@@ -44,13 +44,12 @@ def val_epoch(dataset,model,criterion):
 
     pred = out.argmax(dim=1)  
 
-    #validation
     val_correct=pred[dataset.val_mask] == dataset.y[dataset.val_mask]
     val_acc= int(val_correct.sum()) / int(dataset.val_mask.sum())
 
-   # loss = criterion(out[dataset.train_mask], dataset.y[dataset.train_mask])
- 
     loss_val=  criterion(out[dataset.val_mask], dataset.y[dataset.val_mask])
+   # loss_val=F.nll_loss(out[dataset.train_mask], dataset.y[dataset.train_mask])
+ 
  
 
     return loss_val, val_acc
