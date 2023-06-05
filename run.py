@@ -141,6 +141,9 @@ for seed in seeds:
     elif model_name=='LTFGW_MLP':
         model=LTFGW_MLP(n_nodes=n_nodes,n_classes=n_classes,n_features=n_features, n_templates=n_templates,n_templates_nodes=n_templates_nodes,hidden_layer=hidden_layer,k=k,dropout=drop,alpha0=alpha0,local_alpha=local_alpha,shortest_path=shortest_path)
 
+    elif model_name=='ChebNet':
+        model=ChebNet( drop, n_features, n_classes)    
+
     method=model_name+'_'+graph_type
 
     if alpha0==None:
@@ -190,7 +193,7 @@ for seed in seeds:
         test_acc=test_minibatch(model,loader)
         Test_accuracy.append(test_acc)   
     
-    filename_save_test=os.path.join( 'results',method,"test_{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_localalpha{}_drop{}_shortp{}_wd{}_hl{}.csv".format(dataset_name,first_seed,lr,n_templates,n_templates_nodes,alpha0,k,local_alpha,drop,shortest_path,weight_decay,hidden_layer))
+    filename_save_test=os.path.join( 'new_results',method,"test_{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_localalpha{}_drop{}_shortp{}_wd{}_hl{}.csv".format(dataset_name,first_seed,lr,n_templates,n_templates_nodes,alpha0,k,local_alpha,drop,shortest_path,weight_decay,hidden_layer))
     np.savetxt(filename_save_test,Test_accuracy)
 
 #print the performances
@@ -200,3 +203,4 @@ print('mean_accuracy={},std={}'.format(torch.mean(Test_accuracy),torch.std(Test_
 
 
 # %%
+

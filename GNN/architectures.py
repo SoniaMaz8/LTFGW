@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from torch_geometric.nn import GCNConv, Linear
+from torch_geometric.nn import GCNConv, Linear, ChebConv
 from GNN.layers import LTFGW
 import torch.nn.functional as F
 from sklearn.manifold import TSNE
@@ -263,3 +263,24 @@ class GCN_Net(torch.nn.Module):
         x = F.dropout(x, p=self.dropout, training=self.training)
         x = self.conv2(x, edge_index)
         return F.log_softmax(x, dim=1),x
+    
+
+
+class ChebNet(torch.nn.Module):
+    def __init__(self, drop, n_features, n_classes):
+        super(ChebNet, self).__init__()
+        self.conv1 = ChebConv(n_features, 32, K=2)
+        self.conv2 = ChebConv(32, n_classes, K=2)
+        self.dropout = drop
+
+    def reset_parameters(self):
+        self.conv1.reset_parameters()
+        self.conv2.reset_parameters()
+
+    def forward(self, x, edge_index):
+        x=self.conv1(x, edge_index)
+        x = F.relu(x)
+        x_latent=x
+        x = F.dropout(x, p=self.dropout, training=self.training)
+        x = self.conv2(x, edge_index)
+        return F.log_softmax(x, dim=1),  x_latent
