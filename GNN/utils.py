@@ -73,7 +73,7 @@ def get_dataset(dataset_name):
 
     return dataset,n_classes,n_features, test_graph, graph_type
 
-def get_filenames(dataset_name,method,lr,n_temp,n_nodes,alpha0,local_alpha,k,dropout,shortest_path,wd,seed=None):
+def get_filenames(dataset_name,method,lr,n_temp,n_nodes,alpha0,local_alpha,k,dropout,shortest_path,wd,hl,seed=None):
 
     if seed is None:
         filename_save=os.path.join( 'results',method,"{}.pkl".format(dataset_name))
@@ -81,9 +81,9 @@ def get_filenames(dataset_name,method,lr,n_temp,n_nodes,alpha0,local_alpha,k,dro
         filename_visus=os.path.join( 'results',method,"{}_visus.pkl".format(dataset_name)) 
 
     else:   
-        filename_save=os.path.join( 'results',method,"{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_localalpha{}_dropout{}_shortest_path{}_wd{}.pkl".format(dataset_name,seed,lr,n_temp,n_nodes,alpha0,k,local_alpha,dropout,shortest_path,wd))
-        filename_best_model=os.path.join( 'results',method,"{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_localalpha{}_dropout{}_shortest_path{}_wd{}_best_valid.pkl".format(dataset_name,seed,lr,n_temp,n_nodes,alpha0,k,local_alpha,dropout,shortest_path,wd))
-        filename_visus=os.path.join( 'results',method,"{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_localalpha{}_dropout{}_shortest_path{}_wd{}_visus.pkl".format(dataset_name,seed,lr,n_temp,n_nodes,alpha0,k,local_alpha,dropout,shortest_path,wd))
+        filename_save=os.path.join( 'results',method,"{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_localalpha{}_drop{}_shortp{}_wd{}_hl{}.pkl".format(dataset_name,seed,lr,n_temp,n_nodes,alpha0,k,local_alpha,dropout,shortest_path,wd,hl))
+        filename_best_model=os.path.join( 'results',method,"{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_localalpha{}_drop{}_shortp{}_wd{}_hl{}_best_valid.pkl".format(dataset_name,seed,lr,n_temp,n_nodes,alpha0,k,local_alpha,dropout,shortest_path,wd,hl))
+        filename_visus=os.path.join( 'results',method,"{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_localalpha{}_drop{}_shortp{}_wd{}_hl{}_visus.pkl".format(dataset_name,seed,lr,n_temp,n_nodes,alpha0,k,local_alpha,dropout,shortest_path,wd,hl))
 
     return filename_save, filename_best_model, filename_visus
 

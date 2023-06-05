@@ -53,7 +53,7 @@ parser.add_argument('-local_alpha', type=str, default='False',
                     help='wether to learn one alpha for each node in LTFGW or one for the whole graph')
 parser.add_argument('-k', type=int, default=1,
                     help='nomber of hops (order of the neighbourhood) in LTFGW')
-parser.add_argument('-dropout', type=float, default=0.5,
+parser.add_argument('-dropout', type=float, default=0.6,
                     help='dropout')
 parser.add_argument('-shortest_path', type=str, default='False',
                     help='wether to use the shortest path cost matrix in TFGW')
@@ -143,9 +143,9 @@ for seed in seeds:
     method=model_name+'_'+graph_type
 
     if alpha0==None:
-      filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0,local_alpha,k,drop,shortest_path,weight_decay,seed)
+      filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0,local_alpha,k,drop,shortest_path,weight_decay,hidden_layer,seed)
     else:
-       filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0.item(),local_alpha,k,drop,shortest_path,weight_decay,seed)
+       filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0.item(),local_alpha,k,drop,shortest_path,weight_decay,hidden_layer,seed)
     
     optimizer=torch.optim.Adam(model.parameters(), lr=lr,weight_decay=weight_decay)
 
@@ -189,7 +189,7 @@ for seed in seeds:
         test_acc=test_minibatch(model,loader)
         Test_accuracy.append(test_acc)   
     
-    filename_save_test=os.path.join( 'results',method,"test_{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_local_alpha{}_dropout{}_shortest_path{}_wd{}.csv".format(dataset_name,first_seed,lr,n_templates,n_templates_nodes,alpha0,k,local_alpha,drop,shortest_path,weight_decay))
+    filename_save_test=os.path.join( 'results',method,"test_{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_localalpha{}_drop{}_shortp{}_wd{}_hl{}.csv".format(dataset_name,first_seed,lr,n_templates,n_templates_nodes,alpha0,k,local_alpha,drop,shortest_path,weight_decay,hidden_layer))
     np.savetxt(filename_save_test,Test_accuracy)
 
 #print the performances
