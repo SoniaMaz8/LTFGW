@@ -159,7 +159,7 @@ for seed in seeds:
         val_lb=int(round(0.2*len(dataset.y)))
         dataset=random_planetoid_splits(dataset, n_classes, percls_trn=percls_trn, val_lb=val_lb, seed=seed)
         dataset_test=dataset
-        torch.save(dataset,'dataset_seed{}'.format(seed))
+       # torch.save(dataset,'dataset_seed{}'.format(seed))
         train(model,dataset,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus)
 
     elif graph_type=='multi_graph':
@@ -193,7 +193,7 @@ for seed in seeds:
         test_acc=test_minibatch(model,loader)
         Test_accuracy.append(test_acc)   
     
-    filename_save_test=os.path.join( 'new_results',method,"test_{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_localalpha{}_drop{}_shortp{}_wd{}_hl{}.csv".format(dataset_name,first_seed,lr,n_templates,n_templates_nodes,alpha0,k,local_alpha,drop,shortest_path,weight_decay,hidden_layer))
+    filename_save_test=os.path.join( 'results',method,"test_{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_localalpha{}_drop{}_shortp{}_wd{}_hl{}.csv".format(dataset_name,first_seed,lr,n_templates,n_templates_nodes,alpha0,k,local_alpha,drop,shortest_path,weight_decay,hidden_layer))
     np.savetxt(filename_save_test,Test_accuracy)
 
 #print the performances
