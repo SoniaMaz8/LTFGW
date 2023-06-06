@@ -65,11 +65,11 @@ def get_dataset(dataset_name):
        graph_type='single_graph'
 
     elif dataset_name=='chameleon':
-       dataset=torch.load('data/chameleon.pt')
+       dataset=torch.load('data/chameleon_undirected.pt')
        n_classes=5
        n_features=dataset.num_features
        test_graph=False
-       graph_type='mini_batch'
+       graph_type='single_graph'
 
     return dataset,n_classes,n_features, test_graph, graph_type
 

@@ -9,7 +9,7 @@ from torch.nn.parameter import Parameter
 
 
 class GCN_LTFGW(nn.Module):
-    def __init__(self,args,n_classes,n_features):
+    def __init__(self,args,n_classes,n_features,n_nodes):
         """
         n_classes: number of classes for node classification
         """
@@ -96,7 +96,7 @@ class GCN(nn.Module):
 
 
 class LTFGW_GCN(nn.Module):
-    def __init__(self,args,n_classes,n_features):
+    def __init__(self,args,n_classes,n_features,n_nodes):
         """
         n_classes: number of classes for node classification
         """
@@ -114,7 +114,7 @@ class LTFGW_GCN(nn.Module):
         self.shortest_path=args['shortest_path']==True
         self.local_alpha=args['local_alpha']==True
         self.k=args['k']
-        self.n_nodes=args['n_nodes']
+        self.n_nodes=n_nodes
 
         self.dropout=torch.nn.Dropout(self.drop)
         
@@ -189,7 +189,7 @@ class MLP(nn.Module):
     
 
 class LTFGW_MLP(nn.Module):
-    def __init__(self,args,n_classes,n_features):
+    def __init__(self,args,n_classes,n_features,n_nodes):
         """
         n_classes: number of classes for node classification
         n_features: number of features for each node
@@ -217,7 +217,7 @@ class LTFGW_MLP(nn.Module):
         self.shortest_path=args['shortest_path']==True
         self.local_alpha=args['local_alpha']==True
         self.k=args['k']
-        self.n_nodes=args['n_nodes']    
+        self.n_nodes=n_nodes  
 
         self.dropout2=torch.nn.Dropout(self.drop)
         
