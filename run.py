@@ -57,6 +57,8 @@ parser.add_argument('-dropout', type=float, default=0.6,
                     help='dropout')
 parser.add_argument('-shortest_path', type=str, default='False',
                     help='wether to use the shortest path cost matrix in TFGW')
+parser.add_argument('-skip_connection', type=str, default='True',
+                    help='wether to skip connection is the architectures')
 #parser.add_argument('-seeds', type=list, default=[1941488137,4198936517,983997847,4023022221,4019585660,2108550661,1648766618,629014539,3212139042,2424918363],
 #                    help='seeds to use for splits')
 
@@ -68,6 +70,7 @@ dataset_name=args['dataset']  #'Citeseer' or 'Toy_graph_single' or 'Toy_graph_mu
 model_name=args['model']  # 'GCN', 'GCN_LTFGW', 'LTFGW_GCN' or 'MLP'  or 'LTFGW_MLP'
 save=args['save']=='True'  #wether to save the parameters and the model
 graph_type=args['graph_type']
+
 
 
 #training arguments
@@ -126,23 +129,23 @@ for seed in seeds:
 
     # init model
     if model_name=='LTFGW_GCN':
-        model=LTFGW_GCN(n_nodes,n_classes=n_classes,n_features=n_features, n_templates=n_templates,n_templates_nodes=n_templates_nodes,hidden_layer=hidden_layer,drop=drop,train_node_weights=train_node_weights,shortest_path=shortest_path,k=k,local_alpha=local_alpha)
+        model=LTFGW_GCN(args,n_classes,n_features)
 
     elif model_name=='GCN_LTFGW':
-        model=GCN_LTFGW(n_classes=n_classes,n_features=n_features, n_templates=6,n_templates_nodes=6, skip_connection=True)
+        model=GCN_LTFGW(args,n_classes,n_features)
   
     elif model_name=='MLP':
-        model=MLP(n_classes=n_classes,n_features=n_features,hidden_layer=hidden_layer)
+        model=MLP(args,n_classes,n_features)
 
     elif model_name=='GCN':
-        model=GCN(n_classes=n_classes,n_features=n_features,hidden_layer=hidden_layer,n_hidden_layers=n_hidden_layer,drop=drop)
+        model=GCN(args,n_classes,n_features)
       #  model=GCN_Net(hidden_layer, drop,n_features,n_classes)
 
     elif model_name=='LTFGW_MLP':
-        model=LTFGW_MLP(n_nodes=n_nodes,n_classes=n_classes,n_features=n_features, n_templates=n_templates,n_templates_nodes=n_templates_nodes,hidden_layer=hidden_layer,k=k,dropout=drop,alpha0=alpha0,local_alpha=local_alpha,shortest_path=shortest_path)
+        model=LTFGW_MLP(args,n_classes,n_features)
 
     elif model_name=='ChebNet':
-        model=ChebNet( drop, n_features, n_classes)    
+        model=ChebNet( args,n_classes,n_features)    
 
     method=model_name+'_'+graph_type
 
@@ -173,8 +176,8 @@ for seed in seeds:
         percls_trn=int(round(0.6*len(dataset.y)/n_classes))
         val_lb=int(round(0.2*len(dataset.y)))
         dataset=random_planetoid_splits(dataset, n_classes, percls_trn=percls_trn, val_lb=val_lb, seed=seed)    
-        loader=NeighborLoader(dataset,num_neighbors=[-1]*2,input_nodes=dataset.train_mask)
-        loader_val=NeighborLoader(dataset,num_neighbors=[-1]*2,input_nodes=dataset.val_mask)
+        loader=NeighborLoader(dataset,num_neighbors=[-1],input_nodes=dataset.train_mask)
+        loader_val=NeighborLoader(dataset,num_neighbors=[-1],input_nodes=dataset.val_mask)
         train_minibatch(model,dataset,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus,loader,loader_val)
 
     checkpoint = torch.load(filename_best_model)

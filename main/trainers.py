@@ -240,6 +240,10 @@ def train_epoch_minibatch(data,criterion,optimizer,model,loader):
     total_loss =[]
     total_train_acc=0
     for data in loader:
+        print(data.x)
+        print(data.edge_index)
+        print(data.batch_size)
+        print(data.n_id)
       
         optimizer.zero_grad()
         out,_ = model(data.x,data.edge_index) 
@@ -278,10 +282,7 @@ def validation_epoch_minibatch(model,loader,criterion):
 
 
             
-def train_minibatch(model,dataset,N_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus,loader,loader_val):
-    """"
-    train the entire model on the entire graph
-    """     
+def train_minibatch(model,dataset,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus,loader,loader_val):
 
     best_val_perf=0  
 
@@ -290,7 +291,7 @@ def train_minibatch(model,dataset,N_epoch,criterion, optimizer,save,filename_sav
       df=pd.DataFrame(columns=['loss','loss_validation','train_accuracy','validation_accuracy','test_accuracy','best_validation_accuracy']) 
       df.to_pickle(filename_save)
 
-    for epoch in tqdm(range(N_epoch)): 
+    for epoch in tqdm(range(n_epoch)): 
             start=time.time()     
             loss,train_acc =train_epoch_minibatch(dataset,criterion,optimizer,model,loader)
             val_acc,loss_val =validation_epoch_minibatch(model,loader_val,criterion)
@@ -310,11 +311,6 @@ def train_minibatch(model,dataset,N_epoch,criterion, optimizer,save,filename_sav
                     torch.save({'model_state_dict':model.state_dict(),'optimizer_state_dict': optimizer.state_dict()},filename_best_model)
                     best_val_perf=val_acc
                     df.at[epoch,'best_validation_accuracy']=val_acc
-
-                    #save latent embedding for visualisation
-  #                  x_latent=x_latent.detach().numpy()
-  #                  df_x=pd.DataFrame(x_latent)
-  #                  df_x.to_csv(filename_visus)
 
                 df.to_pickle(filename_save) 
 

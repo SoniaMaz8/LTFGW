@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from torch_geometric.nn import GCNConv, Linear, ChebConv
+from torch_geometric.nn import GCNConv, Linear, ChebConv, GATConv
 from GNN.layers import LTFGW
 import torch.nn.functional as F
 from sklearn.manifold import TSNE
@@ -9,7 +9,7 @@ from torch.nn.parameter import Parameter
 
 
 class GCN_LTFGW(nn.Module):
-    def __init__(self,n_classes=2,n_features=10, n_templates=10,n_templates_nodes=10,hidden_layer=20,alpha0=None, skip_connection=False):
+    def __init__(self,args,n_classes,n_features):
         """
         n_classes: number of classes for node classification
         """
@@ -17,11 +17,11 @@ class GCN_LTFGW(nn.Module):
     
         self.n_classes=n_classes
         self.n_features=n_features
-        self.n_templates=n_templates
-        self.n_templates_nodes=n_templates_nodes
-        self.hidden_layer=hidden_layer
-        self.alpha0=alpha0
-        self.skip_connection=skip_connection
+        self.n_templates=args['n_templates']
+        self.n_templates_nodes=args['n_template_nodes']
+        self.hidden_layer=args['hidden_layer']
+        self.alpha0=args['alpha_0']
+        self.skip_connection=args['skip_connection']=='True'
         
         self.conv1=GCNConv(self.n_features, self.hidden_layer)
         self.conv2=GCNConv(self.n_features, self.hidden_layer) 
@@ -55,7 +55,7 @@ class GCN_LTFGW(nn.Module):
     
 
 class GCN(nn.Module):
-    def __init__(self,n_classes=2,n_features=10,hidden_layer=10, n_hidden_layers=0,drop=0.5):
+    def __init__(self,args,n_classes,n_features):
         """
         n_classes: number of classes for node classification
         """
@@ -63,9 +63,9 @@ class GCN(nn.Module):
     
         self.n_classes=n_classes
         self.n_features=n_features
-        self.hidden_layer=hidden_layer
-        self.n_hidden_layers=n_hidden_layers
-        self.dropout=drop
+        self.hidden_layer=args['hidden_layer']
+        self.n_hidden_layers=args['n_hidden_layer']
+        self.dropout=args['dropout']
 
         self.first_conv=GCNConv(self.n_features,self.hidden_layer)
         self.dropout=torch.nn.Dropout(p=self.dropout)
@@ -96,7 +96,7 @@ class GCN(nn.Module):
 
 
 class LTFGW_GCN(nn.Module):
-    def __init__(self,n_nodes,n_classes=2,n_features=10, n_templates=10,n_templates_nodes=10,hidden_layer=10,drop=0.5,k=1,local_alpha=False,alpha0=None,train_node_weights=True, skip_connection=True,shortest_path=False):
+    def __init__(self,args,n_classes,n_features):
         """
         n_classes: number of classes for node classification
         """
@@ -104,17 +104,17 @@ class LTFGW_GCN(nn.Module):
     
         self.n_classes=n_classes
         self.n_features=n_features
-        self.n_templates=n_templates
-        self.n_templates_nodes=n_templates_nodes
-        self.hidden_layer=hidden_layer
-        self.alpha0=alpha0
-        self.train_node_weights=train_node_weights
-        self.skip_connection=skip_connection
-        self.drop=drop
-        self.shortest_path=shortest_path
-        self.local_alpha=local_alpha
-        self.k=k
-        self.n_nodes=n_nodes
+        self.n_templates=args['n_templates']
+        self.n_templates_nodes=args['n_templates_nodes']
+        self.hidden_layer=args['hidden_layer']
+        self.alpha0=args['alpha0']
+        self.train_node_weights=args['train_node_weights']=='True'
+        self.skip_connection=args['skip_connection']=='True'
+        self.drop=args['dropout']
+        self.shortest_path=args['shortest_path']==True
+        self.local_alpha=args['local_alpha']==True
+        self.k=args['k']
+        self.n_nodes=args['n_nodes']
 
         self.dropout=torch.nn.Dropout(self.drop)
         
@@ -145,21 +145,21 @@ class LTFGW_GCN(nn.Module):
     
 
 class MLP(nn.Module):
-    def __init__(self,n_classes=2,n_features=10,hidden_layer=20, n_hidden_layers=0):
+    def __init__(self,args,n_classes,n_features):
         """
         n_classes: number of classes for node classification
         """
         super().__init__()
 
-    
         self.n_classes=n_classes
         self.n_features=n_features
-        self.hidden_layer=hidden_layer
-        self.n_hidden_layers=n_hidden_layers
+        self.n_hidden_layers=args['n_hidden_layer']
+        self.hidden_layer=args['hidden_layer']
+        self.drop=args['dropout']
 
         self.first_linear=Linear(self.n_features, self.hidden_layer)
-        self.dropout1=torch.nn.Dropout(0.5)
-        self.dropout2=torch.nn.Dropout(0.5)
+        self.dropout1=torch.nn.Dropout(self.drop)
+        self.dropout2=torch.nn.Dropout(self.drop)
         
         # list of Linear layers
         self.list_hidden_layer = nn.ModuleList()
@@ -189,7 +189,7 @@ class MLP(nn.Module):
     
 
 class LTFGW_MLP(nn.Module):
-    def __init__(self,n_nodes,n_classes=2,n_features=10, n_templates=10,n_templates_nodes=10,hidden_layer=10,k=1,dropout=0.5,alpha0=None,train_node_weights=True, skip_connection=True,local_alpha=True,shortest_path=False):
+    def __init__(self,args,n_classes,n_features):
         """
         n_classes: number of classes for node classification
         n_features: number of features for each node
@@ -202,28 +202,29 @@ class LTFGW_MLP(nn.Module):
         local alpha: wether to learn one tradeoff parameter for the FGW for each node or for the whole graph 
 
         """
+
         super().__init__()
-    
+
         self.n_classes=n_classes
         self.n_features=n_features
-        self.n_templates=n_templates
-        self.n_templates_nodes=n_templates_nodes
-        self.hidden_layer=hidden_layer
-        self.alpha0=alpha0
-        self.train_node_weights=train_node_weights
-        self.skip_connection=skip_connection
-        self.n_nodes=n_nodes
-        self.local_alpha=local_alpha
-        self.k=k
-        self.drop=dropout
-        self.shortest_path=shortest_path
+        self.n_templates=args['n_templates']
+        self.n_templates_nodes=args['n_templates_nodes']
+        self.hidden_layer=args['hidden_layer']
+        self.alpha0=args['alpha0']
+        self.train_node_weights=args['train_node_weights']=='True'
+        self.skip_connection=args['skip_connection']=='True'
+        self.drop=args['dropout']
+        self.shortest_path=args['shortest_path']==True
+        self.local_alpha=args['local_alpha']==True
+        self.k=args['k']
+        self.n_nodes=args['n_nodes']    
 
         self.dropout2=torch.nn.Dropout(self.drop)
         
         self.Linear1=Linear(self.n_features, self.hidden_layer)
         self.Linear2=Linear(self.hidden_layer+self.n_templates, self.n_classes)
         self.Linear3=Linear(self.n_templates, self.n_classes)
-        self.LTFGW=LTFGW(self.n_nodes,self.n_templates,self.n_templates_nodes, self.hidden_layer,k,self.alpha0,self.train_node_weights,self.local_alpha,self.shortest_path)
+        self.LTFGW=LTFGW(self.n_nodes,self.n_templates,self.n_templates_nodes, self.hidden_layer,self.k,self.alpha0,self.train_node_weights,self.local_alpha,self.shortest_path)
         self.batch_norm=torch.nn.BatchNorm1d(self.hidden_layer+self.n_templates)
         
 
@@ -246,32 +247,20 @@ class LTFGW_MLP(nn.Module):
 
         return  x,x_latent
    
-
-class GCN_Net(torch.nn.Module):
-    def __init__(self, num_hidden, drop,n_features,n_classes):
-        super(GCN_Net, self).__init__()
-        self.conv1 = GCNConv(n_features,num_hidden)
-        self.conv2 = GCNConv(num_hidden, n_classes)
-        self.dropout = drop
-
-    def reset_parameters(self):
-        self.conv1.reset_parameters()
-        self.conv2.reset_parameters()
-
-    def forward(self, x, edge_index):
-        x = F.relu(self.conv1(x, edge_index))
-        x = F.dropout(x, p=self.dropout, training=self.training)
-        x = self.conv2(x, edge_index)
-        return F.log_softmax(x, dim=1),x
     
 
 
 class ChebNet(torch.nn.Module):
-    def __init__(self, drop, n_features, n_classes):
+    def __init__(self, args,n_classes,n_features):
         super(ChebNet, self).__init__()
-        self.conv1 = ChebConv(n_features, 32, K=2)
-        self.conv2 = ChebConv(32, n_classes, K=2)
-        self.dropout = drop
+
+        self.n_features=n_features
+        self.n_classes=n_classes
+        self.drop=args['dropout']
+
+        self.conv1 = ChebConv(self.n_features, 32, K=2)
+        self.conv2 = ChebConv(32, self.n_classes, K=2)
+        self.dropout = self.drop
 
     def reset_parameters(self):
         self.conv1.reset_parameters()
@@ -284,3 +273,32 @@ class ChebNet(torch.nn.Module):
         x = F.dropout(x, p=self.dropout, training=self.training)
         x = self.conv2(x, edge_index)
         return F.log_softmax(x, dim=1),  x_latent
+    
+
+class GAT(torch.nn.Module):
+    def __init__(self, dataset, args):
+        super(GAT, self).__init__()
+        self.conv1 = GATConv(
+            dataset.num_features,
+            args.hidden,
+            heads=args.heads,
+            dropout=args.dropout)
+        self.conv2 = GATConv(
+            args.hidden * args.heads,
+            dataset.num_classes,
+            heads=args.output_heads,
+            concat=False,
+            dropout=args.dropout)
+        self.dropout = args.dropout
+
+    def reset_parameters(self):
+        self.conv1.reset_parameters()
+        self.conv2.reset_parameters()
+
+    def forward(self, data):
+        x, edge_index = data.x, data.edge_index
+        x = F.dropout(x, p=self.dropout, training=self.training)
+        x = F.elu(self.conv1(x, edge_index))
+        x = F.dropout(x, p=self.dropout, training=self.training)
+        x = self.conv2(x, edge_index)
+        return F.log_softmax(x, dim=1)
