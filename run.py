@@ -1,5 +1,6 @@
 #%%
 
+import torch_sparse
 from torch_geometric.loader import NeighborLoader, DataLoader
 from GNN.architectures import *
 
