@@ -151,9 +151,9 @@ for seed in seeds:
     method=model_name+'_'+graph_type
 
     if alpha0==None:
-      filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0,local_alpha,k,drop,shortest_path,weight_decay,hidden_layer,seed)
+      filename_save, filename_best_model, filename_visus,filename_current_model = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0,local_alpha,k,drop,shortest_path,weight_decay,hidden_layer,seed)
     else:
-       filename_save, filename_best_model, filename_visus = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0.item(),local_alpha,k,drop,shortest_path,weight_decay,hidden_layer,seed)
+       filename_save, filename_best_model, filename_visus,filename_current_model = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0.item(),local_alpha,k,drop,shortest_path,weight_decay,hidden_layer,seed)
     
     optimizer=torch.optim.Adam(model.parameters(), lr=lr,weight_decay=weight_decay)
 
@@ -182,7 +182,7 @@ for seed in seeds:
        # loader_val=loader
         loader=NeighborLoader(dataset,num_neighbors=[-1],input_nodes=dataset.train_mask,batch_size=100)
         loader_val=NeighborLoader(dataset,num_neighbors=[-1],input_nodes=dataset.val_mask,batch_size=100)
-        train_minibatch(model,dataset,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus,loader,loader_val)
+        train_minibatch(model,dataset,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus,loader,loader_val,filename_current_model)
 
     checkpoint = torch.load(filename_best_model)
     model.load_state_dict(checkpoint['model_state_dict'])

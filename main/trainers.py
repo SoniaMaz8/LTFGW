@@ -52,7 +52,7 @@ def val_epoch(dataset,model,criterion):
 
     return loss_val, val_acc
 
-def train(model,dataset,N_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus):
+def train(model,dataset,N_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus,filename_current_model):
     """"
     train the entire model on the entire graph
     """     
@@ -91,6 +91,8 @@ def train(model,dataset,N_epoch,criterion, optimizer,save,filename_save,filename
                     df_x.to_csv(filename_visus)
 
                 df.to_pickle(filename_save) 
+                torch.save({'model_state_dict':model.state_dict(),'optimizer_state_dict': optimizer.state_dict()},filename_current_model)
+
 
             #print performances           
             print(f'Epoch: {epoch:03d},time:{end-start:.4f}, Loss: {loss:.4f},Loss validation: {loss_val:.4f},Train Accuracy: {train_acc:.4f},Validation Accuracy:{val_acc:.4f}')  
@@ -318,6 +320,7 @@ def train_minibatch(model,dataset,n_epoch,criterion, optimizer,save,filename_sav
                     df.at[epoch,'best_validation_accuracy']=val_acc
 
                 df.to_pickle(filename_save) 
+                torch.save({'model_state_dict':model.state_dict(),'optimizer_state_dict': optimizer.state_dict()},filename_best_model)
 
             #print performances           
             print(f'Epoch: {epoch:03d},time:{end-start:.4f}, Loss: {loss:.4f},Loss validation: {loss_val:.4f},Train Accuracy: {train_acc:.4f},Validation Accuracy:{val_acc:.4f}') 
