@@ -238,9 +238,7 @@ def train_epoch_minibatch(data,criterion,optimizer,model,loader):
     total_loss =[]
     total_train_acc=0
     optimizer.zero_grad()
-    print(len(loader))
     for data in loader:
-        print(len(data.x))
         out,_ = model(data.x,data.edge_index) 
         pred = out.argmax(dim=1) 
         train_correct = pred[data.train_mask] == data.y[data.train_mask]   
