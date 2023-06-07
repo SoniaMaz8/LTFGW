@@ -1,7 +1,7 @@
 #%%
 
 import torch_sparse
-from torch_geometric.loader import NeighborLoader, DataLoader
+from torch_geometric.loader import NeighborLoader, DataLoader, ClusterData, ClusterLoader, DataLoader
 from GNN.architectures import *
 
 from GNN.utils import *
@@ -177,8 +177,11 @@ for seed in seeds:
         percls_trn=int(round(0.6*len(dataset.y)/n_classes))
         val_lb=int(round(0.2*len(dataset.y)))
         dataset=random_planetoid_splits(dataset, n_classes, percls_trn=percls_trn, val_lb=val_lb, seed=seed)    
-        loader=NeighborLoader(dataset,num_neighbors=[-1],input_nodes=dataset.train_mask,batch_size=5)
-        loader_val=NeighborLoader(dataset,num_neighbors=[-1],input_nodes=dataset.val_mask,batch_size=5)
+       # clusterdata=ClusterData(dataset,num_parts=5)
+       # loader=ClusterLoader(clusterdata)
+       # loader_val=loader
+        loader=NeighborLoader(dataset,num_neighbors=[-1],input_nodes=dataset.train_mask,batch_size=100)
+        loader_val=NeighborLoader(dataset,num_neighbors=[-1],input_nodes=dataset.val_mask,batch_size=100)
         train_minibatch(model,dataset,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus,loader,loader_val)
 
     checkpoint = torch.load(filename_best_model)
@@ -193,8 +196,7 @@ for seed in seeds:
         Test_accuracy.append(test_acc)   
 
     elif graph_type=='mini_batch':
-        loader=NeighborLoader(dataset,num_neighbors=-1,input_nodes=dataset.test_mask)
-        test_acc=test_minibatch(model,loader)
+        test_acc=test(model,dataset_test,test_graph)
         Test_accuracy.append(test_acc)   
     
     filename_save_test=os.path.join( 'results',method,"test_{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_localalpha{}_drop{}_shortp{}_wd{}_hl{}.csv".format(dataset_name,first_seed,lr,n_templates,n_templates_nodes,alpha0,k,local_alpha,drop,shortest_path,weight_decay,hidden_layer))

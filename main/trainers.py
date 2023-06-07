@@ -6,7 +6,7 @@ import pandas as pd
 from sklearn.manifold import TSNE
 from torch_geometric.loader import DataLoader
 import torch.nn.functional as F
-
+from torch_geometric.loader import NeighborLoader, DataLoader, ClusterData, ClusterLoader
 
 def train_epoch(dataset,model,criterion,optimizer):
     """"
@@ -250,7 +250,6 @@ def train_epoch_minibatch(data,criterion,optimizer,model,loader):
     mean_loss = torch.mean(torch.stack(total_loss))
     mean_loss.backward()
     optimizer.step()
-      
 
     return  mean_loss, total_train_acc / len(loader)
 
@@ -283,11 +282,24 @@ def train_minibatch(model,dataset,n_epoch,criterion, optimizer,save,filename_sav
       #create dataframe to save performances
       df=pd.DataFrame(columns=['loss','loss_validation','train_accuracy','validation_accuracy','test_accuracy','best_validation_accuracy']) 
       df.to_pickle(filename_save)
+    
+    train_nodes=torch.where(dataset.train_mask==True)
+    val_nodes=torch.where(dataset.val_mask==True)
+    nodes=torch.hstack([train_nodes[0],val_nodes[0]])
+    n_nodes=len(nodes)
+    
 
     for epoch in tqdm(range(n_epoch)): 
+            
+            #choose random indices to train on
+            indices=torch.randperm(n_nodes)[:100]
+            
+            loader=NeighborLoader(dataset,num_neighbors=[-1],input_nodes=indices,batch_size=100)
+        
+ 
             start=time.time()     
             loss,train_acc =train_epoch_minibatch(dataset,criterion,optimizer,model,loader)
-            val_acc,loss_val =validation_epoch_minibatch(model,loader_val,criterion)
+            val_acc,loss_val =validation_epoch_minibatch(model,loader,criterion)
             end=time.time()
 
             if save: 
