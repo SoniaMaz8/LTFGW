@@ -49,8 +49,6 @@ def val_epoch(dataset,model,criterion):
 
     loss_val=  criterion(out[dataset.val_mask], dataset.y[dataset.val_mask])
    # loss_val=F.nll_loss(out[dataset.train_mask], dataset.y[dataset.train_mask])
- 
- 
 
     return loss_val, val_acc
 
@@ -239,9 +237,10 @@ def train_epoch_minibatch(data,criterion,optimizer,model,loader):
     model.train()
     total_loss =[]
     total_train_acc=0
-    for i,data in enumerate(loader):
-        print(i)
-        optimizer.zero_grad()
+    optimizer.zero_grad()
+    print(len(loader))
+    for data in loader:
+        print(len(data.x))
         out,_ = model(data.x,data.edge_index) 
         pred = out.argmax(dim=1) 
         train_correct = pred[data.train_mask] == data.y[data.train_mask]   
