@@ -164,7 +164,7 @@ for seed in seeds:
         dataset=random_planetoid_splits(dataset, n_classes, percls_trn=percls_trn, val_lb=val_lb, seed=seed)
         dataset_test=dataset
        # torch.save(dataset,'dataset_seed{}'.format(seed))
-        train(model,dataset,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus)
+        train(model,dataset,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus,filename_current_model)
 
     elif graph_type=='multi_graph':
         generator = torch.Generator().manual_seed(seed.item())
