@@ -176,8 +176,8 @@ for seed in seeds:
         percls_trn=int(round(0.6*len(dataset.y)/n_classes))
         val_lb=int(round(0.2*len(dataset.y)))
         dataset=random_planetoid_splits(dataset, n_classes, percls_trn=percls_trn, val_lb=val_lb, seed=seed)    
-        loader=NeighborLoader(dataset,num_neighbors=[-1],input_nodes=dataset.train_mask,batch_size=2)
-        loader_val=NeighborLoader(dataset,num_neighbors=[-1],input_nodes=dataset.val_mask,batch_size=2)
+        loader=NeighborLoader(dataset,num_neighbors=[-1],input_nodes=dataset.train_mask,batch_size=5)
+        loader_val=NeighborLoader(dataset,num_neighbors=[-1],input_nodes=dataset.val_mask,batch_size=5)
         train_minibatch(model,dataset,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus,loader,loader_val)
 
     checkpoint = torch.load(filename_best_model)
