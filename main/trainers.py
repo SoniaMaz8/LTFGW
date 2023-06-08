@@ -276,7 +276,7 @@ def validation_epoch_minibatch(model,loader,criterion):
 
 
             
-def train_minibatch(model,dataset,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus,loader,loader_val):
+def train_minibatch(model,dataset,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus,loader,loader_val,filename_current_model):
 
     best_val_perf=0  
 
@@ -296,7 +296,7 @@ def train_minibatch(model,dataset,n_epoch,criterion, optimizer,save,filename_sav
             #choose random indices to train on
             indices=torch.randperm(n_nodes)[:100]
             
-            loader=NeighborLoader(dataset,num_neighbors=[-1],input_nodes=indices,batch_size=100)
+            loader=NeighborLoader(dataset,num_neighbors=[-1],input_nodes=indices,batch_size=200)
         
  
             start=time.time()     
@@ -320,7 +320,7 @@ def train_minibatch(model,dataset,n_epoch,criterion, optimizer,save,filename_sav
                     df.at[epoch,'best_validation_accuracy']=val_acc
 
                 df.to_pickle(filename_save) 
-                torch.save({'model_state_dict':model.state_dict(),'optimizer_state_dict': optimizer.state_dict()},filename_best_model)
+                torch.save({'model_state_dict':model.state_dict(),'optimizer_state_dict': optimizer.state_dict()},filename_current_model)
 
             #print performances           
             print(f'Epoch: {epoch:03d},time:{end-start:.4f}, Loss: {loss:.4f},Loss validation: {loss_val:.4f},Train Accuracy: {train_acc:.4f},Validation Accuracy:{val_acc:.4f}') 

@@ -69,7 +69,7 @@ def get_dataset(dataset_name):
        n_classes=5
        n_features=dataset.num_features
        test_graph=False
-       graph_type='single_graph'
+       graph_type='mini_batch'
 
     return dataset,n_classes,n_features, test_graph, graph_type
 
