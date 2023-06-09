@@ -341,3 +341,22 @@ def test_minibatch(model,loader):
        test_acc = int(test_correct.sum()) / int(data.train_mask.sum())  
        total_test_acc+=test_acc
     return test_acc/len(loader)
+
+def test_minibatch(model,loader,criterion):
+    """"
+    test the model
+    test_graph: True if the test is done on the whole dataset, False if it is a subset of the dataset
+    """      
+    model.eval()
+    total_test_acc=0
+    total_loss_test=0
+    for data in loader:
+       out,_= model(data.x,data.edge_index)
+       pred = out.argmax(dim=1)  # Use the class with highest probability.
+       test_correct = pred[data.test_mask] == data.y[data.test_mask]   
+       test_acc = int(test_correct.sum()) / int(data.test_mask.sum())  
+       total_test_acc+=test_acc
+       loss_test=criterion(out[data.test_mask], data.y[data.test_mask])
+       total_loss_test+=loss_test
+
+    return test_acc/len(loader),total_loss_test/len(loader)
