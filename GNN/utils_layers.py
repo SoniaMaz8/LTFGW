@@ -29,7 +29,8 @@ def graph_to_adjacency(n,edges,shortest_path,device):
 
     Returns: sparse adjacency matrix C
     """
-    C=torch.sparse_coo_tensor(edges, np.ones(len(edges[0])),size=(n, n)).to(device)
+    ones=np.ones(len(edges[0])).to(device)
+    C=torch.sparse_coo_tensor(edges, ones,size=(n, n))
     C=C.to_dense()
     C=C+C.T
     if not shortest_path:
