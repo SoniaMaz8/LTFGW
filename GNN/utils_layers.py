@@ -21,7 +21,7 @@ def adjacency_to_graph(C,F):
     return GraphData(x=F,edge_index=edge_index)
 
 
-def graph_to_adjacency(n,edges,shortest_path): 
+def graph_to_adjacency(n,edges,shortest_path,device): 
     """"
     adjacency matrix of a graph given its nodes and edges in a torch.geometric format
     n : number of nodes
@@ -29,7 +29,7 @@ def graph_to_adjacency(n,edges,shortest_path):
 
     Returns: sparse adjacency matrix C
     """
-    C=torch.sparse_coo_tensor(edges, np.ones(len(edges[0])),size=(n, n))
+    C=torch.sparse_coo_tensor(edges, np.ones(len(edges[0])),size=(n, n)).to(device)
     C=C.to_dense()
     C=C+C.T
     if not shortest_path:
@@ -37,7 +37,7 @@ def graph_to_adjacency(n,edges,shortest_path):
     else:
         graph=csr_matrix(C)
         dist_matrix=function_shortest_path(graph)
-        return torch.Tensor(dist_matrix)
+        return torch.Tensor(dist_matrix).to(device)
     
 def subgraph(x,edge_index,node_idx, order,num_nodes):
     """
@@ -125,7 +125,7 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k,local_alpha,shortest_pat
     return distances
 
 
-def distance_to_template_semirelaxed(x,edge_index,x_T,C_T,alpha,k,local_alpha,shortest_path):
+def distance_to_template_semirelaxed(x,edge_index,x_T,C_T,alpha,k,local_alpha,shortest_path,device):
     """
     Computes the OT distance between each subgraphs of order k of G and the templates
     x : node features of the graph
@@ -153,14 +153,16 @@ def distance_to_template_semirelaxed(x,edge_index,x_T,C_T,alpha,k,local_alpha,sh
         if n_sub>1:    #more weight on central node
           val=(1-(k+1)/(k+2))/(n_sub-1)
           p=torch.ones(n_sub)*val
+          p=p.to(device)
           p[central_node_index]=(k+1)/(k+2)
           p=F.normalize(p,p=1,dim=0)    #normalize for gromov-wasserstein
 
         else:          #if the node is isolated
           p=torch.ones(1)
           p=F.normalize(p,p=1,dim=0)  #normalize p for gromov-wasserstein
+          p=p.to(device)
 
-        C_sub=graph_to_adjacency(n_sub,edges_sub,shortest_path).type(torch.float)
+        C_sub=graph_to_adjacency(n_sub,edges_sub,shortest_path,device).type(torch.float)
  
         for j in range(n_T):
           

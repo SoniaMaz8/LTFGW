@@ -20,6 +20,7 @@ else:
   dev = "cpu" 
 
 device = torch.device(dev)   
+print(device)
 
 
 parser = argparse.ArgumentParser(description='Graph node classification')

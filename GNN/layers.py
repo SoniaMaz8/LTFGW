@@ -81,7 +81,7 @@ class LTFGW(nn.Module):
 
 class LTFGW_semirelaxed(nn.Module):
     """ Layer for the local TFWG """
-    def __init__(self,n_nodes, n_templates=10,n_templates_nodes=10,n_features=10,k=1,mean_init=0,std_init=0.001,alpha0=None,local_alpha=False,shortest_path=False):
+    def __init__(self,n_nodes, n_templates=10,n_templates_nodes=10,n_features=10,k=1,mean_init=0,std_init=0.001,alpha0=None,local_alpha=False,shortest_path=False,device='cuda'):
         """
         n_features: number of node features
         n_templates: number of graph templates
@@ -97,6 +97,7 @@ class LTFGW_semirelaxed(nn.Module):
         self.n_features=n_features
         self.k=k
         self.shortest_path=shortest_path
+        self.device=device
 
         self.local_alpha=local_alpha
 
@@ -123,7 +124,7 @@ class LTFGW_semirelaxed(nn.Module):
 
     def forward(self, x, edge_index):
         alpha=torch.sigmoid(self.alpha0)
-        x=distance_to_template_semirelaxed(x,edge_index,self.templates_features,self.templates,alpha,self.k,self.local_alpha,self.shortest_path)
+        x=distance_to_template_semirelaxed(x,edge_index,self.templates_features,self.templates,alpha,self.k,self.local_alpha,self.shortest_path,self.device)
         return x
 
 

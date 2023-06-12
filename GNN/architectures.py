@@ -334,7 +334,7 @@ class GCN_JK(torch.nn.Module):
         return x,x
     
 class LTFGW_MLP_semirelaxed(nn.Module):
-    def __init__(self,args,n_classes,n_features,n_nodes, mean_init=0, std_init=0.001):
+    def __init__(self,args,n_classes,n_features,n_nodes,device ,mean_init=0, std_init=0.001):
         """
         n_classes: number of classes for node classification
         n_features: number of features for each node
@@ -369,7 +369,7 @@ class LTFGW_MLP_semirelaxed(nn.Module):
         self.Linear1=Linear(self.n_features, self.hidden_layer)
         self.Linear2=Linear(self.hidden_layer+self.n_templates, self.n_classes)
         self.Linear3=Linear(self.n_templates, self.n_classes)
-        self.LTFGW=LTFGW_semirelaxed(self.n_nodes, self.n_templates,self.n_templates_nodes,self.hidden_layer,self.k,mean_init,std_init)
+        self.LTFGW=LTFGW_semirelaxed(self.n_nodes, self.n_templates,self.n_templates_nodes,self.hidden_layer,self.k,mean_init,std_init,device)
         self.batch_norm=torch.nn.BatchNorm1d(self.hidden_layer+self.n_templates)
         
 
