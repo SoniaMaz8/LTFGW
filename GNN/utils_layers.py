@@ -94,7 +94,6 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k,local_alpha,shortest_pat
           p=torch.ones(1)
           p=F.normalize(p,p=1,dim=0)  #normalize p for gromov-wasserstein
 
-        print(p)
         C_sub=graph_to_adjacency(n_sub,edges_sub,shortest_path).type(torch.float)
  
         for j in range(n_T):
@@ -165,7 +164,6 @@ def distance_to_template_semirelaxed(x,edge_index,x_T,C_T,alpha,k,local_alpha,sh
           p=p.to(device)
 
         p=p.type(torch.double)
-        print(device)
         C_sub=graph_to_adjacency(n_sub,edges_sub,shortest_path,device=device).type(torch.double)
  
         for j in range(n_T):
