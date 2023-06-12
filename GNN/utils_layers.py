@@ -165,7 +165,8 @@ def distance_to_template_semirelaxed(x,edge_index,x_T,C_T,alpha,k,local_alpha,sh
           p=p.to(device)
 
         p=p.type(torch.double)
-        C_sub=graph_to_adjacency(n_sub,edges_sub,shortest_path,device).type(torch.double)
+        print(device)
+        C_sub=graph_to_adjacency(n_sub,edges_sub,shortest_path,device=device).type(torch.double)
  
         for j in range(n_T):
           
