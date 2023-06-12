@@ -369,7 +369,7 @@ class LTFGW_MLP_semirelaxed(nn.Module):
         self.Linear1=Linear(self.n_features, self.hidden_layer)
         self.Linear2=Linear(self.hidden_layer+self.n_templates, self.n_classes)
         self.Linear3=Linear(self.n_templates, self.n_classes)
-        self.LTFGW=LTFGW_semirelaxed(self.n_nodes, self.n_templates,self.n_templates_nodes,self.hidden_layer,self.k,mean_init,std_init,device)
+        self.LTFGW=LTFGW_semirelaxed(self.n_nodes, self.n_templates,self.n_templates_nodes,self.hidden_layer,self.k,mean_init,std_init,self.alpha0,self.local_alpha,self.shortest_path,device)
         self.batch_norm=torch.nn.BatchNorm1d(self.hidden_layer+self.n_templates)
         
 

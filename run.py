@@ -20,7 +20,6 @@ else:
   dev = "cpu" 
 
 device = torch.device(dev)   
-print(device)
 
 
 parser = argparse.ArgumentParser(description='Graph node classification')
@@ -101,6 +100,7 @@ k=args['k']
 drop=args['dropout']
 shortest_path=args['shortest_path']=='True'
 
+
 if not args['alpha0']==None:
   alpha0=torch.as_tensor([args['alpha0']])
 else:
@@ -121,7 +121,6 @@ criterion = torch.nn.CrossEntropyLoss()
 
 Test_accuracy=[]
 seeds=torch.arange(first_seed,first_seed+num_seeds,1)
-
 
 for seed in seeds:
     torch.manual_seed(seed)

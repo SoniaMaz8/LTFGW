@@ -81,7 +81,7 @@ class LTFGW(nn.Module):
 
 class LTFGW_semirelaxed(nn.Module):
     """ Layer for the local TFWG """
-    def __init__(self,n_nodes, n_templates=10,n_templates_nodes=10,n_features=10,k=1,mean_init=0,std_init=0.001,alpha0=None,local_alpha=False,shortest_path=False,device='cuda'):
+    def __init__(self,n_nodes, n_templates=10,n_templates_nodes=10,n_features=10,k=1,mean_init=0,std_init=0.001,alpha0=None,local_alpha=False,shortest_path=False,device='cpu'):
         """
         n_features: number of node features
         n_templates: number of graph templates
@@ -119,7 +119,7 @@ class LTFGW_semirelaxed(nn.Module):
                 alpha0=torch.ones(n_nodes)*alpha0
                 self.alpha0=torch.logit(alpha0) 
             else:
-                alpha0=torch.zeros(n_nodes)
+                alpha0=torch.Tensor([alpha0])
                 self.alpha0=torch.logit(alpha0) 
 
     def forward(self, x, edge_index):

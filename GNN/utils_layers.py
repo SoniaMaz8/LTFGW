@@ -21,7 +21,7 @@ def adjacency_to_graph(C,F):
     return GraphData(x=F,edge_index=edge_index)
 
 
-def graph_to_adjacency(n,edges,shortest_path,device): 
+def graph_to_adjacency(n,edges,shortest_path,device='cpu'): 
     """"
     adjacency matrix of a graph given its nodes and edges in a torch.geometric format
     n : number of nodes
@@ -94,6 +94,7 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k,local_alpha,shortest_pat
           p=torch.ones(1)
           p=F.normalize(p,p=1,dim=0)  #normalize p for gromov-wasserstein
 
+        print(p)
         C_sub=graph_to_adjacency(n_sub,edges_sub,shortest_path).type(torch.float)
  
         for j in range(n_T):
@@ -163,7 +164,8 @@ def distance_to_template_semirelaxed(x,edge_index,x_T,C_T,alpha,k,local_alpha,sh
           p=F.normalize(p,p=1,dim=0)  #normalize p for gromov-wasserstein
           p=p.to(device)
 
-        C_sub=graph_to_adjacency(n_sub,edges_sub,shortest_path,device).type(torch.float)
+        p=p.type(torch.double)
+        C_sub=graph_to_adjacency(n_sub,edges_sub,shortest_path,device).type(torch.double)
  
         for j in range(n_T):
           
@@ -177,6 +179,7 @@ def distance_to_template_semirelaxed(x,edge_index,x_T,C_T,alpha,k,local_alpha,sh
           if local_alpha: 
              dist=semirelaxed_fgw(M, C_sub, C_T[j], p,alpha=alpha[i],symmetric=True,max_iter=100)
           else:
-             dist=semirelaxed_fgw(M, C_sub, C_T[j], p,alpha=alpha,symmetric=True,max_iter=100) 
+             
+             dist=semirelaxed_fgw(M, C_sub, C_T[j].type(torch.double), p,alpha=alpha,symmetric=True,max_iter=100) 
           distances[i,j]=dist
     return distances
