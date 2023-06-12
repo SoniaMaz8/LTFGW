@@ -9,6 +9,7 @@ from scipy.sparse.csgraph import shortest_path as function_shortest_path
 from torch_geometric.utils import k_hop_subgraph
 from torch_geometric.data import Data as GraphData
 from ot.gromov import semirelaxed_fused_gromov_wasserstein2 as semirelaxed_fgw
+import time
 
 def adjacency_to_graph(C,F):
     """
@@ -121,7 +122,7 @@ def distance_to_template(x,edge_index,x_T,C_T,alpha,q,k,local_alpha,shortest_pat
           if local_alpha: 
              dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, C_T[j], p, qj,alpha=alpha[i],symmetric=True,max_iter=100) 
           else:
-             dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, C_T[j], p, qj,alpha=alpha,symmetric=True,max_iter=100) 
+             dist=ot.gromov.fused_gromov_wasserstein2(M, C_sub, C_T[j], p, qj,alpha=alpha,symmetric=True,max_iter=20) 
           distances[i,j]=dist
     return distances
 
@@ -178,7 +179,6 @@ def distance_to_template_semirelaxed(x,edge_index,x_T,C_T,alpha,k,local_alpha,sh
           if local_alpha: 
              dist=semirelaxed_fgw(M, C_sub, C_T[j], p,alpha=alpha[i],symmetric=True,max_iter=100)
           else:
-             
-             dist=semirelaxed_fgw(M, C_sub, C_T[j].type(torch.double), p,alpha=alpha,symmetric=True,max_iter=100) 
+             dist=semirelaxed_fgw(M, C_sub, C_T[j].type(torch.double), p,alpha=alpha,symmetric=True,max_iter=20) 
           distances[i,j]=dist
     return distances.to(device)
