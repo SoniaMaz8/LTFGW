@@ -136,7 +136,7 @@ for seed in seeds:
     else: 
        dataset_test=dataset
 
-    model=get_model(model_name,args,n_classes,n_features,n_nodes,mean,std) 
+    model=get_model(model_name,args,n_classes,n_features,n_nodes,mean,std,device) 
     model=model.to(device)
 
     method=model_name+'_'+graph_type

@@ -334,7 +334,7 @@ class GCN_JK(torch.nn.Module):
         return x,x
     
 class LTFGW_MLP_semirelaxed(nn.Module):
-    def __init__(self,args,n_classes,n_features,n_nodes,device ,mean_init=0, std_init=0.001):
+    def __init__(self,args,n_classes,n_features,n_nodes, mean_init=0, std_init=0.001,device='cpu'):
         """
         n_classes: number of classes for node classification
         n_features: number of features for each node
@@ -363,6 +363,7 @@ class LTFGW_MLP_semirelaxed(nn.Module):
         self.local_alpha=args['local_alpha']==True
         self.k=args['k']
         self.n_nodes=n_nodes  
+        print(device)
 
         self.dropout2=torch.nn.Dropout(self.drop)
         

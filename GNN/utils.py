@@ -9,7 +9,7 @@ from data.convert_datasets import Citeseer_data
 from GNN.architectures import *
 
 
-def get_model(model_name,args,n_classes,n_features,n_nodes,mean_init,std_init):
+def get_model(model_name,args,n_classes,n_features,n_nodes,mean_init,std_init,device):
     if model_name=='LTFGW_GCN':
         model=LTFGW_GCN(args,n_classes,n_features,n_nodes)
 
@@ -32,7 +32,7 @@ def get_model(model_name,args,n_classes,n_features,n_nodes,mean_init,std_init):
         model=GCN_JK( args,n_classes,n_features) 
 
     elif model_name=='LTFGW_MLP_semirelaxed':
-        model=LTFGW_MLP_semirelaxed(args,n_classes,n_features,n_nodes, mean_init, std_init)
+        model=LTFGW_MLP_semirelaxed(args,n_classes,n_features,n_nodes, mean_init, std_init,device)
 
     return model     
 
