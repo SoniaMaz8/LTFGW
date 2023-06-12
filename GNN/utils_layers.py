@@ -183,4 +183,4 @@ def distance_to_template_semirelaxed(x,edge_index,x_T,C_T,alpha,k,local_alpha,sh
              
              dist=semirelaxed_fgw(M, C_sub, C_T[j].type(torch.double), p,alpha=alpha,symmetric=True,max_iter=100) 
           distances[i,j]=dist
-    return distances
+    return distances.to(device)

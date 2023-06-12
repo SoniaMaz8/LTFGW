@@ -363,7 +363,6 @@ class LTFGW_MLP_semirelaxed(nn.Module):
         self.local_alpha=args['local_alpha']==True
         self.k=args['k']
         self.n_nodes=n_nodes  
-        print(device)
 
         self.dropout2=torch.nn.Dropout(self.drop)
         

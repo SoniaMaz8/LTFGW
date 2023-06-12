@@ -124,7 +124,6 @@ class LTFGW_semirelaxed(nn.Module):
 
     def forward(self, x, edge_index):
         alpha=torch.sigmoid(self.alpha0)
-        print(self.device)
         x=distance_to_template_semirelaxed(x,edge_index,self.templates_features,self.templates,alpha,self.k,self.local_alpha,self.shortest_path,self.device)
         return x
 
