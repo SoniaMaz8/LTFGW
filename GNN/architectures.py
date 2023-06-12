@@ -1,11 +1,10 @@
 import torch
 import torch.nn as nn
 from torch_geometric.nn import GCNConv, Linear, ChebConv, GATConv
-from GNN.layers import LTFGW
+from GNN.layers import LTFGW, LTFGW_semirelaxed
 import torch.nn.functional as F
-from sklearn.manifold import TSNE
-import math 
-from torch.nn.parameter import Parameter
+from torch_geometric.nn import JumpingKnowledge
+from torch_geometric.nn import  APPNP
 
 
 class GCN_LTFGW(nn.Module):
@@ -189,7 +188,7 @@ class MLP(nn.Module):
     
 
 class LTFGW_MLP(nn.Module):
-    def __init__(self,args,n_classes,n_features,n_nodes):
+    def __init__(self,args,n_classes,n_features,n_nodes, mean_init=0, std_init=0.001):
         """
         n_classes: number of classes for node classification
         n_features: number of features for each node
@@ -224,7 +223,7 @@ class LTFGW_MLP(nn.Module):
         self.Linear1=Linear(self.n_features, self.hidden_layer)
         self.Linear2=Linear(self.hidden_layer+self.n_templates, self.n_classes)
         self.Linear3=Linear(self.n_templates, self.n_classes)
-        self.LTFGW=LTFGW(self.n_nodes,self.n_templates,self.n_templates_nodes, self.hidden_layer,self.k,self.alpha0,self.train_node_weights,self.local_alpha,self.shortest_path)
+        self.LTFGW=LTFGW(self.n_nodes,self.n_templates,self.n_templates_nodes, self.hidden_layer,self.k,self.alpha0,mean_init,std_init,self.train_node_weights,self.local_alpha,self.shortest_path)
         self.batch_norm=torch.nn.BatchNorm1d(self.hidden_layer+self.n_templates)
         
 
@@ -302,3 +301,93 @@ class GAT(torch.nn.Module):
         x = F.dropout(x, p=self.dropout, training=self.training)
         x = self.conv2(x, edge_index)
         return F.log_softmax(x, dim=1)
+    
+
+class GCN_JK(torch.nn.Module):
+    def __init__(self, args, n_classes, n_features):
+        in_channels = n_features
+        out_channels = n_classes
+
+        self.drop=args['dropout']
+
+        super(GCN_JK, self).__init__()
+        self.conv1 = GCNConv(in_channels, args['dim_hidden_layer'])
+        self.conv2 = GCNConv(args['dim_hidden_layer'], args['dim_hidden_layer'])
+        self.lin1 = torch.nn.Linear(2*args['dim_hidden_layer'], out_channels)
+        self.one_step = APPNP(K=1, alpha=0)
+        self.JK = JumpingKnowledge(mode='cat',
+                                   channels=args['dim_hidden_layer'],
+                                   num_layers=8
+                                   )
+
+    def forward(self,x,edge_index):
+
+        x1 = F.relu(self.conv1(x, edge_index))
+        x1 = F.dropout(x1, p=self.drop, training=self.training)
+
+        x2 = F.relu(self.conv2(x1, edge_index))
+        x2 = F.dropout(x2, p=self.drop, training=self.training)
+
+        x = self.JK([x1, x2])
+        x = self.one_step(x, edge_index)
+        x = self.lin1(x)
+        return x,x
+    
+class LTFGW_MLP_semirelaxed(nn.Module):
+    def __init__(self,args,n_classes,n_features,n_nodes, mean_init=0, std_init=0.001):
+        """
+        n_classes: number of classes for node classification
+        n_features: number of features for each node
+        n_templates: number of templates to use for LTFGW
+        n_templates_nodes: number of nodes for each template for LTFGW
+        hidden_layer: number of hidden dimensions
+        alpha0: alpha paramameter for Fused Gromov Wasserstein, if None it is learned
+        train_node_weights: wether to learn node weights on the templates for LFTGW
+        skip_connection: wether to put MLP and LTFGW in parallel
+        local alpha: wether to learn one tradeoff parameter for the FGW for each node or for the whole graph 
+
+        """
+
+        super().__init__()
+
+        self.n_classes=n_classes
+        self.n_features=n_features
+        self.n_templates=args['n_templates']
+        self.n_templates_nodes=args['n_templates_nodes']
+        self.hidden_layer=args['hidden_layer']
+        self.alpha0=args['alpha0']
+        self.train_node_weights=args['train_node_weights']=='True'
+        self.skip_connection=args['skip_connection']=='True'
+        self.drop=args['dropout']
+        self.shortest_path=args['shortest_path']==True
+        self.local_alpha=args['local_alpha']==True
+        self.k=args['k']
+        self.n_nodes=n_nodes  
+
+        self.dropout2=torch.nn.Dropout(self.drop)
+        
+        self.Linear1=Linear(self.n_features, self.hidden_layer)
+        self.Linear2=Linear(self.hidden_layer+self.n_templates, self.n_classes)
+        self.Linear3=Linear(self.n_templates, self.n_classes)
+        self.LTFGW=LTFGW_semirelaxed(self.n_nodes, self.n_templates,self.n_templates_nodes,self.hidden_layer,self.k,mean_init,std_init)
+        self.batch_norm=torch.nn.BatchNorm1d(self.hidden_layer+self.n_templates)
+        
+
+    def forward(self, x, edge_index):
+
+        x=self.Linear1(x)
+        
+        if self.skip_connection:
+            y=self.LTFGW(x,edge_index)
+            x = torch.hstack([x,y])
+            x=self.batch_norm(x)
+            x=x.relu()
+            x=self.dropout2(x)
+            x=self.Linear2(x)
+            x_latent=x
+
+        else:
+            x=self.LTFGW(x,edge_index)
+            x=self.Linear3(x)
+
+        return  x,x_latent    

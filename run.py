@@ -14,6 +14,14 @@ import argparse
 
 #%%Parameters to set
 
+if torch.cuda.is_available():  
+  dev = "cuda:0" 
+else:  
+  dev = "cpu" 
+
+device = torch.device(dev)   
+
+
 parser = argparse.ArgumentParser(description='Graph node classification')
 
 parser.add_argument('-dataset', type=str, default='cornell',
@@ -118,7 +126,7 @@ for seed in seeds:
     torch.manual_seed(seed)
     
     # load dataset
-    dataset, n_classes, n_features, test_graph, graph_type=get_dataset(dataset_name)
+    dataset, n_classes, n_features, test_graph, graph_type, mean, std=get_dataset(dataset_name)
 
     n_nodes=len(dataset.x)
 
@@ -128,25 +136,8 @@ for seed in seeds:
     else: 
        dataset_test=dataset
 
-    # init model
-    if model_name=='LTFGW_GCN':
-        model=LTFGW_GCN(args,n_classes,n_features,n_nodes)
-
-    elif model_name=='GCN_LTFGW':
-        model=GCN_LTFGW(args,n_classes,n_features)
-  
-    elif model_name=='MLP':
-        model=MLP(args,n_classes,n_features)
-
-    elif model_name=='GCN':
-        model=GCN(args,n_classes,n_features)
-      #  model=GCN_Net(hidden_layer, drop,n_features,n_classes)
-
-    elif model_name=='LTFGW_MLP':
-        model=LTFGW_MLP(args,n_classes,n_features,n_nodes)
-
-    elif model_name=='ChebNet':
-        model=ChebNet( args,n_classes,n_features)    
+    model=get_model(model_name,args,n_classes,n_features,n_nodes,mean,std) 
+    model=model.to(device)
 
     method=model_name+'_'+graph_type
 
@@ -163,7 +154,8 @@ for seed in seeds:
         val_lb=int(round(0.2*len(dataset.y)))
         dataset=random_planetoid_splits(dataset, n_classes, percls_trn=percls_trn, val_lb=val_lb, seed=seed)
         dataset_test=dataset
-       # torch.save(dataset,'dataset_seed{}'.format(seed))
+        dataset=dataset.to(device)
+        dataset_test=dataset.to(device)
         train(model,dataset,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus,filename_current_model)
 
     elif graph_type=='multi_graph':
@@ -177,9 +169,6 @@ for seed in seeds:
         percls_trn=int(round(0.6*len(dataset.y)/n_classes))
         val_lb=int(round(0.2*len(dataset.y)))
         dataset=random_planetoid_splits(dataset, n_classes, percls_trn=percls_trn, val_lb=val_lb, seed=seed)    
-       # clusterdata=ClusterData(dataset,num_parts=5)
-       # loader=ClusterLoader(clusterdata)
-       # loader_val=loader
         loader=NeighborLoader(dataset,num_neighbors=[-1],input_nodes=dataset.train_mask,batch_size=100)
         loader_val=NeighborLoader(dataset,num_neighbors=[-1],input_nodes=dataset.val_mask,batch_size=100)
         train_minibatch(model,dataset,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus,loader,loader_val,filename_current_model)

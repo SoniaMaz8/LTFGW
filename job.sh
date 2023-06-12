@@ -2,12 +2,13 @@
 #
 ## BEGIN SBATCH directives
 #SBATCH --job-name=test_seq
-#SBATCH --output=res_seq.txt
+#SBATCH --output=res_seq1.txt
 #
 #SBATCH --ntasks=1
 #SBATCH --time=00:10:00
 #SBATCH --partition=cpu_shared
 #SBATCH --account=oatmil
+#SBATCH --gres=gpu:1
 ##SBATCH --mail-type=ALL
 ##SBATCH --mail-user=sonia.mazelet@polytechnique.edu
 ## END SBATCH directives
