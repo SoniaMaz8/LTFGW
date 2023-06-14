@@ -34,6 +34,9 @@ def get_model(model_name,args,n_classes,n_features,n_nodes,mean_init,std_init,de
     elif model_name=='LTFGW_MLP_semirelaxed':
         model=LTFGW_MLP_semirelaxed(args,n_classes,n_features,n_nodes, mean_init, std_init,device)
 
+    elif model_name=='LTFGW_MLP_dropout':
+        model=LTFGW_MLP_dropout(args,n_classes,n_features,n_nodes, mean_init=mean_init, std_init=std_init)
+
     return model     
 
 

@@ -22,18 +22,12 @@ def train_epoch(dataset,model,criterion,optimizer):
     train_correct = pred[dataset.train_mask] == dataset.y[dataset.train_mask]   #number of correct node predictions
     train_acc = int(train_correct.sum()) / int(dataset.train_mask.sum())  #training_accuracy
 
-    #validation
-    val_correct=pred[dataset.val_mask] == dataset.y[dataset.val_mask]
-    val_acc= int(val_correct.sum()) / int(dataset.val_mask.sum())
-
     loss = criterion(out[dataset.train_mask], dataset.y[dataset.train_mask])
-   # loss=F.nll_loss(out[dataset.train_mask], dataset.y[dataset.train_mask])
  
-    loss_val=  criterion(out[dataset.val_mask], dataset.y[dataset.val_mask])
     loss.backward()  
     optimizer.step()  
 
-    return loss, train_acc, val_acc, x_latent,loss_val
+    return loss, train_acc, x_latent
 
 def val_epoch(dataset,model,criterion):
     """"
@@ -47,12 +41,11 @@ def val_epoch(dataset,model,criterion):
     val_correct=pred[dataset.val_mask] == dataset.y[dataset.val_mask]
     val_acc= int(val_correct.sum()) / int(dataset.val_mask.sum())
 
-    loss_val=  criterion(out[dataset.val_mask], dataset.y[dataset.val_mask])
-   # loss_val=F.nll_loss(out[dataset.train_mask], dataset.y[dataset.train_mask])
+    loss_val= criterion(out[dataset.val_mask], dataset.y[dataset.val_mask])
 
     return loss_val, val_acc
 
-def train(model,dataset,N_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus,filename_current_model):
+def train(model,loader,loader_val,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus,filename_current_model):
     """"
     train the entire model on the entire graph
     """     
@@ -64,26 +57,44 @@ def train(model,dataset,N_epoch,criterion, optimizer,save,filename_save,filename
       df=pd.DataFrame(columns=['loss','loss_validation','train_accuracy','validation_accuracy','test_accuracy','best_validation_accuracy']) 
       df.to_pickle(filename_save)
 
-    for epoch in tqdm(range(N_epoch)): 
-            start=time.time()     
-            loss,train_acc, val_acc, x_latent,loss_val = train_epoch(dataset,model,criterion,optimizer)
-            loss_val, val_acc=  val_epoch(dataset,model,criterion)
-            end=time.time()
+    for epoch in tqdm(range(n_epoch)): 
+            train_losses=[]
+            val_losses=[]
+            train_accs=[]
+            val_accs=[]
+
+            start=time.time()  
+            for dataset in loader:
+                loss,train_acc, x_latent = train_epoch(dataset,model,criterion,optimizer)
+                train_losses.append(loss.item())
+                train_accs.append(train_acc)
+                
+            for dataset in loader_val:
+                loss_val, val_acc=  val_epoch(dataset,model,criterion)
+                val_losses.append(loss_val.item())
+                val_accs.append(val_acc)
+
+            end=time.time() 
+
+            mean_train_acc=torch.mean(torch.tensor(train_accs))
+            mean_train_loss=torch.mean(torch.tensor(train_losses))
+            mean_val_acc=torch.mean(torch.tensor(val_accs))
+            mean_val_loss=torch.mean(torch.tensor(val_losses))
 
             if save: 
                 df=pd.read_pickle(filename_save)
                 #add performances to the dataframe
-                df.at[epoch,'loss']=loss.item()
-                df.at[epoch,'train_accuracy']=train_acc
-                df.at[epoch,'validation_accuracy']=val_acc
-                df.at[epoch,'loss_validation']=loss_val.item()
+                df.at[epoch,'loss']=mean_train_loss
+                df.at[epoch,'train_accuracy']=mean_train_acc
+                df.at[epoch,'validation_accuracy']=mean_val_acc
+                df.at[epoch,'loss_validation']=mean_val_loss
 
                 if val_acc>best_val_perf:  
 
                     #save best model parameters
                     torch.save({'model_state_dict':model.state_dict(),'optimizer_state_dict': optimizer.state_dict()},filename_best_model)
-                    best_val_perf=val_acc
-                    df.at[epoch,'best_validation_accuracy']=val_acc
+                    best_val_perf=mean_val_acc
+                    df.at[epoch,'best_validation_accuracy']=mean_val_acc
 
                     #save latent embedding for visualisation
                     x_latent=x_latent.detach().numpy()
@@ -95,7 +106,7 @@ def train(model,dataset,N_epoch,criterion, optimizer,save,filename_save,filename
 
 
             #print performances           
-            print(f'Epoch: {epoch:03d},time:{end-start:.4f}, Loss: {loss:.4f},Loss validation: {loss_val:.4f},Train Accuracy: {train_acc:.4f},Validation Accuracy:{val_acc:.4f}')  
+            print(f'Epoch: {epoch:03d},time:{end-start:.4f}, Loss: {mean_train_loss:.4f},Loss validation: {mean_val_loss:.4f},Train Accuracy: {mean_train_acc:.4f},Validation Accuracy:{mean_val_acc:.4f}')  
 
 
 def test(model,dataset,test_graph):
