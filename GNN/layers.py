@@ -15,12 +15,13 @@ def template_initialisation(n_nodes,n_templates,n_features, mean, std):
       Templates: list of the adjancecy matrices of the templates
       Templates_features: list of the features of the nodes of each template
     """
-    Templates=torch.randint(0, 3, size=(n_templates,n_nodes, n_nodes))
+    #Templates=torch.randint(0, 3, size=(n_templates,n_nodes, n_nodes))
+    Templates=2*torch.rand((n_templates,n_nodes, n_nodes))
     Templates_features=torch.Tensor(n_templates,n_nodes,n_features)
     noise=torch.Tensor(n_templates,n_nodes,n_nodes)
     torch.nn.init.normal_(Templates_features, mean=mean, std=std)
     torch.nn.init.normal_(noise,mean=0,std=1e-2)
-    Templates=Templates+noise
+    #Templates=Templates+noise
     return 0.5*(Templates+torch.transpose(Templates,1,2)), Templates_features
 
 
