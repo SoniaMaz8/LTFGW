@@ -51,6 +51,8 @@ def train(model,loader,loader_val,n_epoch,criterion, optimizer,save,filename_sav
     """     
 
     best_val_perf=0  
+    Templates=[]
+    alphas=[]
 
     if save:
       #create dataframe to save performances
@@ -103,10 +105,15 @@ def train(model,loader,loader_val,n_epoch,criterion, optimizer,save,filename_sav
 
                 df.to_pickle(filename_save) 
                 torch.save({'model_state_dict':model.state_dict(),'optimizer_state_dict': optimizer.state_dict()},filename_current_model)
-
+                
+                df=torch.load(filename_current_model)
+                Templates.append(df['model_state_dict']['LTFGW.templates'])  
+                alphas.append(df['model_state_dict']['LTFGW.alpha0']) 
 
             #print performances           
-            print(f'Epoch: {epoch:03d},time:{end-start:.4f}, Loss: {mean_train_loss:.4f},Loss validation: {mean_val_loss:.4f},Train Accuracy: {mean_train_acc:.4f},Validation Accuracy:{mean_val_acc:.4f}')  
+            print(f'Epoch: {epoch:03d},time:{end-start:.4f}, Loss: {mean_train_loss:.4f},Loss validation: {mean_val_loss:.4f},Train Accuracy: {mean_train_acc:.4f},Validation Accuracy:{mean_val_acc:.4f}') 
+            torch.save(Templates,'templates.pt') 
+            torch.save(alphas,'alphas.pt')
 
 
 def test(model,dataset,test_graph):
