@@ -48,12 +48,13 @@ def val_epoch(dataset,model,criterion):
     return loss_val, val_acc
 
 
-def train(model,loader,loader_val,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus,filename_current_model,filename_templates,filename_alpha,model_name):
+def train(model,loader,loader_val,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus,filename_current_model,filename_templates,filename_alpha,model_name,schedule):
 
     best_val_perf=0  
     Templates=[]
     alphas=[]
-    scheduler = StepLR(optimizer, 200, 0.8)
+    if schedule:
+      scheduler = StepLR(optimizer, 200, 0.8)
 
     save_templates = model_name=='LTFGW_MLP' or model_name=='LTFGW_GCN' or model_name=='LTFGW_MLP_log' or model_name=='LTFGW_MLP_dropout' or model_name=='LTFGW_MLP_semirelaxed'
 
@@ -121,8 +122,9 @@ def train(model,loader,loader_val,n_epoch,criterion, optimizer,save,filename_sav
             if save_templates:
                 torch.save(Templates,filename_templates) 
                 torch.save(alphas,filename_alpha)
-                
-            scheduler.step()
+            
+            if schedule:
+              scheduler.step()
 
 
 def test(model,dataset,test_graph):

@@ -115,7 +115,7 @@ def get_dataset(dataset_name):
     return dataset,n_classes,n_features, test_graph, graph_type, mean, std
 
 
-def get_filenames(dataset_name,method,lr,n_temp,n_nodes,alpha0,k,dropout,wd,hl,seed=None):
+def get_filenames(dataset_name,method,lr,n_temp,n_nodes,alpha0,k,dropout,wd,hl,scheduler,seed=None):
 
     if seed is None:
         filename_save=os.path.join( 'results',method,"{}.pkl".format(dataset_name))
@@ -123,12 +123,12 @@ def get_filenames(dataset_name,method,lr,n_temp,n_nodes,alpha0,k,dropout,wd,hl,s
         filename_visus=os.path.join( 'results',method,"{}_visus.pkl".format(dataset_name)) 
 
     else:   
-        filename_save=os.path.join( 'results',method,dataset_name,str(seed.item()),'performances',"lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}.pkl".format(lr,n_temp,n_nodes,alpha0,k,dropout,wd,hl))
-        filename_best_model=os.path.join( 'results',method,dataset_name,str(seed.item()),'best_model',"lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}.pt".format(lr,n_temp,n_nodes,alpha0,k,dropout,wd,hl))
-        filename_visus=os.path.join('results',method,dataset_name,str(seed.item()),'visus',"lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}.pkl".format(lr,n_temp,n_nodes,alpha0,k,dropout,wd,hl))
-        filename_current_model=os.path.join('results',method,dataset_name,str(seed.item()),'current_model',"lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}.pt".format(lr,n_temp,n_nodes,alpha0,k,dropout,wd,hl))
-        filename_templates=os.path.join('results',method,dataset_name,str(seed.item()),'templates',"lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}.pkl".format(lr,n_temp,n_nodes,alpha0,k,dropout,wd,hl))
-        filename_alphas=os.path.join('results',method,dataset_name,str(seed.item()),'alphas',"lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}.pkl".format(lr,n_temp,n_nodes,alpha0,k,dropout,wd,hl))
+        filename_save=os.path.join( 'results',method,dataset_name,str(seed.item()),'performances',"lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}.pkl".format(lr,n_temp,n_nodes,alpha0,k,dropout,wd,hl,scheduler))
+        filename_best_model=os.path.join( 'results',method,dataset_name,str(seed.item()),'best_model',"lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}.pt".format(lr,n_temp,n_nodes,alpha0,k,dropout,wd,hl,scheduler))
+        filename_visus=os.path.join('results',method,dataset_name,str(seed.item()),'visus',"lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}.pkl".format(lr,n_temp,n_nodes,alpha0,k,dropout,wd,hl,scheduler))
+        filename_current_model=os.path.join('results',method,dataset_name,str(seed.item()),'current_model',"lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}.pt".format(lr,n_temp,n_nodes,alpha0,k,dropout,wd,hl,scheduler))
+        filename_templates=os.path.join('results',method,dataset_name,str(seed.item()),'templates',"lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}.pkl".format(lr,n_temp,n_nodes,alpha0,k,dropout,wd,hl,scheduler))
+        filename_alphas=os.path.join('results',method,dataset_name,str(seed.item()),'alphas',"lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}.pkl".format(lr,n_temp,n_nodes,alpha0,k,dropout,wd,hl,scheduler))
 
 
     return filename_save, filename_best_model, filename_visus, filename_current_model,filename_templates,filename_alphas

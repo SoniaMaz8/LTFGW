@@ -68,6 +68,8 @@ parser.add_argument('-shortest_path', type=str, default='False',
                     help='wether to use the shortest path cost matrix in TFGW')
 parser.add_argument('-skip_connection', type=str, default='True',
                     help='wether to skip connection is the architectures')
+parser.add_argument('-scheduler', type=str, default='True',
+                    help='wether to use a learning rate scheduler')
 #parser.add_argument('-seeds', type=list, default=[1941488137,4198936517,983997847,4023022221,4019585660,2108550661,1648766618,629014539,3212139042,2424918363],
 #                    help='seeds to use for splits')
 
@@ -79,6 +81,7 @@ dataset_name=args['dataset']  #'Citeseer' or 'Toy_graph_single' or 'Toy_graph_mu
 model_name=args['model']  # 'GCN', 'GCN_LTFGW', 'LTFGW_GCN' or 'MLP'  or 'LTFGW_MLP'
 save=args['save']=='True'  #wether to save the parameters and the model
 graph_type=args['graph_type']
+scheduler=args['scheduler']=='True' 
 
 
 
@@ -142,9 +145,9 @@ for seed in seeds:
     method=model_name
 
     if alpha0==None:
-      filename_save, filename_best_model, filename_visus,filename_current_model, filename_templates,filename_alpha = get_filenames(dataset_name,method,lr,n_templates,n_nodes,alpha0,k,drop,weight_decay,hidden_layer,seed)
+      filename_save, filename_best_model, filename_visus,filename_current_model, filename_templates,filename_alpha = get_filenames(dataset_name,method,lr,n_templates,n_nodes,alpha0,k,drop,weight_decay,hidden_layer,scheduler,seed)
     else:
-      filename_save, filename_best_model, filename_visus,filename_current_model, filename_templates,filename_alpha = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0.item(),local_alpha,k,drop,shortest_path,weight_decay,hidden_layer,seed)
+      filename_save, filename_best_model, filename_visus,filename_current_model, filename_templates,filename_alpha = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0.item(),local_alpha,k,drop,shortest_path,weight_decay,hidden_layer,scheduler,seed)
     
     optimizer=torch.optim.Adam(model.parameters(), lr=lr,weight_decay=weight_decay)
 
