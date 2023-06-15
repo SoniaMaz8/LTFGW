@@ -6,7 +6,8 @@ import pandas as pd
 from sklearn.manifold import TSNE
 from torch_geometric.loader import DataLoader
 import torch.nn.functional as F
-from torch_geometric.loader import NeighborLoader, DataLoader, ClusterData, ClusterLoader
+from torch_geometric.loader import NeighborLoader
+from torch.optim.lr_scheduler import StepLR
 
 def train_epoch(dataset,model,criterion,optimizer):
     """"
@@ -29,6 +30,7 @@ def train_epoch(dataset,model,criterion,optimizer):
 
     return loss, train_acc, x_latent
 
+
 def val_epoch(dataset,model,criterion):
     """"
     train one epoch on the complete graph
@@ -45,11 +47,13 @@ def val_epoch(dataset,model,criterion):
 
     return loss_val, val_acc
 
+
 def train(model,loader,loader_val,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus,filename_current_model,filename_templates,filename_alpha,model_name):
 
     best_val_perf=0  
     Templates=[]
     alphas=[]
+    scheduler = StepLR(optimizer, 200, 0.8)
 
     save_templates = model_name=='LTFGW_MLP' or model_name=='LTFGW_GCN' or model_name=='LTFGW_MLP_log' or model_name=='LTFGW_MLP_dropout' or model_name=='LTFGW_MLP_semirelaxed'
 
@@ -117,6 +121,8 @@ def train(model,loader,loader_val,n_epoch,criterion, optimizer,save,filename_sav
             if save_templates:
                 torch.save(Templates,filename_templates) 
                 torch.save(alphas,filename_alpha)
+                
+            scheduler.step()
 
 
 def test(model,dataset,test_graph):
@@ -192,7 +198,6 @@ def validation_epoch_multi_graph(model,val_loader,criterion):
     return torch.mean(Val_acc),X_latent, Data,torch.mean(Loss_val)
 
 
-
 def train_multi_graph(model,criterion,optimizer,n_epoch,save,filename_save,filename_best_model,train_loader,val_loader,filename_visus):
 
     best_val_perf=0
@@ -241,6 +246,7 @@ def train_multi_graph(model,criterion,optimizer,n_epoch,save,filename_save,filen
             
         df.to_pickle(filename_save)
 
+
 def test_multigraph(model,dataset):
     """"
     test the model
@@ -255,6 +261,7 @@ def test_multigraph(model,dataset):
         Test_acc.append(test_acc)
     Test_acc=torch.tensor(Test_acc)
     return  torch.mean(Test_acc) 
+
 
 def train_epoch_minibatch(data,criterion,optimizer,model,loader):
     model.train()
@@ -276,6 +283,7 @@ def train_epoch_minibatch(data,criterion,optimizer,model,loader):
 
     return  mean_loss, total_train_acc / len(loader)
 
+
 def validation_epoch_minibatch(model,loader,criterion):
     """"
     test the model
@@ -296,7 +304,6 @@ def validation_epoch_minibatch(model,loader,criterion):
     return val_acc/len(loader),total_loss_val/len(loader)
 
 
-            
 def train_minibatch(model,dataset,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus,loader,loader_val,filename_current_model):
 
     best_val_perf=0  
@@ -347,7 +354,6 @@ def train_minibatch(model,dataset,n_epoch,criterion, optimizer,save,filename_sav
             print(f'Epoch: {epoch:03d},time:{end-start:.4f}, Loss: {loss:.4f},Loss validation: {loss_val:.4f},Train Accuracy: {train_acc:.4f},Validation Accuracy:{val_acc:.4f}') 
 
 
-
 def test_minibatch(model,loader):
     """"
     test the model
@@ -362,6 +368,7 @@ def test_minibatch(model,loader):
        test_acc = int(test_correct.sum()) / int(data.train_mask.sum())  
        total_test_acc+=test_acc
     return test_acc/len(loader)
+
 
 def test_minibatch(model,loader,criterion):
     """"
