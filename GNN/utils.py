@@ -25,6 +25,9 @@ def get_model(model_name,args,n_classes,n_features,n_nodes,mean_init,std_init,de
     elif model_name=='LTFGW_MLP':
         model=LTFGW_MLP(args,n_classes,n_features,n_nodes, mean_init=mean_init, std_init=std_init)
 
+    elif model_name=='LTFGW_MLP_log':
+        model=LTFGW_MLP_log(args,n_classes,n_features,n_nodes, mean_init=mean_init, std_init=std_init)    
+
     elif model_name=='ChebNet':
         model=ChebNet( args,n_classes,n_features)    
 
