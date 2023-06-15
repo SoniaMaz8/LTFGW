@@ -7,7 +7,6 @@ import pandas as pd
 from GNN.utils import moving_average
 
 
-
 #%% Plot initial graph TSNE with connections between nodes
 
 G=torch.load('data/mutag.pt')
@@ -59,75 +58,10 @@ plt.title('TSNE - LTFGW_GCN')
 plt.show()
 
 
-
-#%% MUTAG
-
-df=pd.read_pickle('results/LTFGW_GCN_multi_graph/mutag_seed24.pkl')
-loss=df['loss']
-validation=df['validation_accuracy']
-train=df['train_accuracy']
-df_GCN=pd.read_pickle('results/GCN_multi_graph/mutag_seed22.pkl')
-df_LTFGW2=pd.read_pickle('results/LTFGW_GCN_multi_graph/mutag_seed24.pkl')
-loss_GCN=df_GCN['loss']
-validation_GCN=df_GCN['validation_accuracy']
-train_GCN=df_GCN['train_accuracy']
-
-loss_LTFGW2=df_LTFGW2['loss']
-validation_LTFGW2=df_LTFGW2['validation_accuracy']
-train_LTFGW2=df_LTFGW2['train_accuracy']
-
-
-plt.figure(1)
-plt.plot(loss_GCN,label='loss GCN')
-#plt.plot(loss,label='loss LTFGW')
-plt.plot(loss_LTFGW2,label='loss LTFGW2')
-plt.title('mutag')
-plt.legend()
-#plt.savefig('loss.png')
-plt.show()
-
-
-plt.figure(2)
-plt.plot(validation_GCN,label='validation GCN')
-#plt.plot(validation,label='validation LTFGW')
-plt.plot(validation_LTFGW2,label='validation LTFGW2')
-plt.title('mutag')
-plt.legend()
-#plt.savefig('validation.png')
-plt.show()
-
-
-plt.figure(3)
-#plt.plot(train,label='train LTFGW')
-plt.plot(train_GCN,label='train GCN')
-plt.plot(train_LTFGW2,label='train LTFGW2')
-plt.title('mutag')
-plt.legend()
-#plt.savefig('train.png')
-plt.show()
-
-plt.figure(4)
-loss_val=df_LTFGW2['loss_validation']
-loss_val_GCN=df_GCN['loss_validation']
-plt.plot(loss_val_GCN,label='validation loss GCN')
-plt.plot(loss_val,label='validation loss LTFWG-GCN')
-plt.title('mutag - validation loss')
-plt.legend()
-
-
-#%%
-
-smooth=moving_average(validation,50)
-smooth_GCN=moving_average(validation_GCN,50)
-plt.plot(smooth,label='LTFGW_GCN')
-plt.plot(smooth_GCN,label='GCN')
-plt.title('mutag - smoothed validation')
-
-
 # %% CORNELL
 
-df=pd.read_pickle('results/MLP_single_graph/cornell_seed20.pkl')
-df_LTFGW=pd.read_pickle('results/LTFGW_MLP_complete_graph/cornell_seed21.pkl')
+df=pd.read_pickle('results/MLP_single_graph/cornell_seed20_lr0.05_n_temp15_n_nodes5_alpha0None_k1_localalphaFalse_drop0.8_shortpFalse_wd0.0005_hl64.pkl')
+df_LTFGW=pd.read_pickle('see.pkl')
 loss=df['loss']
 validation=df['validation_accuracy']
 train=df['train_accuracy']
@@ -140,25 +74,25 @@ loss_val_LTFGW=df_LTFGW['loss_validation']
 
 plt.figure(1)
 plt.plot(loss,label='MLP')
-plt.plot(loss_LTFGW,label='LTFGW_MLP')
+plt.plot(loss_LTFGW,label='LTFGW-MLP')
 plt.title('cornell - training loss')
 plt.legend()
 
 plt.figure(2)
 plt.plot(loss_val,label='MLP')
-plt.plot(loss_val_LTFGW,label='LTFGW_MLP')
+plt.plot(loss_val_LTFGW,label='LTFGW-MLP')
 plt.title('cornell - validation loss')
 plt.legend()
 
 plt.figure(3)
 plt.plot(validation,label='MLP')
-plt.plot(validation_LTFGW,label='LTFGW_MLP')
+plt.plot(validation_LTFGW,label='LTFGW-MLP')
 plt.title('cornell - validation accuracy')
 plt.legend()
 
 plt.figure(4)
 plt.plot(train,label='MLP')
-plt.plot(train_LTFGW,label='LTFGW_MLP')
+plt.plot(train_LTFGW,label='LTFGW-MLP')
 plt.title('cornell - train accuracy')
 plt.legend()
 
