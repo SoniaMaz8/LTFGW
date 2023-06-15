@@ -160,7 +160,7 @@ for seed in seeds:
         loader=NeighborLoader(dataset,num_neighbors=[-1],input_nodes=dataset.train_mask,batch_size=torch.sum(dataset.train_mask).item())
         loader_val=NeighborLoader(dataset,num_neighbors=[-1],input_nodes=dataset.val_mask,batch_size=torch.sum(dataset.val_mask).item())
         dataset_test=dataset
-        train(model,loader,loader_val,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus,filename_current_model,filename_templates,filename_alpha,model_name)
+        train(model,loader,loader_val,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus,filename_current_model,filename_templates,filename_alpha,model_name,scheduler)
 
     elif graph_type=='multi_graph':
         generator = torch.Generator().manual_seed(seed.item())
