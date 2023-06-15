@@ -60,8 +60,8 @@ plt.show()
 
 # %% CORNELL
 
-df=pd.read_pickle('results/MLP_single_graph/cornell_seed20_lr0.05_n_temp15_n_nodes5_alpha0None_k1_localalphaFalse_drop0.8_shortpFalse_wd0.0005_hl64.pkl')
-df_LTFGW=pd.read_pickle('see.pkl')
+df=pd.read_pickle('results/MLP/cornell/20/performances/lr0.05_n_temp15_n_nodes183_alpha0None_k1_drop0.8_wd0.0005_hl64.pkl')
+df_LTFGW=pd.read_pickle('results/LTFGW_MLP_dropout/cornell/20/performances/lr0.0005_n_temp1_n_nodes183_alpha0None_k1_drop0.9_wd0.0005_hl64.pkl')
 loss=df['loss']
 validation=df['validation_accuracy']
 train=df['train_accuracy']
@@ -98,4 +98,33 @@ plt.legend()
 
 
 
+# %% Plot template and alpha evolution
+
+df=torch.load('results/LTFGW_MLP_dropout/cornell/20/templates/n_temp0.0005_n_nodes1_alpha0183_kNone_drop1_wd0.8_hl0.0005.pkl')
+norms=[]
+plt.figure(1)
+for i in range(len(df)-1):
+  norm=torch.abs((torch.linalg.matrix_norm(df[i][0])-torch.linalg.matrix_norm(df[i+1][0])))/torch.linalg.matrix_norm(df[i][0])
+  norms.append(norm.item())
+
+print(norms)
+plt.plot(norms)
+plt.title('norm of the difference between two consecutive templates')
+plt.xlabel('epochs')
+
+plt.figure(2)
+df=torch.load('results/LTFGW_MLP_dropout/cornell/20/alphas/lr0.0005_n_temp1_n_nodes183_alpha0None_k1_drop0.8_wd0.0005_hl64.pkl')
+alphas=[]
+for i in range(len(df)):
+  alpha=torch.sigmoid(df[i]).item()
+  alphas.append(alpha)
+
+plt.plot(alphas)
+plt.title('evolution of alpha')
+plt.xlabel('epochs')
+
+# %%
+
+df=torch.load('results/LTFGW_MLP_dropout/cornell/20/templates/n_temp0.0005_n_nodes1_alpha0183_kNone_drop1_wd0.8_hl0.0005.pkl')
+print(df)
 # %%

@@ -41,6 +41,7 @@ def graph_to_adjacency(n,edges,shortest_path,device='cpu'):
         dist_matrix=function_shortest_path(graph)
         return torch.Tensor(dist_matrix).to(device)
     
+    
 def subgraph(x,edge_index,node_idx, order,num_nodes):
     """
     Computes the edges and nodes of a subgraph center at node_idx of order k

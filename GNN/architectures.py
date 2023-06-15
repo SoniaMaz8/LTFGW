@@ -51,7 +51,6 @@ class GCN_LTFGW(nn.Module):
         x=self.linear(x)
         return x  , x_latent
    
-    
 
 class GCN(nn.Module):
     def __init__(self,args,n_classes,n_features):
@@ -92,7 +91,6 @@ class GCN(nn.Module):
         x=self.last_conv(x, edge_index) 
         return  x ,x_latent
     
-
 
 class LTFGW_GCN(nn.Module):
     def __init__(self,args,n_classes,n_features,n_nodes):
@@ -305,6 +303,7 @@ class LTFGW_MLP_log(nn.Module):
 
         return  x,x_latent
 
+
 class ChebNet(torch.nn.Module):
     def __init__(self, args,n_classes,n_features):
         super(ChebNet, self).__init__()
@@ -389,6 +388,7 @@ class GCN_JK(torch.nn.Module):
         x = self.lin1(x)
         return x,x
     
+
 class LTFGW_MLP_semirelaxed(nn.Module):
     def __init__(self,args,n_classes,n_features,n_nodes, mean_init=0, std_init=0.001,device='cpu'):
         """

@@ -80,7 +80,6 @@ class LTFGW_log(nn.Module):
         return x
 
 
-
 class LTFGW(nn.Module):
     """ Layer for the local TFWG """
     def __init__(self,n_nodes, n_templates=10,n_templates_nodes=10,n_features=10,k=1,alpha0=None,mean_init=0,std_init=0.001,train_node_weights=True,local_alpha=True,shortest_path=False):

@@ -114,6 +114,7 @@ def get_dataset(dataset_name):
 
     return dataset,n_classes,n_features, test_graph, graph_type, mean, std
 
+
 def get_filenames(dataset_name,method,lr,n_temp,n_nodes,alpha0,k,dropout,wd,hl,seed=None):
 
     if seed is None:
@@ -126,7 +127,7 @@ def get_filenames(dataset_name,method,lr,n_temp,n_nodes,alpha0,k,dropout,wd,hl,s
         filename_best_model=os.path.join( 'results',method,dataset_name,str(seed.item()),'best_model',"lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}.pt".format(lr,n_temp,n_nodes,alpha0,k,dropout,wd,hl))
         filename_visus=os.path.join('results',method,dataset_name,str(seed.item()),'visus',"lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}.pkl".format(lr,n_temp,n_nodes,alpha0,k,dropout,wd,hl))
         filename_current_model=os.path.join('results',method,dataset_name,str(seed.item()),'current_model',"lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}.pt".format(lr,n_temp,n_nodes,alpha0,k,dropout,wd,hl))
-        filename_templates=os.path.join('results',method,dataset_name,str(seed.item()),'templates',"n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}.pkl".format(lr,n_temp,n_nodes,alpha0,k,dropout,wd,hl))
+        filename_templates=os.path.join('results',method,dataset_name,str(seed.item()),'templates',"lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}.pkl".format(lr,n_temp,n_nodes,alpha0,k,dropout,wd,hl))
         filename_alphas=os.path.join('results',method,dataset_name,str(seed.item()),'alphas',"lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}.pkl".format(lr,n_temp,n_nodes,alpha0,k,dropout,wd,hl))
 
 
@@ -145,6 +146,7 @@ def visualize_graph(G, color='b'):
                      node_color=color, cmap="Set2")
     plt.show()
 
+
 def plot_graph(x, C, binary=True, color='C0', s=None):
     for j in range(C.shape[0]):
         for i in range(j):
@@ -155,6 +157,7 @@ def plot_graph(x, C, binary=True, color='C0', s=None):
                 plt.plot([x[i, 0], x[j, 0]], [x[i, 1], x[j, 1]], alpha=C[i, j], color='k')
 
     plt.scatter(x[:, 0], x[:, 1], c=color, s=s, zorder=10, edgecolors='k', cmap='tab10', vmax=9)
+
 
 def get_sbm(n, nc, ratio, P):
     nbpc = torch.round(n * ratio).type(torch.int64)
@@ -204,15 +207,18 @@ def train_val_test_mask(n, train_prop=.6, val_prop=.2):
     test_mask[test_indices]=1        
     return train_mask==1, val_mask==1, test_mask==1
 
+
 def transform_random_split(dataset,train_prop=0.6,val_prop=0.2):
     n=len(dataset.y)
     train_mask,val_mask,test_mask=train_val_test_mask(n,train_prop,val_prop)
     return GraphData(x=dataset.x,y=dataset.y,edge_index=dataset.edge_index,train_mask=train_mask,val_mask=val_mask,test_mask=test_mask)
 
+
 def index_to_mask(index, size):
     mask = torch.zeros(size, dtype=torch.bool)
     mask[index] = 1
     return mask
+
 
 def random_planetoid_splits(data, num_classes, percls_trn=20, val_lb=500, seed=12134):
     index=[i for i in range(0,data.y.shape[0])]
