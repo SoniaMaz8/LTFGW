@@ -139,12 +139,12 @@ for seed in seeds:
     model=get_model(model_name,args,n_classes,n_features,n_nodes,mean,std,device) 
     model=model.to(device)
 
-    method=model_name+'_'+graph_type
+    method=model_name
 
     if alpha0==None:
-      filename_save, filename_best_model, filename_visus,filename_current_model = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0,local_alpha,k,drop,shortest_path,weight_decay,hidden_layer,seed)
+      filename_save, filename_best_model, filename_visus,filename_current_model, filename_templates,filename_alpha = get_filenames(dataset_name,method,lr,n_templates,n_nodes,alpha0,k,drop,weight_decay,hidden_layer,seed)
     else:
-       filename_save, filename_best_model, filename_visus,filename_current_model = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0.item(),local_alpha,k,drop,shortest_path,weight_decay,hidden_layer,seed)
+      filename_save, filename_best_model, filename_visus,filename_current_model, filename_templates,filename_alpha = get_filenames(dataset_name,method,lr,n_templates,n_templates_nodes,alpha0.item(),local_alpha,k,drop,shortest_path,weight_decay,hidden_layer,seed)
     
     optimizer=torch.optim.Adam(model.parameters(), lr=lr,weight_decay=weight_decay)
 
@@ -157,7 +157,7 @@ for seed in seeds:
         loader=NeighborLoader(dataset,num_neighbors=[-1],input_nodes=dataset.train_mask,batch_size=torch.sum(dataset.train_mask).item())
         loader_val=NeighborLoader(dataset,num_neighbors=[-1],input_nodes=dataset.val_mask,batch_size=torch.sum(dataset.val_mask).item())
         dataset_test=dataset
-        train(model,loader,loader_val,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus,filename_current_model)
+        train(model,loader,loader_val,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus,filename_current_model,filename_templates,filename_alpha,model_name)
 
     elif graph_type=='multi_graph':
         generator = torch.Generator().manual_seed(seed.item())
@@ -188,7 +188,7 @@ for seed in seeds:
         test_acc=test(model,dataset_test,test_graph)
         Test_accuracy.append(test_acc)   
     
-    filename_save_test=os.path.join( 'results',method,"test_{}_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_localalpha{}_drop{}_shortp{}_wd{}_hl{}.csv".format(dataset_name,first_seed,lr,n_templates,n_templates_nodes,alpha0,k,local_alpha,drop,shortest_path,weight_decay,hidden_layer))
+    filename_save_test=os.path.join( 'results',method,dataset_name,"test_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}.csv".format(first_seed,lr,n_templates,n_templates_nodes,alpha0,k,drop,weight_decay,hidden_layer))
     np.savetxt(filename_save_test,Test_accuracy)
 
 #print the performances

@@ -45,14 +45,13 @@ def val_epoch(dataset,model,criterion):
 
     return loss_val, val_acc
 
-def train(model,loader,loader_val,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus,filename_current_model):
-    """"
-    train the entire model on the entire graph
-    """     
+def train(model,loader,loader_val,n_epoch,criterion, optimizer,save,filename_save,filename_best_model,filename_visus,filename_current_model,filename_templates,filename_alpha,model_name):
 
     best_val_perf=0  
     Templates=[]
     alphas=[]
+
+    save_templates = model_name=='LTFGW_MLP' or model_name=='LTFGW_GCN' or model_name=='LTFGW_MLP_log' or model_name=='LTFGW_MLP_dropout' or model_name=='LTFGW_MLP_semirelaxed'
 
     if save:
       #create dataframe to save performances
@@ -105,15 +104,19 @@ def train(model,loader,loader_val,n_epoch,criterion, optimizer,save,filename_sav
 
                 df.to_pickle(filename_save) 
                 torch.save({'model_state_dict':model.state_dict(),'optimizer_state_dict': optimizer.state_dict()},filename_current_model)
+
+                if save_templates:
                 
-                df=torch.load(filename_current_model)
-                Templates.append(df['model_state_dict']['LTFGW.templates'])  
-                alphas.append(df['model_state_dict']['LTFGW.alpha0']) 
+                    df=torch.load(filename_current_model)
+                    Templates.append(df['model_state_dict']['LTFGW.templates'])  
+                    alphas.append(df['model_state_dict']['LTFGW.alpha0']) 
 
             #print performances           
             print(f'Epoch: {epoch:03d},time:{end-start:.4f}, Loss: {mean_train_loss:.4f},Loss validation: {mean_val_loss:.4f},Train Accuracy: {mean_train_acc:.4f},Validation Accuracy:{mean_val_acc:.4f}') 
-            torch.save(Templates,'templates.pt') 
-            torch.save(alphas,'alphas.pt')
+
+            if save_templates:
+                torch.save(Templates,filename_templates) 
+                torch.save(alphas,filename_alpha)
 
 
 def test(model,dataset,test_graph):
