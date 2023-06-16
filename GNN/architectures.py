@@ -324,7 +324,8 @@ class LTFGW_MLP_log(nn.Module):
         self.local_alpha = args['local_alpha']
         self.k = args['k']
         self.n_nodes = n_nodes
-
+        
+        self.dropout1 = torch.nn.Dropout(self.drop)
         self.dropout2 = torch.nn.Dropout(self.drop)
 
         self.Linear1 = Linear(self.n_features, self.hidden_layer)
@@ -349,7 +350,8 @@ class LTFGW_MLP_log(nn.Module):
             self.hidden_layer + self.n_templates)
 
     def forward(self, x, edge_index):
-
+        
+        x = self.dropout1(x)
         x = self.Linear1(x)
 
         if self.skip_connection:
