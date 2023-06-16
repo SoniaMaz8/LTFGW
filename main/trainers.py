@@ -56,10 +56,10 @@ def train(args,criterion,optimizer,loader,loader_val,model,filename_save,filenam
     best_val_perf = 0
     Templates = []
     alphas = []
-    if args['schedule']:
+    if args['scheduler']:
         scheduler = StepLR(optimizer, 200, 0.8)
 
-    save_templates = args['model_name'] == 'LTFGW_MLP' or  args['model_name'] == 'LTFGW_GCN' or  args['model_name'] == 'LTFGW_MLP_log' or  args['model_name'] == 'LTFGW_MLP_dropout' or  args['model_name'] == 'LTFGW_MLP_semirelaxed'
+    save_templates = args['model'] == 'LTFGW_MLP' or  args['model'] == 'LTFGW_GCN' or  args['model'] == 'LTFGW_MLP_log' or  args['model'] == 'LTFGW_MLP_dropout' or  args['model'] == 'LTFGW_MLP_semirelaxed'
 
     if args['save']:
         # create dataframe to save performances
@@ -73,7 +73,7 @@ def train(args,criterion,optimizer,loader,loader_val,model,filename_save,filenam
                 'best_validation_accuracy'])
         df.to_pickle(filename_save)
 
-    for epoch in tqdm(range(args['nepoch'])):
+    for epoch in tqdm(range(args['nepochs'])):
         train_losses = []
         val_losses = []
         train_accs = []
@@ -138,7 +138,7 @@ def train(args,criterion,optimizer,loader,loader_val,model,filename_save,filenam
             torch.save(Templates, filename_templates)
             torch.save(alphas, filename_alpha)
 
-        if args['schedule']:
+        if args['scheduler']:
             scheduler.step()
 
 

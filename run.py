@@ -166,9 +166,10 @@ for seed in seeds:
 
     method = model_name
 
+
     if alpha0 is None:
         filename_save, filename_best_model, filename_visus, filename_current_model, filename_templates, filename_alpha = get_filenames(
-            dataset_name, method, lr, n_templates, n_nodes, alpha0, k, drop, weight_decay, hidden_layer, scheduler, seed)
+            dataset_name, method, lr, n_templates, n_templates_nodes, alpha0, k, drop, weight_decay, hidden_layer, scheduler, seed)
     else:
         filename_save, filename_best_model, filename_visus, filename_current_model, filename_templates, filename_alpha = get_filenames(
             dataset_name, method, lr, n_templates, n_templates_nodes, alpha0.item(), local_alpha, k, drop, shortest_path, weight_decay, hidden_layer, scheduler, seed)

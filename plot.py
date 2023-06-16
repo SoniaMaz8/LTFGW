@@ -67,7 +67,7 @@ plt.show()
 df = pd.read_pickle(
     'results/MLP/cornell/20/performances/lr0.05_n_temp15_n_nodes183_alpha0None_k1_drop0.8_wd0.0005_hl64.pkl')
 df_LTFGW = pd.read_pickle(
-    'results/LTFGW_MLP_dropout/cornell/20/performances/lr0.0005_n_temp1_n_nodes183_alpha0None_k1_drop0.9_wd0.0005_hl64.pkl')
+    'results/LTFGW_MLP_dropout/cornell/20/performances/lr0.05_n_temp1_n_nodes183_alpha0None_k1_drop0.9_wd0.0005_hl64_scheduler_True.pkl')
 loss = df['loss']
 validation = df['validation_accuracy']
 train = df['train_accuracy']
