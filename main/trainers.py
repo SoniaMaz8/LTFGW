@@ -59,6 +59,7 @@ def train(args,criterion,optimizer,loader,loader_val,model,filename_save,filenam
     if args['scheduler']:
         scheduler = StepLR(optimizer, 200, 0.8)
 
+
     save_templates = args['model'] == 'LTFGW_MLP' or  args['model'] == 'LTFGW_GCN' or  args['model'] == 'LTFGW_MLP_log' or  args['model'] == 'LTFGW_MLP_dropout' or  args['model'] == 'LTFGW_MLP_semirelaxed'
 
     if args['save']:

@@ -65,11 +65,6 @@ parser.add_argument('-random_split', type=list, default=[600, 200, 200],
 parser.add_argument('-alpha0', type=float, default=None,
                     help='alpha0 for LTFGW')
 parser.add_argument(
-    '-local_alpha',
-    type=str,
-    default='False',
-    help='wether to learn one alpha for each node in LTFGW or one for the whole graph')
-parser.add_argument(
     '-k',
     type=int,
     default=1,
@@ -111,7 +106,6 @@ n_hidden_layer = args['n_hidden_layer']
 # args for LTFGW
 n_templates = args['n_templates']
 n_templates_nodes = args['n_templates_nodes']
-local_alpha = args['local_alpha'] == 'True'
 k = args['k']
 drop = args['dropout']
 shortest_path = args['shortest_path'] == 'True'
@@ -166,13 +160,12 @@ for seed in seeds:
 
     method = model_name
 
-
     if alpha0 is None:
         filename_save, filename_best_model, filename_visus, filename_current_model, filename_templates, filename_alpha = get_filenames(
             dataset_name, method, lr, n_templates, n_templates_nodes, alpha0, k, drop, weight_decay, hidden_layer, scheduler, seed)
     else:
         filename_save, filename_best_model, filename_visus, filename_current_model, filename_templates, filename_alpha = get_filenames(
-            dataset_name, method, lr, n_templates, n_templates_nodes, alpha0.item(), local_alpha, k, drop, shortest_path, weight_decay, hidden_layer, scheduler, seed)
+            dataset_name, method, lr, n_templates, n_templates_nodes, alpha0.item(), k, drop, shortest_path, weight_decay, hidden_layer, scheduler, seed)
 
     optimizer = torch.optim.Adam(
         model.parameters(),

@@ -15,13 +15,9 @@ def template_initialisation(n_nodes, n_templates, n_features, mean, std):
       Templates: list of the adjancecy matrices of the templates
       Templates_features: list of the features of the nodes of each template
     """
-    # Templates=torch.randint(0, 3, size=(n_templates,n_nodes, n_nodes))
     Templates = 2 * torch.rand((n_templates, n_nodes, n_nodes))
     Templates_features = torch.Tensor(n_templates, n_nodes, n_features)
-    noise = torch.Tensor(n_templates, n_nodes, n_nodes)
     torch.nn.init.normal_(Templates_features, mean=mean, std=std)
-    torch.nn.init.normal_(noise, mean=0, std=1e-2)
-    # Templates=Templates+noise
     return 0.5 * (Templates + torch.transpose(Templates, 1, 2)
                   ), Templates_features
 
@@ -74,22 +70,15 @@ class LTFGW_log(nn.Module):
 
         # initialize the tradeoff parameter alpha
         if alpha0 is None:
-            if self.local_alpha:
-                alpha0 = torch.zeros(n_nodes)
-                self.alpha0 = nn.Parameter(alpha0)
-            else:
                 alpha0 = torch.Tensor([0])
                 self.alpha0 = nn.Parameter(alpha0)
         else:
-            if self.local_alpha:
-                alpha0 = torch.ones(n_nodes) * alpha0
-                self.alpha0 = torch.logit(alpha0)
-            else:
-                alpha0 = torch.zeros(n_nodes)
+                alpha0 = torch.zeros([alpha0])
                 self.alpha0 = torch.logit(alpha0)
 
     def forward(self, x, edge_index):
         alpha = torch.sigmoid(self.alpha0)
+        print(alpha)
         q = self.softmax(self.q0)
         x = torch.log(
             distance_to_template(
@@ -153,18 +142,10 @@ class LTFGW(nn.Module):
 
         # initialize the tradeoff parameter alpha
         if alpha0 is None:
-            if self.local_alpha:
-                alpha0 = torch.zeros(n_nodes)
-                self.alpha0 = nn.Parameter(alpha0)
-            else:
                 alpha0 = torch.Tensor([0])
                 self.alpha0 = nn.Parameter(alpha0)
         else:
-            if self.local_alpha:
-                alpha0 = torch.ones(n_nodes) * alpha0
-                self.alpha0 = torch.logit(alpha0)
-            else:
-                alpha0 = torch.zeros(n_nodes)
+                alpha0 = torch.tensor([alpha0])
                 self.alpha0 = torch.logit(alpha0)
 
     def forward(self, x, edge_index):

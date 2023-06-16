@@ -118,7 +118,6 @@ class LTFGW_GCN(nn.Module):
         self.skip_connection = args['skip_connection'] == 'True'
         self.drop = args['dropout']
         self.shortest_path = args['shortest_path']
-        self.local_alpha = args['local_alpha']
         self.k = args['k']
         self.n_nodes = n_nodes
 
@@ -139,7 +138,6 @@ class LTFGW_GCN(nn.Module):
             self.k,
             self.alpha0,
             self.train_node_weights,
-            self.local_alpha,
             self.shortest_path)
         self.batch_norm = torch.nn.BatchNorm1d(
             self.hidden_layer + self.n_templates)
@@ -224,7 +222,6 @@ class LTFGW_MLP(nn.Module):
         alpha0: alpha paramameter for Fused Gromov Wasserstein, if None it is learned
         train_node_weights: wether to learn node weights on the templates for LFTGW
         skip_connection: wether to put MLP and LTFGW in parallel
-        local alpha: wether to learn one tradeoff parameter for the FGW for each node or for the whole graph
 
         """
 
@@ -240,7 +237,6 @@ class LTFGW_MLP(nn.Module):
         self.skip_connection = args['skip_connection'] == 'True'
         self.drop = args['dropout']
         self.shortest_path = args['shortest_path']
-        self.local_alpha = args['local_alpha']
         self.k = args['k']
         self.n_nodes = n_nodes
 
@@ -262,7 +258,6 @@ class LTFGW_MLP(nn.Module):
             mean_init,
             std_init,
             self.train_node_weights,
-            self.local_alpha,
             self.shortest_path)
         self.batch_norm = torch.nn.BatchNorm1d(
             self.hidden_layer + self.n_templates)
@@ -305,7 +300,6 @@ class LTFGW_MLP_log(nn.Module):
         alpha0: alpha paramameter for Fused Gromov Wasserstein, if None it is learned
         train_node_weights: wether to learn node weights on the templates for LFTGW
         skip_connection: wether to put MLP and LTFGW in parallel
-        local alpha: wether to learn one tradeoff parameter for the FGW for each node or for the whole graph
 
         """
 
@@ -321,7 +315,6 @@ class LTFGW_MLP_log(nn.Module):
         self.skip_connection = args['skip_connection'] == 'True'
         self.drop = args['dropout']
         self.shortest_path = args['shortest_path']
-        self.local_alpha = args['local_alpha']
         self.k = args['k']
         self.n_nodes = n_nodes
         
@@ -344,7 +337,6 @@ class LTFGW_MLP_log(nn.Module):
             mean_init,
             std_init,
             self.train_node_weights,
-            self.local_alpha,
             self.shortest_path)
         self.batch_norm = torch.nn.BatchNorm1d(
             self.hidden_layer + self.n_templates)
@@ -476,7 +468,6 @@ class LTFGW_MLP_semirelaxed(nn.Module):
         alpha0: alpha paramameter for Fused Gromov Wasserstein, if None it is learned
         train_node_weights: wether to learn node weights on the templates for LFTGW
         skip_connection: wether to put MLP and LTFGW in parallel
-        local alpha: wether to learn one tradeoff parameter for the FGW for each node or for the whole graph
 
         """
 
@@ -492,7 +483,6 @@ class LTFGW_MLP_semirelaxed(nn.Module):
         self.skip_connection = args['skip_connection'] == 'True'
         self.drop = args['dropout']
         self.shortest_path = args['shortest_path']
-        self.local_alpha = args['local_alpha']
         self.k = args['k']
         self.n_nodes = n_nodes
 
@@ -513,7 +503,6 @@ class LTFGW_MLP_semirelaxed(nn.Module):
             mean_init,
             std_init,
             self.alpha0,
-            self.local_alpha,
             self.shortest_path,
             device)
         self.batch_norm = torch.nn.BatchNorm1d(
@@ -557,7 +546,6 @@ class LTFGW_MLP_dropout(nn.Module):
         alpha0: alpha paramameter for Fused Gromov Wasserstein, if None it is learned
         train_node_weights: wether to learn node weights on the templates for LFTGW
         skip_connection: wether to put MLP and LTFGW in parallel
-        local alpha: wether to learn one tradeoff parameter for the FGW for each node or for the whole graph
 
         """
 
@@ -573,7 +561,6 @@ class LTFGW_MLP_dropout(nn.Module):
         self.skip_connection = args['skip_connection'] == 'True'
         self.drop = args['dropout']
         self.shortest_path = args['shortest_path']
-        self.local_alpha = args['local_alpha']
         self.k = args['k']
         self.n_nodes = n_nodes
 
@@ -596,7 +583,6 @@ class LTFGW_MLP_dropout(nn.Module):
             mean_init,
             std_init,
             self.train_node_weights,
-            self.local_alpha,
             self.shortest_path)
         self.batch_norm = torch.nn.BatchNorm1d(
             self.hidden_layer + self.n_templates)

@@ -143,11 +143,8 @@ def distance_to_template(
                     p[0] += abs(sum_q - sum_p)
                 else:
                     qj[0] += abs(sum_q - sum_p)
-            if local_alpha:
-                dist = ot.gromov.fused_gromov_wasserstein2(
-                    M, C_sub, C_T[j], p, qj, alpha=alpha[i], symmetric=True, max_iter=100)
-            else:
-                dist = ot.gromov.fused_gromov_wasserstein2(
+
+            dist = ot.gromov.fused_gromov_wasserstein2(
                     M, C_sub, C_T[j], p, qj, alpha=alpha, symmetric=True, max_iter=20)
             distances[i, j] = dist
     return distances
@@ -160,7 +157,6 @@ def distance_to_template_semirelaxed(
         C_T,
         alpha,
         k,
-        local_alpha,
         shortest_path,
         device):
     """
@@ -222,17 +218,7 @@ def distance_to_template_semirelaxed(
             # more normalization
             p = p / torch.sum(p)
 
-            if local_alpha:
-                dist = semirelaxed_fgw(
-                    M,
-                    C_sub,
-                    C_T[j],
-                    p,
-                    alpha=alpha[i],
-                    symmetric=True,
-                    max_iter=100)
-            else:
-                dist = semirelaxed_fgw(
+            dist = semirelaxed_fgw(
                     M,
                     C_sub,
                     C_T[j].type(
