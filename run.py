@@ -75,7 +75,7 @@ parser.add_argument('-shortest_path', type=str, default='False',
                     help='wether to use the shortest path cost matrix in TFGW')
 parser.add_argument('-skip_connection', type=str, default='True',
                     help='wether to skip connection is the architectures')
-parser.add_argument('-scheduler', type=str, default='True',
+parser.add_argument('-scheduler', type=str, default='False',
                     help='wether to use a learning rate scheduler')
 # parser.add_argument('-seeds', type=list, default=[1941488137,4198936517,983997847,4023022221,4019585660,2108550661,1648766618,629014539,3212139042,2424918363],
 #                    help='seeds to use for splits')
