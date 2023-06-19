@@ -591,13 +591,12 @@ class LTFGW_MLP_dropout(nn.Module):
 
         x = self.dropout1(x)
         x = self.Linear1(x)
-        x = x.relu()
-
+        
         if self.skip_connection:
             y = self.LTFGW(x, edge_index)
             x = torch.hstack([x, y])
             x = self.batch_norm(x)
-            
+            x = x.relu()
             x = self.dropout2(x)
             x = self.Linear2(x)
             x_latent = x
