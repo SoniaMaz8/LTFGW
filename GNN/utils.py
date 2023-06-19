@@ -122,7 +122,7 @@ def get_dataset(dataset_name):
         graph_type = 'multi_graph'
 
     elif dataset_name == 'cornell':
-        dataset = torch.load('data/cornell.pt')
+        dataset = torch.load('data/cornell_undirected.pt')
         n_classes = 5
         n_features = dataset.num_features
         test_graph = False
