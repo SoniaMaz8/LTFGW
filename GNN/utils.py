@@ -72,6 +72,16 @@ def get_model(
             n_nodes,
             mean_init=mean_init,
             std_init=std_init)
+        
+    
+    elif model_name == 'LTFGW_MLP_dropout_relu':
+        model = LTFGW_MLP_dropout(
+            args,
+            n_classes,
+            n_features,
+            n_nodes,
+            mean_init=mean_init,
+            std_init=std_init)    
 
     return model
 
