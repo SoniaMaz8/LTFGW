@@ -138,6 +138,13 @@ def get_dataset(dataset_name):
         test_graph = False
         graph_type = 'single_graph'
 
+    elif dataset_name == 'cornell_directed':
+        dataset = torch.load('data/cornell.pt')
+        n_classes = 5
+        n_features = dataset.num_features
+        test_graph = False
+        graph_type = 'single_graph'    
+
     elif dataset_name == 'chameleon':
         dataset = torch.load('data/chameleon_undirected.pt')
         n_classes = 5
