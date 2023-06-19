@@ -51,7 +51,7 @@ def val_epoch(dataset, model, criterion):
     return loss_val, val_acc
 
 
-def train(args,criterion,optimizer,loader,loader_val,model,filename_save,filename_best_model,filename_visus,filename_templates,filename_alpha,filename_current_model):
+def train(args,criterion,optimizer,loader,loader_val,model,filename_save,filename_best_model,filename_visus,filename_templates,filename_alpha,filename_current_model,save,schedule):
 
     best_val_perf = 0
     Templates = []
@@ -62,7 +62,7 @@ def train(args,criterion,optimizer,loader,loader_val,model,filename_save,filenam
 
     save_templates = args['model'] == 'LTFGW_MLP' or  args['model'] == 'LTFGW_GCN' or  args['model'] == 'LTFGW_MLP_log' or  args['model'] == 'LTFGW_MLP_dropout' or  args['model'] == 'LTFGW_MLP_semirelaxed'
 
-    if args['save']:
+    if save:
         # create dataframe to save performances
         df = pd.DataFrame(
             columns=[
@@ -99,7 +99,7 @@ def train(args,criterion,optimizer,loader,loader_val,model,filename_save,filenam
         mean_val_acc = torch.mean(torch.tensor(val_accs))
         mean_val_loss = torch.mean(torch.tensor(val_losses))
 
-        if args['save']:
+        if save:
             df = pd.read_pickle(filename_save)
             # add performances to the dataframe
             df.at[epoch, 'loss'] = mean_train_loss
@@ -107,7 +107,7 @@ def train(args,criterion,optimizer,loader,loader_val,model,filename_save,filenam
             df.at[epoch, 'validation_accuracy'] = mean_val_acc
             df.at[epoch, 'loss_validation'] = mean_val_loss
 
-            if val_acc > best_val_perf:
+            if  mean_val_acc > best_val_perf:
 
                 # save best model parameters
                 torch.save({'model_state_dict': model.state_dict(),
@@ -139,7 +139,7 @@ def train(args,criterion,optimizer,loader,loader_val,model,filename_save,filenam
             torch.save(Templates, filename_templates)
             torch.save(alphas, filename_alpha)
 
-        if args['scheduler']:
+        if schedule:
             scheduler.step()
 
 

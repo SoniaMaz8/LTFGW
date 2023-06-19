@@ -78,7 +78,6 @@ class LTFGW_log(nn.Module):
 
     def forward(self, x, edge_index):
         alpha = torch.sigmoid(self.alpha0)
-        print(alpha)
         q = self.softmax(self.q0)
         x = torch.log(
             distance_to_template(

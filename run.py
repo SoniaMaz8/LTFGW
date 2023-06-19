@@ -191,7 +191,7 @@ for seed in seeds:
                                     input_nodes=dataset.val_mask,
                                     batch_size=torch.sum(dataset.val_mask).item())
         dataset_test = dataset
-        train(args,criterion,optimizer,loader,loader_val,model,filename_save,filename_best_model,filename_visus,filename_templates,filename_alpha,filename_current_model)
+        train(args,criterion,optimizer,loader,loader_val,model,filename_save,filename_best_model,filename_visus,filename_templates,filename_alpha,filename_current_model,save,scheduler)
 
     elif graph_type == 'multi_graph':
         generator = torch.Generator().manual_seed(seed.item())
