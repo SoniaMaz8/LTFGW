@@ -1,14 +1,14 @@
 #!/bin/bash
 #
 ## BEGIN SBATCH directives
-#SBATCH --job-name=test_seq
-#SBATCH --output=res_seq1.txt
+#SBATCH --job-name=OTGNN
+#SBATCH --output=res_seq9.txt
 #
 #SBATCH --ntasks=1
-#SBATCH --time=00:10:00
+#SBATCH --time=35:00:00
+#SBATCH --mem=15GB
 #SBATCH --partition=cpu_shared
 #SBATCH --account=oatmil
-#SBATCH --gres=gpu:1
 ##SBATCH --mail-type=ALL
 ##SBATCH --mail-user=sonia.mazelet@polytechnique.edu
 ## END SBATCH directives
@@ -18,4 +18,4 @@ module purge
 module load anaconda3/2020.11
 
 ## Execution
-python run.py -model LTFGW_MLP
+python run.py -dropout 0.8 -model LTFGW_MLP_dropout_relu -number_of_seeds 10 -nepochs 1500 -dataset cornell_directed
