@@ -1,6 +1,6 @@
 # %%
 
-import torch_sparse
+import torch_geometric
 from torch_geometric.loader import NeighborLoader, DataLoader, ClusterData, ClusterLoader, DataLoader
 from GNN.architectures import *
 
@@ -11,6 +11,8 @@ import torch
 import numpy as np
 import torch_geometric.transforms as T
 import argparse
+
+torch_geometric.typing.WITH_PYG_LIB = False
 
 # %%Parameters to set
 
@@ -185,11 +187,15 @@ for seed in seeds:
         loader = NeighborLoader(dataset,
                                 num_neighbors=[-1],
                                 input_nodes=dataset.train_mask,
-                                batch_size=torch.sum(dataset.train_mask).item())
+                                directed=False,
+                                batch_size=torch.sum(dataset.train_mask).item()
+                                )
         loader_val = NeighborLoader(dataset,
                                     num_neighbors=[-1],
                                     input_nodes=dataset.val_mask,
-                                    batch_size=torch.sum(dataset.val_mask).item())
+                                    directed=False,
+                                    batch_size=torch.sum(dataset.val_mask).item()
+                                    )
         dataset_test = dataset
         train(args,criterion,optimizer,loader,loader_val,model,filename_save,filename_best_model,filename_visus,filename_templates,filename_alpha,filename_current_model,save,scheduler)
 

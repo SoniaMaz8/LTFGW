@@ -34,7 +34,7 @@ def graph_to_adjacency(n, edges, shortest_path, device='cpu'):
     ones = torch.ones(len(edges[0])).to(device)
     C = torch.sparse_coo_tensor(edges, ones, size=(n, n))
     C = C.to_dense()
-    C = C + C.T
+    C = 0.5*(C + C.T)
     if not shortest_path:
         return C
     else:
@@ -57,7 +57,8 @@ def subgraph(x, edge_index, node_idx, order, num_nodes):
         order,
         edge_index=edge_index,
         relabel_nodes=True,
-        num_nodes=num_nodes)
+        num_nodes=num_nodes,
+        directed=False)
     x_sub = x[sub_G[0]]
     edges_sub = sub_G[1]
     central_node_index = sub_G[2]

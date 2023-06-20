@@ -8,6 +8,7 @@ from torch_geometric.loader import DataLoader
 import torch.nn.functional as F
 from torch_geometric.loader import NeighborLoader
 from torch.optim.lr_scheduler import StepLR
+from torch_geometric.utils import is_undirected
 
 
 def train_epoch(dataset, model, criterion, optimizer):
