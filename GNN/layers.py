@@ -162,7 +162,7 @@ class LTFGW(nn.Module):
             self.shortest_path)
         return x
 
-
+        
 class LTFGW_semirelaxed(nn.Module):
     """ Layer for the local TFWG """
 
@@ -176,7 +176,6 @@ class LTFGW_semirelaxed(nn.Module):
             mean_init=0,
             std_init=0.001,
             alpha0=None,
-            local_alpha=False,
             shortest_path=False,
             device='cpu'):
         """
@@ -196,8 +195,6 @@ class LTFGW_semirelaxed(nn.Module):
         self.shortest_path = shortest_path
         self.device = device
 
-        self.local_alpha = local_alpha
-
         templates, templates_features = template_initialisation(
             self.n_templates_nodes, self.n_templates, self.n_features, mean_init, std_init)
         self.templates = nn.Parameter(templates)
@@ -206,17 +203,9 @@ class LTFGW_semirelaxed(nn.Module):
 
         # initialize the tradeoff parameter alpha
         if alpha0 is None:
-            if self.local_alpha:
-                alpha0 = torch.zeros(n_nodes)
-                self.alpha0 = nn.Parameter(alpha0)
-            else:
                 alpha0 = torch.Tensor([0])
                 self.alpha0 = nn.Parameter(alpha0)
         else:
-            if self.local_alpha:
-                alpha0 = torch.ones(n_nodes) * alpha0
-                self.alpha0 = torch.logit(alpha0)
-            else:
                 alpha0 = torch.Tensor([alpha0])
                 self.alpha0 = torch.logit(alpha0)
 
@@ -229,7 +218,6 @@ class LTFGW_semirelaxed(nn.Module):
             self.templates,
             alpha,
             self.k,
-            self.local_alpha,
             self.shortest_path,
             self.device)
         return x

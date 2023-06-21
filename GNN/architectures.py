@@ -448,7 +448,6 @@ class GCN_JK(torch.nn.Module):
         x = self.lin1(x)
         return x, x
 
-
 class LTFGW_MLP_semirelaxed(nn.Module):
     def __init__(
             self,
@@ -482,16 +481,17 @@ class LTFGW_MLP_semirelaxed(nn.Module):
         self.train_node_weights = args['train_node_weights'] == 'True'
         self.skip_connection = args['skip_connection'] == 'True'
         self.drop = args['dropout']
-        self.shortest_path = args['shortest_path']
+        self.shortest_path = args['shortest_path'] == 'True'
         self.k = args['k']
         self.n_nodes = n_nodes
 
+        self.dropout1 = torch.nn.Dropout(self.drop)
         self.dropout2 = torch.nn.Dropout(self.drop)
 
         self.Linear1 = Linear(self.n_features, self.hidden_layer)
         self.Linear2 = Linear(
             self.hidden_layer +
-            self.n_templates,
+            self.n_templates*self.n_templates_nodes,
             self.n_classes)
         self.Linear3 = Linear(self.n_templates, self.n_classes)
         self.LTFGW = LTFGW_semirelaxed(
@@ -506,10 +506,11 @@ class LTFGW_MLP_semirelaxed(nn.Module):
             self.shortest_path,
             device)
         self.batch_norm = torch.nn.BatchNorm1d(
-            self.hidden_layer + self.n_templates)
+            self.hidden_layer +self.n_templates*self.n_templates_nodes)
 
     def forward(self, x, edge_index):
 
+        x = self.dropout1(x)
         x = self.Linear1(x)
 
         if self.skip_connection:

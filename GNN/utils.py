@@ -63,6 +63,8 @@ def get_model(
             mean_init,
             std_init,
             device)
+        
+
 
     elif model_name == 'LTFGW_MLP_dropout':
         model = LTFGW_MLP_dropout(
