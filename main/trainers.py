@@ -12,9 +12,7 @@ from torch_geometric.utils import is_undirected
 
 
 def train_epoch(dataset, model, criterion, optimizer):
-    """"
-    train one epoch on the complete graph
-    """
+
     model.train()
     optimizer.zero_grad()
     out, x_latent = model(dataset.x, dataset.edge_index)
@@ -36,9 +34,7 @@ def train_epoch(dataset, model, criterion, optimizer):
 
 
 def val_epoch(dataset, model, criterion):
-    """"
-    train one epoch on the complete graph
-    """
+
     model.eval()
     out, _ = model(dataset.x, dataset.edge_index)
 
@@ -61,7 +57,7 @@ def train(args,criterion,optimizer,loader,loader_val,model,filename_save,filenam
         scheduler = StepLR(optimizer, 200, 0.8)
 
 
-    save_templates = args['model'] == 'LTFGW_MLP' or  args['model'] == 'LTFGW_GCN' or  args['model'] == 'LTFGW_MLP_log' or  args['model'] == 'LTFGW_MLP_dropout' or  args['model'] == 'LTFGW_MLP_semirelaxed'
+    save_templates = args['model'] == 'LTFGW_MLP' or  args['model'] == 'LTFGW_GCN' or  args['model'] == 'LTFGW_MLP_log' or  args['model'] == 'LTFGW_MLP_dropout' or  args['model'] == 'LTFGW_MLP_semirelaxed' or args['model'] == 'LTFGW_MLP_dropout' or  args['model'] == 'LTFGW_MLP_dropout_relu'
 
     if save:
         # create dataframe to save performances
