@@ -9,6 +9,7 @@ from scipy.sparse.csgraph import shortest_path as function_shortest_path
 from torch_geometric.utils import k_hop_subgraph
 from torch_geometric.data import Data as GraphData
 from ot.gromov import semirelaxed_fused_gromov_wasserstein2 as semirelaxed_fgw
+from ot.gromov import semirelaxed_gromov_wasserstein
 import time
 
 
@@ -35,7 +36,9 @@ def graph_to_adjacency(n, edges, shortest_path, device='cpu'):
     C = torch.sparse_coo_tensor(edges, ones, size=(n, n))
     C = C.to_dense()
     C = 0.5*(C + C.T)
+    
     if not shortest_path:
+
         return C
     else:
         graph = csr_matrix(C)
@@ -118,6 +121,7 @@ def distance_to_template(
         C_sub = graph_to_adjacency(
             n_sub, edges_sub, shortest_path).type(
             torch.float)
+    
 
         for j in range(n_T):
 
@@ -174,12 +178,13 @@ def distance_to_template_semirelaxed(
     n_T = len(x_T)  # number of templates
     n_feat = len(x[0])
     n_feat_T = len(x_T[0][0])
+    n_templates_nodes=len(C_T[0][0])
 
     if not n_feat == n_feat_T:
         raise ValueError(
             'the templates and the graphs must have the same number of features')
 
-    distances = torch.zeros(n, n_T)
+    distances = torch.zeros(n, n_T*n_templates_nodes)
     for i in range(n):
         x_sub, edges_sub, central_node_index = subgraph(x, edge_index, i, k, n)
         # reshape pour utiliser ot.dist
@@ -199,13 +204,11 @@ def distance_to_template_semirelaxed(
             p = F.normalize(p, p=1, dim=0)
             p = p.to(device)
 
-        p = p.type(torch.double)
         C_sub = graph_to_adjacency(
             n_sub,
             edges_sub,
             shortest_path,
-            device=device).type(
-            torch.double)
+            device=device)
 
         for j in range(n_T):
 
@@ -219,14 +222,9 @@ def distance_to_template_semirelaxed(
             # more normalization
             p = p / torch.sum(p)
 
-            dist = semirelaxed_fgw(
-                    M,
-                    C_sub,
-                    C_T[j].type(
-                        torch.double),
-                    p,
-                    alpha=alpha,
-                    symmetric=True,
-                    max_iter=20)
-            distances[i, j] = dist
+            T = semirelaxed_gromov_wasserstein(C_sub, C_T[j], p, max_iter=20)
+
+            q =torch.sum(T,0)
+
+            distances[i, j*n_templates_nodes:(j+1)*n_templates_nodes] = q
     return distances.to(device)

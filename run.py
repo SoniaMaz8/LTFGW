@@ -41,9 +41,9 @@ parser.add_argument('-lr', type=float, default=0.05,
                     help='learning rate')
 parser.add_argument('-wd', type=float, default=5e-4,
                     help='weight decay')
-parser.add_argument('-n_templates', type=int, default=15,
+parser.add_argument('-n_templates', type=int, default=1,
                     help='number of templates for LTFGW')
-parser.add_argument('-n_templates_nodes', type=int, default=5,
+parser.add_argument('-n_templates_nodes', type=int, default=2,
                     help='number of templates nodes for LTFGW')
 parser.add_argument('-hidden_layer', type=int, default=64,
                     help='hidden dimention')
