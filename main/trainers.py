@@ -93,7 +93,6 @@ def train(args,criterion,optimizer,loader,loader_val,model,filename_save,filenam
             val_losses.append(loss_val.item())
             val_accs.append(val_acc)
 
-        end = time.time()
 
         mean_train_acc = torch.mean(torch.tensor(train_accs))
         mean_train_loss = torch.mean(torch.tensor(train_losses))
@@ -133,7 +132,7 @@ def train(args,criterion,optimizer,loader,loader_val,model,filename_save,filenam
                 Templates.append(df['model_state_dict']['LTFGW.templates'])
                 alphas.append(df['model_state_dict']['LTFGW.alpha0'])
 
-        
+        end = time.time()
         # print performances
         print(f'Epoch: {epoch:03d},time:{end-start:.4f}, Loss: {mean_train_loss:.4f},Loss validation: {mean_val_loss:.4f},Train Accuracy: {mean_train_acc:.4f},Validation Accuracy:{mean_val_acc:.4f}')
 

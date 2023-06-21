@@ -11,6 +11,7 @@ from torch_geometric.data import Data as GraphData
 from ot.gromov import semirelaxed_fused_gromov_wasserstein2 as semirelaxed_fgw
 from ot.gromov import semirelaxed_gromov_wasserstein
 import time
+from ot.backend import TorchBackend
 
 
 def adjacency_to_graph(C, F):
@@ -228,3 +229,101 @@ def distance_to_template_semirelaxed(
 
             distances[i, j*n_templates_nodes:(j+1)*n_templates_nodes] = q
     return distances.to(device)
+
+
+
+def FGW_one_node(M,C,p,alpha):
+    nx = TorchBackend()
+    T=torch.reshape(p,(len(p),1))
+    fgw_dist=(1-alpha)*torch.matmul(p,M)+alpha*torch.sum(C**2)
+    C2=torch.tensor([[0.]])
+    fgw_dist = nx.set_gradients(fgw_dist, (alpha,M,C,p),
+                                        (torch.sum(C**2)-torch.matmul(p,M),(1-alpha)*T,2 * C * nx.outer(p, p) - 2 * nx.dot(T, nx.dot(C2, T.T)),(1-alpha)*M))
+    return fgw_dist
+
+
+def distance_to_template_one_node(
+        x,
+        edge_index,
+        x_T,
+        C_T,
+        alpha,
+        q,
+        k,
+        local_alpha,
+        shortest_path):
+    """
+    Computes the OT distance between each subgraphs of order k of G and the templates
+    x : node features of the graph
+    edge_index : edge indexes of the graph
+    x_T : list of the node features of the templates
+    C_T : list of the adjacency matrices of the templates
+    alpha : trade-off parameter for fused gromov-wasserstein distance
+    k : number of neighbours in the subgraphs
+    """
+
+    n = len(x)  # number of nodes in the graph
+    n_T = len(x_T)  # number of templates
+    n_feat = len(x[0])
+    n_feat_T = len(x_T[0][0])
+
+    # normalize q for gromov-wasserstein
+    q = F.normalize(q, p=1, dim=1)
+
+    if not n_feat == n_feat_T:
+        raise ValueError(
+            'the templates and the graphs must have the same number of features')
+
+    distances = torch.zeros(n, n_T)
+    for i in range(n):
+        x_sub, edges_sub, central_node_index = subgraph(x, edge_index, i, k, n)
+        # reshape pour utiliser ot.dist
+        x_sub = x_sub.reshape(len(x_sub), n_feat)
+        n_sub = len(x_sub)
+
+        if n_sub > 1:  # more weight on central node
+            val = (1 - (k + 1) / (k + 2)) / (n_sub - 1)
+            p = torch.ones(n_sub) * val
+            p[central_node_index] = (k + 1) / (k + 2)
+            p = F.normalize(p, p=1, dim=0)  # normalize for gromov-wasserstein
+
+        else:  # if the node is isolated
+            p = torch.ones(1)
+            # normalize p for gromov-wasserstein
+            p = F.normalize(p, p=1, dim=0)
+
+        C_sub = graph_to_adjacency(
+            n_sub, edges_sub, shortest_path).type(
+            torch.float)
+    
+
+        for j in range(n_T):
+
+            template_features = x_T[j].reshape(
+                len(x_T[j]), n_feat_T)  # reshape pour utiliser ot.dist
+            M = ot.dist(x_sub, template_features).clone(
+            ).detach().requires_grad_(True)
+            # cost matrix between the features of the subgraph and the template
+            M = M.type(torch.float)
+
+            # more normalization
+            qj = q[j] / torch.sum(q[j])
+            p = p / torch.sum(p)
+
+            # ensure that p and q have the same sum
+            p_nump = p.numpy()
+            p_nump = np.asarray(p_nump, dtype=np.float64)
+            sum_p = p_nump.sum(0)
+            q_nump = qj.detach().numpy()
+            q_nump = np.asarray(q_nump, dtype=np.float64)
+            sum_q = q_nump.sum(0)
+            if not abs(sum_q - sum_p) < np.float64(1.5 * 10**(-7)):
+                if sum_q > sum_p:
+                    p[0] += abs(sum_q - sum_p)
+                else:
+                    qj[0] += abs(sum_q - sum_p)
+
+            dist = FGW_one_node(M,C_sub,p,alpha)
+            distances[i, j] = dist
+    return distances
+
