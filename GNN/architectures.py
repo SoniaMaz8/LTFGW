@@ -7,59 +7,6 @@ from torch_geometric.nn import JumpingKnowledge
 from torch_geometric.nn import APPNP
 
 
-class GCN_LTFGW(nn.Module):
-    def __init__(self, args, n_classes, n_features, n_nodes):
-        """
-        n_classes: number of classes for node classification
-        """
-        super().__init__()
-
-        self.n_classes = n_classes
-        self.n_features = n_features
-        self.n_templates = args['n_templates']
-        self.n_templates_nodes = args['n_template_nodes']
-        self.hidden_layer = args['hidden_layer']
-        self.alpha0 = args['alpha_0']
-        self.skip_connection = args['skip_connection'] == 'True'
-
-        self.conv1 = GCNConv(self.n_features, self.hidden_layer)
-        self.conv2 = GCNConv(self.n_features, self.hidden_layer)
-        self.LTFGW = LTFGW(
-            self.n_templates,
-            self.n_templates_nodes,
-            self.hidden_layer,
-            self.alpha0)
-        self.linear = Linear(
-            self.n_templates +
-            self.hidden_layer,
-            self.n_classes)
-        self.batch_norm = torch.nn.BatchNorm1d(
-            self.hidden_layer + self.n_templates)
-
-    def forward(self, x, edge_index):
-
-        # first conv -> dim reduction
-        x = self.conv1(x, edge_index)
-        x = x.relu()
-
-        # LTFGW + batch norm
-        if self.skip_connection:
-            y = self.LTFGW(x, edge_index)
-            x = torch.hstack([x, y])
-        else:
-            x = self.LTFGW(x, edge_index)
-        x = self.batch_norm(x)
-
-        # second conv -> dim reduction
-        x = self.conv2(x, edge_index)
-        x = x.relu()
-
-        x_latent = x
-        # final prediction
-        x = self.linear(x)
-        return x, x_latent
-
-
 class GCN(nn.Module):
     def __init__(self, args, n_classes, n_features):
         """
@@ -139,8 +86,6 @@ class LTFGW_GCN(nn.Module):
             self.alpha0,
             self.train_node_weights,
             self.shortest_path)
-        self.batch_norm = torch.nn.BatchNorm1d(
-            self.hidden_layer + self.n_templates)
 
     def forward(self, x, edge_index):
 
@@ -150,7 +95,6 @@ class LTFGW_GCN(nn.Module):
             z = self.conv1(x, edge_index)
             z = z.relu()
             x = torch.hstack([z, y])
-            x = self.batch_norm(x)
             x = self.dropout(x)
             x_latent = x
             x = self.conv2(x, edge_index)
@@ -259,8 +203,6 @@ class LTFGW_MLP(nn.Module):
             std_init,
             self.train_node_weights,
             self.shortest_path)
-        self.batch_norm = torch.nn.BatchNorm1d(
-            self.hidden_layer + self.n_templates)
 
     def forward(self, x, edge_index):
 
@@ -269,7 +211,6 @@ class LTFGW_MLP(nn.Module):
         if self.skip_connection:
             y = self.LTFGW(x, edge_index)
             x = torch.hstack([x, y])
-            x = self.batch_norm(x)
             x = x.relu()
             x = self.dropout2(x)
             x = self.Linear2(x)
@@ -338,8 +279,6 @@ class LTFGW_MLP_log(nn.Module):
             std_init,
             self.train_node_weights,
             self.shortest_path)
-        self.batch_norm = torch.nn.BatchNorm1d(
-            self.hidden_layer + self.n_templates)
 
     def forward(self, x, edge_index):
         
@@ -349,7 +288,6 @@ class LTFGW_MLP_log(nn.Module):
         if self.skip_connection:
             y = self.LTFGW(x, edge_index)
             x = torch.hstack([x, y])
-            x = self.batch_norm(x)
             x = x.relu()
             x = self.dropout2(x)
             x = self.Linear2(x)
@@ -505,19 +443,16 @@ class LTFGW_MLP_semirelaxed(nn.Module):
             self.alpha0,
             self.shortest_path,
             device)
-        self.batch_norm = torch.nn.BatchNorm1d(
-            self.hidden_layer +self.n_templates*self.n_templates_nodes)
 
     def forward(self, x, edge_index):
 
-      #  x = self.dropout1(x)
+        x = self.dropout1(x)
         x = self.Linear1(x)
 
         if self.skip_connection:
             y = self.LTFGW(x, edge_index)
             print(y)
             x = torch.hstack([x, y])
-            x = self.batch_norm(x)
             x = x.relu()
             x = self.dropout2(x)
             x = self.Linear2(x)
@@ -586,8 +521,6 @@ class LTFGW_MLP_dropout(nn.Module):
             std_init,
             self.train_node_weights,
             self.shortest_path)
-        self.batch_norm = torch.nn.BatchNorm1d(
-            self.hidden_layer + self.n_templates)
 
     def forward(self, x, edge_index):
 
@@ -597,7 +530,6 @@ class LTFGW_MLP_dropout(nn.Module):
         if self.skip_connection:
             y = self.LTFGW(x, edge_index)
             x = torch.hstack([x, y])
-            x = self.batch_norm(x)
             x = x.relu()
             x = self.dropout2(x)
             x = self.Linear2(x)
@@ -667,8 +599,6 @@ class LTFGW_MLP_dropout_relu(nn.Module):
             std_init,
             self.train_node_weights,
             self.shortest_path)
-        self.batch_norm = torch.nn.BatchNorm1d(
-            self.hidden_layer + self.n_templates)
 
     def forward(self, x, edge_index):
 
@@ -679,7 +609,6 @@ class LTFGW_MLP_dropout_relu(nn.Module):
         if self.skip_connection:
             y = self.LTFGW(x, edge_index)
             x = torch.hstack([x, y])
-            x = self.batch_norm(x)
             x = self.dropout2(x)
             x = self.Linear2(x)
             x_latent = x
@@ -747,8 +676,6 @@ class LTFGW_MLP_dropout_relu_one_node(nn.Module):
             std_init,
             self.train_node_weights,
             self.shortest_path)
-        self.batch_norm = torch.nn.BatchNorm1d(
-            self.hidden_layer + self.n_templates)
 
     def forward(self, x, edge_index):
 
@@ -759,7 +686,6 @@ class LTFGW_MLP_dropout_relu_one_node(nn.Module):
         if self.skip_connection:
             y = self.LTFGW(x, edge_index)
             x = torch.hstack([x, y])
-            x = self.batch_norm(x)
             x = self.dropout2(x)
             x = self.Linear2(x)
             x_latent = x
