@@ -26,7 +26,7 @@ device = torch.device(dev)
 
 parser = argparse.ArgumentParser(description='Graph node classification')
 
-parser.add_argument('-dataset', type=str, default='cornell',
+parser.add_argument('-dataset', type=str, default='cornell_directed',
                     help='name of the dataset to use')
 parser.add_argument('-model', type=str, default='MLP',
                     help='name of the model to use')
