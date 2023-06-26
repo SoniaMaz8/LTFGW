@@ -48,7 +48,7 @@ def val_epoch(dataset, model, criterion):
     return loss_val, val_acc
 
 
-def train(args,criterion,optimizer,loader,loader_val,model,filename_save,filename_best_model,filename_visus,filename_templates,filename_alpha,filename_current_model,save,schedule):
+def train(args,criterion,optimizer,loader,loader_val,model,filename_save,filename_best_model,filename_visus,filename_templates,filename_alpha,filename_current_model,save,schedule, template_sizes):
 
     best_val_perf = 0
     Templates = []
@@ -122,7 +122,7 @@ def train(args,criterion,optimizer,loader,loader_val,model,filename_save,filenam
                         'optimizer_state_dict': optimizer.state_dict()},
                        filename_current_model)
 
-            if save_templates:
+            if save_templates and template_sizes==None:
 
                 df = torch.load(filename_current_model)
                 Templates.append(df['model_state_dict']['LTFGW.templates'])
