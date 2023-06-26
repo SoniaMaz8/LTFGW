@@ -75,47 +75,53 @@ class LTFGW_log(nn.Module):
         self.shortest_path = shortest_path
         self.template_sizes=template_sizes
 
-        templates, templates_features = template_initialisation(
-            self.n_templates_nodes, self.n_templates, self.n_features, mean_init, std_init,template_sizes)
-        
+
+        templates, templates_features, q0 = template_initialisation(
+        self.n_templates_nodes, self.n_templates, self.n_features, mean_init, std_init, template_sizes)
+
         if self.template_sizes==None:
             self.templates = nn.Parameter(templates)
             self.templates_features = nn.Parameter(templates_features)
+            if train_node_weights:
+                 self.q0=torch.nn.Parameter(q0)
         
         else:
             self.templates = nn.ParameterList(templates)
             self.templates_features = nn.ParameterList(templates_features)
-            
-        self.softmax = nn.Softmax(dim=1)
-                
-        if train_node_weights:
-            q0 = torch.zeros(n_templates, n_templates_nodes)
-            self.q0 = nn.Parameter(q0)
-        else:
-            self.q0 = torch.zeros(n_templates, n_templates_nodes)
+            if  train_node_weights :
+                  self.q0=torch.nn.ParameterList(q0)
+        
+        
+        self.softmax1 = nn.Softmax(dim=1)  
+        self.softmax2 = nn.Softmax(dim=0) 
 
         # initialize the tradeoff parameter alpha
         if alpha0 is None:
                 alpha0 = torch.Tensor([0])
                 self.alpha0 = nn.Parameter(alpha0)
         else:
-                alpha0 = torch.zeros([alpha0])
+                alpha0 = torch.tensor([alpha0])
                 self.alpha0 = torch.logit(alpha0)
 
     def forward(self, x, edge_index):
         alpha = torch.sigmoid(self.alpha0)
-        q = self.softmax(self.q0)
-        x = torch.log(
-            distance_to_template(
-                x,
-                edge_index,
-                self.templates_features,
-                self.templates,
-                alpha,
-                q,
-                self.k,
-                self.local_alpha,
-                self.shortest_path))
+
+        if self.template_sizes==None:
+          q = self.softmax1(self.q0)
+        else: 
+          q=[]
+          for i in range(self.n_templates):
+            q.append(self.softmax2(self.q0[i]))
+               
+        x = torch.log(distance_to_template(
+            x,
+            edge_index,
+            self.templates_features,
+            self.templates,
+            alpha,
+            q,
+            self.k,
+            self.shortest_path))
         return x
 
 class LTFGW(nn.Module):
