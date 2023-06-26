@@ -49,7 +49,7 @@ class GCN(nn.Module):
 
 
 class LTFGW_GCN(nn.Module):
-    def __init__(self, args, n_classes, n_features, n_nodes):
+    def __init__(self, args, n_classes, n_features, n_nodes, template_sizes=None):
         """
         n_classes: number of classes for node classification
         """
@@ -85,7 +85,8 @@ class LTFGW_GCN(nn.Module):
             self.k,
             self.alpha0,
             self.train_node_weights,
-            self.shortest_path)
+            self.shortest_path,
+            template_sizes)
 
     def forward(self, x, edge_index):
 
@@ -156,7 +157,8 @@ class LTFGW_MLP(nn.Module):
             n_features,
             n_nodes,
             mean_init=0,
-            std_init=0.001):
+            std_init=0.001,
+            template_sizes=None):
         """
         n_classes: number of classes for node classification
         n_features: number of features for each node
@@ -202,7 +204,8 @@ class LTFGW_MLP(nn.Module):
             mean_init,
             std_init,
             self.train_node_weights,
-            self.shortest_path)
+            self.shortest_path,
+            template_sizes)
 
     def forward(self, x, edge_index):
 
@@ -231,7 +234,8 @@ class LTFGW_MLP_log(nn.Module):
             n_features,
             n_nodes,
             mean_init=0,
-            std_init=0.001):
+            std_init=0.001,
+            template_sizes=None):
         """
         n_classes: number of classes for node classification
         n_features: number of features for each node
@@ -278,7 +282,8 @@ class LTFGW_MLP_log(nn.Module):
             mean_init,
             std_init,
             self.train_node_weights,
-            self.shortest_path)
+            self.shortest_path,
+            template_sizes)
 
     def forward(self, x, edge_index):
         
@@ -395,7 +400,8 @@ class LTFGW_MLP_semirelaxed(nn.Module):
             n_nodes,
             mean_init=0,
             std_init=0.001,
-            device='cpu'):
+            device='cpu',
+            template_sizes=None):
         """
         n_classes: number of classes for node classification
         n_features: number of features for each node
@@ -442,7 +448,8 @@ class LTFGW_MLP_semirelaxed(nn.Module):
             std_init,
             self.alpha0,
             self.shortest_path,
-            device)
+            device,
+            template_sizes)
 
     def forward(self, x, edge_index):
 
@@ -473,7 +480,8 @@ class LTFGW_MLP_dropout(nn.Module):
             n_features,
             n_nodes,
             mean_init=0,
-            std_init=0.001):
+            std_init=0.001,
+            template_sizes=None):
         """
         n_classes: number of classes for node classification
         n_features: number of features for each node
@@ -500,6 +508,7 @@ class LTFGW_MLP_dropout(nn.Module):
         self.shortest_path = args['shortest_path']
         self.k = args['k']
         self.n_nodes = n_nodes
+        self.template_sizes=template_sizes
 
         self.dropout1 = torch.nn.Dropout(self.drop)
         self.dropout2 = torch.nn.Dropout(self.drop)
@@ -510,6 +519,7 @@ class LTFGW_MLP_dropout(nn.Module):
             self.n_templates,
             self.n_classes)
         self.Linear3 = Linear(self.n_templates, self.n_classes)
+
         self.LTFGW = LTFGW(
             self.n_nodes,
             self.n_templates,
@@ -520,7 +530,8 @@ class LTFGW_MLP_dropout(nn.Module):
             mean_init,
             std_init,
             self.train_node_weights,
-            self.shortest_path)
+            self.shortest_path,
+            self.template_sizes)
 
     def forward(self, x, edge_index):
 
@@ -538,7 +549,7 @@ class LTFGW_MLP_dropout(nn.Module):
         else:
             x = self.LTFGW(x, edge_index)
             x = self.Linear3(x)
-
+        
         return x, x_latent
 
 
@@ -551,7 +562,8 @@ class LTFGW_MLP_dropout_relu(nn.Module):
             n_features,
             n_nodes,
             mean_init=0,
-            std_init=0.001):
+            std_init=0.001,
+            template_sizes=None):
         """
         n_classes: number of classes for node classification
         n_features: number of features for each node
@@ -598,7 +610,8 @@ class LTFGW_MLP_dropout_relu(nn.Module):
             mean_init,
             std_init,
             self.train_node_weights,
-            self.shortest_path)
+            self.shortest_path,
+            template_sizes)
 
     def forward(self, x, edge_index):
 

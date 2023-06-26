@@ -79,6 +79,8 @@ parser.add_argument('-skip_connection', type=str, default='True',
                     help='wether to skip connection is the architectures')
 parser.add_argument('-scheduler', type=str, default='False',
                     help='wether to use a learning rate scheduler')
+parser.add_argument('-template_sizes', type=int,nargs='+', default=None,
+                    help='list of template sizes')
 # parser.add_argument('-seeds', type=list, default=[1941488137,4198936517,983997847,4023022221,4019585660,2108550661,1648766618,629014539,3212139042,2424918363],
 #                    help='seeds to use for splits')
 
@@ -111,6 +113,10 @@ n_templates_nodes = args['n_templates_nodes']
 k = args['k']
 drop = args['dropout']
 shortest_path = args['shortest_path'] == 'True'
+template_sizes = args['template_sizes']
+
+if not template_sizes == None:
+   args['n_templates']=len(template_sizes)
 
 
 if not args['alpha0'] is None:
@@ -157,7 +163,8 @@ for seed in seeds:
         n_nodes,
         mean,
         std,
-        device)
+        device,
+        template_sizes)
     model = model.to(device)
 
     method = model_name

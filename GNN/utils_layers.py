@@ -77,7 +77,6 @@ def distance_to_template(
         alpha,
         q,
         k,
-        local_alpha,
         shortest_path):
     """
     Computes the OT distance between each subgraphs of order k of G and the templates
@@ -95,7 +94,7 @@ def distance_to_template(
     n_feat_T = len(x_T[0][0])
 
     # normalize q for gromov-wasserstein
-    q = F.normalize(q, p=1, dim=1)
+    #q = F.normalize(q, p=1, dim=1)
 
     if not n_feat == n_feat_T:
         raise ValueError(
@@ -122,17 +121,15 @@ def distance_to_template(
         C_sub = graph_to_adjacency(
             n_sub, edges_sub, shortest_path).type(
             torch.float)
-    
-
+     
         for j in range(n_T):
 
             template_features = x_T[j].reshape(
                 len(x_T[j]), n_feat_T)  # reshape pour utiliser ot.dist
-            M = ot.dist(x_sub, template_features).clone(
-            ).detach().requires_grad_(True)
+            M = ot.dist(x_sub, template_features)
             # cost matrix between the features of the subgraph and the template
             M = M.type(torch.float)
-
+   
             # more normalization
             qj = q[j] / torch.sum(q[j])
             p = p / torch.sum(p)
@@ -149,9 +146,9 @@ def distance_to_template(
                     p[0] += abs(sum_q - sum_p)
                 else:
                     qj[0] += abs(sum_q - sum_p)
-
+        
             dist = ot.gromov.fused_gromov_wasserstein2(
-                    M, C_sub, C_T[j], p, qj, alpha=alpha, symmetric=True, max_iter=20)
+                    M, C_sub, torch.Tensor(C_T[j]), p, qj, alpha=alpha, symmetric=True, max_iter=20)
             distances[i, j] = dist
     return distances
 
@@ -250,7 +247,6 @@ def distance_to_template_one_node(
         alpha,
         q,
         k,
-        local_alpha,
         shortest_path):
     """
     Computes the OT distance between each subgraphs of order k of G and the templates

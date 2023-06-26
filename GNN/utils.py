@@ -17,12 +17,12 @@ def get_model(
         n_nodes,
         mean_init,
         std_init,
-        device):
+        device,
+        template_sizes):
+    
+    
     if model_name == 'LTFGW_GCN':
-        model = LTFGW_GCN(args, n_classes, n_features, n_nodes)
-
-    elif model_name == 'GCN_LTFGW':
-        model = GCN_LTFGW(args, n_classes, n_features)
+        model = LTFGW_GCN(args, n_classes, n_features, n_nodes, template_sizes)
 
     elif model_name == 'MLP':
         model = MLP(args, n_classes, n_features)
@@ -37,7 +37,8 @@ def get_model(
             n_features,
             n_nodes,
             mean_init=mean_init,
-            std_init=std_init)
+            std_init=std_init,
+            template_sizes=template_sizes)
 
     elif model_name == 'LTFGW_MLP_log':
         model = LTFGW_MLP_log(
@@ -46,7 +47,8 @@ def get_model(
             n_features,
             n_nodes,
             mean_init=mean_init,
-            std_init=std_init)
+            std_init=std_init,
+            template_sizes=template_sizes)
 
     elif model_name == 'ChebNet':
         model = ChebNet(args, n_classes, n_features)
@@ -62,9 +64,9 @@ def get_model(
             n_nodes,
             mean_init,
             std_init,
-            device)
+            device,
+            template_sizes=template_sizes)
         
-
 
     elif model_name == 'LTFGW_MLP_dropout':
         model = LTFGW_MLP_dropout(
@@ -73,7 +75,8 @@ def get_model(
             n_features,
             n_nodes,
             mean_init=mean_init,
-            std_init=std_init)
+            std_init=std_init,
+            template_sizes=template_sizes)
         
     
     elif model_name == 'LTFGW_MLP_dropout_relu':
@@ -83,7 +86,8 @@ def get_model(
             n_features,
             n_nodes,
             mean_init=mean_init,
-            std_init=std_init) 
+            std_init=std_init,
+            template_sizes=template_sizes) 
 
     elif model_name == 'LTFGW_MLP_dropout_relu_one_node':
         model = LTFGW_MLP_dropout_relu_one_node(
@@ -92,7 +96,8 @@ def get_model(
             n_features,
             n_nodes,
             mean_init=mean_init,
-            std_init=std_init)          
+            std_init=std_init,
+            template_sizes=template_sizes)          
 
     return model
 
