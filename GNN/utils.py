@@ -17,7 +17,6 @@ def get_model(
         n_nodes,
         mean_init,
         std_init,
-        device,
         template_sizes):
     
     

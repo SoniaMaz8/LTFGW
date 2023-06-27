@@ -129,7 +129,7 @@ num_seeds = args['number_of_seeds']  # number of different seeds to train with
 batch_size = args['batch_size']
 random_split = args['random_split']
 
-
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 # %%Training and testing
 
 criterion = torch.nn.CrossEntropyLoss()
@@ -160,7 +160,6 @@ for seed in seeds:
         n_nodes,
         mean,
         std,
-        device,
         template_sizes)
     model = model.to(device)
 
