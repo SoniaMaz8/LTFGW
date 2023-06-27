@@ -400,7 +400,6 @@ class LTFGW_MLP_semirelaxed(nn.Module):
             n_nodes,
             mean_init=0,
             std_init=0.001,
-            device='cpu',
             template_sizes=None):
         """
         n_classes: number of classes for node classification
@@ -449,7 +448,6 @@ class LTFGW_MLP_semirelaxed(nn.Module):
             std_init,
             self.alpha0,
             self.shortest_path,
-            device,
             template_sizes,
             self.reg)
 

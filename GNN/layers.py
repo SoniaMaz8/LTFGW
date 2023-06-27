@@ -75,7 +75,6 @@ class LTFGW_log(nn.Module):
         self.shortest_path = shortest_path
         self.template_sizes=template_sizes
 
-
         templates, templates_features, q0 = template_initialisation(
         self.n_templates_nodes, self.n_templates, self.n_features, mean_init, std_init, template_sizes)
 
@@ -221,7 +220,6 @@ class LTFGW_semirelaxed(nn.Module):
             std_init=0.001,
             alpha0=None,
             shortest_path=False,
-            device='cpu',
             template_sizes=None,
             reg=0):
         """
@@ -234,12 +232,13 @@ class LTFGW_semirelaxed(nn.Module):
         """
         super().__init__()
 
+        self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
         self.n_templates = n_templates
         self.n_templates_nodes = n_templates_nodes
         self.n_features = n_features
         self.k = k
         self.shortest_path = shortest_path
-        self.device = device
         self.reg=reg
 
         templates, templates_features = template_initialisation(
