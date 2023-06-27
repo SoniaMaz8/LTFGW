@@ -241,7 +241,7 @@ class LTFGW_semirelaxed(nn.Module):
         self.shortest_path = shortest_path
         self.reg=reg
 
-        templates, templates_features = template_initialisation(
+        templates, templates_features,_ = template_initialisation(
             self.n_templates_nodes, self.n_templates, self.n_features, mean_init, std_init, template_sizes)
         self.templates = nn.Parameter(templates)
         self.templates_features = nn.Parameter(templates_features)
