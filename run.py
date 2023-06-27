@@ -81,6 +81,8 @@ parser.add_argument('-scheduler', type=str, default='False',
                     help='wether to use a learning rate scheduler')
 parser.add_argument('-template_sizes', type=int,nargs='+', default=None,
                     help='list of template sizes')
+parser.add_argument('-reg', type=float, default=0,
+                    help='regularisation for entropic semi_relaxed')
 # parser.add_argument('-seeds', type=list, default=[1941488137,4198936517,983997847,4023022221,4019585660,2108550661,1648766618,629014539,3212139042,2424918363],
 #                    help='seeds to use for splits')
 

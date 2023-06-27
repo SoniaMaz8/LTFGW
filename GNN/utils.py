@@ -65,7 +65,7 @@ def get_model(
             mean_init,
             std_init,
             device,
-            template_sizes=template_sizes)
+            template_sizes=template_sizes,)
         
 
     elif model_name == 'LTFGW_MLP_dropout':

@@ -8,8 +8,8 @@ from torch_geometric.utils import k_hop_subgraph
 from scipy.sparse.csgraph import shortest_path as function_shortest_path
 from torch_geometric.utils import k_hop_subgraph
 from torch_geometric.data import Data as GraphData
-from ot.gromov import semirelaxed_fused_gromov_wasserstein2 as semirelaxed_fgw
-from ot.gromov import semirelaxed_gromov_wasserstein
+from ot.gromov import semirelaxed_fused_gromov_wasserstein2 
+from ot.gromov import entropic_semirelaxed_gromov_wasserstein2
 import time
 from ot.backend import TorchBackend
 
@@ -158,7 +158,7 @@ def distance_to_template(
     return distances
 
 
-def distance_to_template_semirelaxed(
+def semi_relaxed_marginals_to_template(
         x,
         edge_index,
         x_T,
@@ -166,7 +166,8 @@ def distance_to_template_semirelaxed(
         alpha,
         k,
         shortest_path,
-        device):
+        device,
+        reg):
     """
     Computes the OT distance between each subgraphs of order k of G and the templates
     x : node features of the graph
@@ -187,7 +188,7 @@ def distance_to_template_semirelaxed(
         raise ValueError(
             'the templates and the graphs must have the same number of features')
 
-    distances = torch.zeros(n, n_T*n_templates_nodes)
+    marginals = torch.zeros(n, n_T*n_templates_nodes)
     for i in range(n):
         x_sub, edges_sub, central_node_index = subgraph(x, edge_index, i, k, n)
         # reshape pour utiliser ot.dist
@@ -216,21 +217,27 @@ def distance_to_template_semirelaxed(
         for j in range(n_T):
 
             template_features = x_T[j].reshape(
-                len(x_T[j]), n_feat_T)  # reshape pour utiliser ot.dist
-            M = ot.dist(x_sub, template_features).clone(
-            ).detach().requires_grad_(True)
+                len(x_T[j]), n_feat_T)  # reshape to use ot.dist
+            M = ot.dist(x_sub, template_features)
+
             # cost matrix between the features of the subgraph and the template
             M = M.type(torch.float)
 
             # more normalization
             p = p / torch.sum(p)
 
-            T = semirelaxed_gromov_wasserstein(C_sub, C_T[j], p, max_iter=20)
+            if reg==0:
+
+                T = semirelaxed_fused_gromov_wasserstein2(C_sub, C_T[j], p, max_iter=20)
+
+            else:
+
+                T = entropic_semirelaxed_gromov_wasserstein2(C_sub, C_T[j], p, epsilon=reg, max_iter=20)
 
             q =torch.sum(T,0)
 
-            distances[i, j*n_templates_nodes:(j+1)*n_templates_nodes] = q
-    return distances.to(device)
+            marginals[i, j*n_templates_nodes:(j+1)*n_templates_nodes] = q
+    return marginals.to(device)
 
 
 

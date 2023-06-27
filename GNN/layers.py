@@ -222,7 +222,8 @@ class LTFGW_semirelaxed(nn.Module):
             alpha0=None,
             shortest_path=False,
             device='cpu',
-            template_sizes=None):
+            template_sizes=None,
+            reg=0):
         """
         n_features: number of node features
         n_templates: number of graph templates
@@ -239,6 +240,7 @@ class LTFGW_semirelaxed(nn.Module):
         self.k = k
         self.shortest_path = shortest_path
         self.device = device
+        self.reg=reg
 
         templates, templates_features = template_initialisation(
             self.n_templates_nodes, self.n_templates, self.n_features, mean_init, std_init, template_sizes)
@@ -256,7 +258,7 @@ class LTFGW_semirelaxed(nn.Module):
 
     def forward(self, x, edge_index):
         alpha = torch.sigmoid(self.alpha0)
-        x = distance_to_template_semirelaxed(
+        x = semi_relaxed_marginals_to_template(
             x,
             edge_index,
             self.templates_features,
@@ -264,7 +266,8 @@ class LTFGW_semirelaxed(nn.Module):
             alpha,
             self.k,
             self.shortest_path,
-            self.device)
+            self.device,
+            self.reg)
         return x
 
 

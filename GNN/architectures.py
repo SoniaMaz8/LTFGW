@@ -428,6 +428,7 @@ class LTFGW_MLP_semirelaxed(nn.Module):
         self.shortest_path = args['shortest_path'] == 'True'
         self.k = args['k']
         self.n_nodes = n_nodes
+        self.reg=args['reg']
 
         self.dropout1 = torch.nn.Dropout(self.drop)
         self.dropout2 = torch.nn.Dropout(self.drop)
@@ -449,7 +450,8 @@ class LTFGW_MLP_semirelaxed(nn.Module):
             self.alpha0,
             self.shortest_path,
             device,
-            template_sizes)
+            template_sizes,
+            self.reg)
 
     def forward(self, x, edge_index):
 
@@ -458,7 +460,6 @@ class LTFGW_MLP_semirelaxed(nn.Module):
 
         if self.skip_connection:
             y = self.LTFGW(x, edge_index)
-            print(y)
             x = torch.hstack([x, y])
             x = x.relu()
             x = self.dropout2(x)
