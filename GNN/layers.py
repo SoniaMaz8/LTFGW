@@ -167,7 +167,6 @@ class LTFGW(nn.Module):
     The distance used is the fused Gromov-Wasserstein distance.
     
     """
-
     def __init__(
             self,
             n_templates=10,

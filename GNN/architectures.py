@@ -657,7 +657,6 @@ class LTFGW_MLP_dropout_relu(nn.Module):
             self.n_classes)
         self.Linear3 = Linear(self.n_templates, self.n_classes)
         self.LTFGW = LTFGW(
-            self.n_nodes,
             self.n_templates,
             self.n_templates_nodes,
             self.hidden_layer,
