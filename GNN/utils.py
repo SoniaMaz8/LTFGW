@@ -193,7 +193,8 @@ def get_filenames(
         wd,
         hl,
         scheduler,
-        seed=None):
+        seed=None,
+        template_sizes=None):
 
     if seed is None:
         filename_save = os.path.join(
@@ -203,7 +204,7 @@ def get_filenames(
         filename_visus = os.path.join(
             'results', method, "{}_visus.pkl".format(dataset_name))
 
-    else:
+    elif template_sizes==None:
         filename_save = os.path.join(
             'results',
             method,
@@ -266,6 +267,71 @@ def get_filenames(
         filename_alphas = os.path.join(
             'results', method, dataset_name, str(
                 seed.item()), 'alphas', "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}.pkl".format(
+                lr, n_temp, n_nodes, alpha0, k, dropout, wd, hl, scheduler))
+        
+    else:
+        filename_save = os.path.join(
+            'results',
+            method,
+            dataset_name,
+            str(
+                seed.item()),
+            'performances',
+            "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_tempsizes.pkl".format(
+                lr,
+                n_temp,
+                n_nodes,
+                alpha0,
+                k,
+                dropout,
+                wd,
+                hl,
+                scheduler))
+        filename_best_model = os.path.join(
+            'results',
+            method,
+            dataset_name,
+            str(
+                seed.item()),
+            'best_model',
+            "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_tempsizes.pt".format(
+                lr,
+                n_temp,
+                n_nodes,
+                alpha0,
+                k,
+                dropout,
+                wd,
+                hl,
+                scheduler))
+        filename_visus = os.path.join(
+            'results', method, dataset_name, str(
+                seed.item()), 'visus', "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_tempsizes.pkl".format(
+                lr, n_temp, n_nodes, alpha0, k, dropout, wd, hl, scheduler))
+        filename_current_model = os.path.join(
+            'results',
+            method,
+            dataset_name,
+            str(
+                seed.item()),
+            'current_model',
+            "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_tempsizes.pt".format(
+                lr,
+                n_temp,
+                n_nodes,
+                alpha0,
+                k,
+                dropout,
+                wd,
+                hl,
+                scheduler))
+        filename_templates = os.path.join(
+            'results', method, dataset_name, str(
+                seed.item()), 'templates', "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_tempsizes.pkl".format(
+                lr, n_temp, n_nodes, alpha0, k, dropout, wd, hl, scheduler))
+        filename_alphas = os.path.join(
+            'results', method, dataset_name, str(
+                seed.item()), 'alphas', "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_tempsizes.pkl".format(
                 lr, n_temp, n_nodes, alpha0, k, dropout, wd, hl, scheduler))
 
     return filename_save, filename_best_model, filename_visus, filename_current_model, filename_templates, filename_alphas

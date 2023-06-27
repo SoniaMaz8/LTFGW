@@ -171,10 +171,10 @@ for seed in seeds:
 
     if alpha0 is None:
         filename_save, filename_best_model, filename_visus, filename_current_model, filename_templates, filename_alpha = get_filenames(
-            dataset_name, method, lr, n_templates, n_templates_nodes, alpha0, k, drop, weight_decay, hidden_layer, scheduler, seed)
+            dataset_name, method, lr, n_templates, n_templates_nodes, alpha0, k, drop, weight_decay, hidden_layer, scheduler, seed,template_sizes)
     else:
         filename_save, filename_best_model, filename_visus, filename_current_model, filename_templates, filename_alpha = get_filenames(
-            dataset_name, method, lr, n_templates, n_templates_nodes, alpha0.item(), k, drop, shortest_path, weight_decay, hidden_layer, scheduler, seed)
+            dataset_name, method, lr, n_templates, n_templates_nodes, alpha0.item(), k, drop, shortest_path, weight_decay, hidden_layer, scheduler, seed,template_sizes)
 
     optimizer = torch.optim.Adam(
         model.parameters(),
