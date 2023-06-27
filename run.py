@@ -130,6 +130,7 @@ batch_size = args['batch_size']
 random_split = args['random_split']
 
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+print(device)
 # %%Training and testing
 
 criterion = torch.nn.CrossEntropyLoss()
