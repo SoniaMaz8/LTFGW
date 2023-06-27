@@ -9,7 +9,7 @@ from scipy.sparse.csgraph import shortest_path as function_shortest_path
 from torch_geometric.utils import k_hop_subgraph
 from torch_geometric.data import Data as GraphData
 from ot.gromov import semirelaxed_fused_gromov_wasserstein2 
-from ot.gromov import entropic_semirelaxed_gromov_wasserstein2
+#from ot.gromov import entropic_semirelaxed_gromov_wasserstein2
 import time
 from ot.backend import TorchBackend
 

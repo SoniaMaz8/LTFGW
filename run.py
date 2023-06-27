@@ -16,12 +16,7 @@ torch_geometric.typing.WITH_PYG_LIB = False
 
 # %%Parameters to set
 
-if torch.cuda.is_available():
-    dev = "cuda:0"
-else:
-    dev = "cpu"
 
-device = torch.device(dev)
 
 
 parser = argparse.ArgumentParser(description='Graph node classification')
