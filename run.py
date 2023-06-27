@@ -132,6 +132,7 @@ random_split = args['random_split']
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 if not device == "cuda:0":
+    print(device)
     raise ValueError(
         'device not cuda')
 # %%Training and testing
