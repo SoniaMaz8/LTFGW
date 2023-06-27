@@ -228,7 +228,7 @@ def semi_relaxed_marginals_to_template(
 
             if reg==0:
 
-                T = semirelaxed_fused_gromov_wasserstein2(C_sub, C_T[j], p, max_iter=20)
+                T = semirelaxed_fused_gromov_wasserstein2(M, C_sub, C_T[j], p, max_iter=20)
 
             else:
 
