@@ -26,6 +26,7 @@ def template_initialisation(n_nodes, n_templates, n_features, mean, std, templat
       Templates_features: list of the features of the nodes of each template
       q0: list of weights of the templates
     """
+
     if template_sizes==None:
         Templates = torch.rand((n_templates, n_nodes, n_nodes))
         Templates_features = torch.Tensor(n_templates, n_nodes, n_features)
@@ -71,6 +72,7 @@ class LTFGW_log(nn.Module):
             n_templates_nodes=10,
             n_features=10,
             k=1,
+            alpha0=None,
             mean_init=0,
             std_init=0.001,
             train_node_weights=True,

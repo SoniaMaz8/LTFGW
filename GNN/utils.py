@@ -44,6 +44,7 @@ def get_model(
             std_init=std_init,
             template_sizes=template_sizes)
 
+
     elif model_name == 'LTFGW_MLP_log':
         model = LTFGW_MLP_log(
             args,
@@ -120,7 +121,7 @@ def get_dataset(dataset_name):
         graph_type: type of graph (single or multi)
         mean: features' mean
         std: features' std 
-        
+
     """
 
     if dataset_name == 'Citeseer':
