@@ -176,6 +176,14 @@ def semi_relaxed_marginals_to_template(
     C_T : list of the adjacency matrices of the templates
     alpha : trade-off parameter for fused gromov-wasserstein distance
     k : number of neighbours in the subgraphs
+    shortest_path: bool
+      If True, the shortest path matrix is used for the templates.
+      Else, the adjacency matrix is used
+    device: string
+      Device, cuda or cpu
+    reg: float
+      If None, the semi-relaxed Qromov Wasserstein distance is used.
+      Else, the entropic semi-relaxed Gromov Wasserstein is used, with the regularisation reg.
     """
 
     n = len(x)  # number of nodes in the graph
@@ -228,7 +236,7 @@ def semi_relaxed_marginals_to_template(
 
             if reg==0:
 
-                T = semirelaxed_fused_gromov_wasserstein2(M, C_sub, C_T[j], p, max_iter=20)
+                T = semirelaxed_fused_gromov_wasserstein2(M, C_sub, C_T[j], p, alpha=alpha,max_iter=20)
 
             else:
 

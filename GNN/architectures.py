@@ -10,7 +10,10 @@ from torch_geometric.nn import APPNP
 class GCN(nn.Module):
     def __init__(self, args, n_classes, n_features):
         """
-        n_classes: number of classes for node classification
+        n_classes: int
+           Number of classes for node classification.
+        n_features: int
+           Number of features for each node.
         """
         super().__init__()
 
@@ -49,9 +52,20 @@ class GCN(nn.Module):
 
 
 class LTFGW_GCN(nn.Module):
+    """"
+    Architecture combining a GCN and the LTFGW layer.
+    """
     def __init__(self, args, n_classes, n_features, n_nodes, template_sizes=None):
         """
-        n_classes: number of classes for node classification
+        n_classes: int
+           Number of classes for node classification.
+        n_features: int
+           Number of features for each node.
+        n_nodes: int
+           Number of nodes in the graph.
+        template_sizes: if None, all template have the same number of nodes. 
+          Else, list of the number of nodes of the templates. 
+          
         """
         super().__init__()
 
@@ -78,7 +92,6 @@ class LTFGW_GCN(nn.Module):
             self.n_classes)
         self.conv3 = GCNConv(self.n_templates, self.n_classes)
         self.LTFGW = LTFGW(
-            self.n_nodes,
             self.n_templates,
             self.n_templates_nodes,
             self.hidden_layer,
@@ -108,7 +121,10 @@ class LTFGW_GCN(nn.Module):
 class MLP(nn.Module):
     def __init__(self, args, n_classes, n_features):
         """
-        n_classes: number of classes for node classification
+        n_classes: int
+           Number of classes for node classification.
+        n_features: int
+           Number of features for each node.
         """
         super().__init__()
 
@@ -150,6 +166,9 @@ class MLP(nn.Module):
 
 
 class LTFGW_MLP(nn.Module):
+    """"
+    Architecture combining a MLP and the LTFGW layer.
+    """
     def __init__(
             self,
             args,
@@ -160,14 +179,20 @@ class LTFGW_MLP(nn.Module):
             std_init=0.001,
             template_sizes=None):
         """
-        n_classes: number of classes for node classification
-        n_features: number of features for each node
-        n_templates: number of templates to use for LTFGW
-        n_templates_nodes: number of nodes for each template for LTFGW
-        hidden_layer: number of hidden dimensions
-        alpha0: alpha paramameter for Fused Gromov Wasserstein, if None it is learned
-        train_node_weights: wether to learn node weights on the templates for LFTGW
-        skip_connection: wether to put MLP and LTFGW in parallel
+        n_classes: int
+           Number of classes for node classification.
+        n_features: int
+           Number of features for each node.
+        n_features: int, optional
+          Number of node features.
+        n_nodes: int
+           Number of nodes in the graph.  
+        mean_init: float, optional
+          Mean of the random normal law to initialize the template features.
+        std_init:  float, optional
+          Std of the random normal law to initialize the template features.
+        template_sizes: if None, all template have the same number of nodes. 
+          Else, list of the number of nodes of the templates. 
 
         """
 
@@ -195,7 +220,6 @@ class LTFGW_MLP(nn.Module):
             self.n_classes)
         self.Linear3 = Linear(self.n_templates, self.n_classes)
         self.LTFGW = LTFGW(
-            self.n_nodes,
             self.n_templates,
             self.n_templates_nodes,
             self.hidden_layer,
@@ -227,6 +251,9 @@ class LTFGW_MLP(nn.Module):
 
 
 class LTFGW_MLP_log(nn.Module):
+    """"
+    Architecture combining a MLP and the LTFGW_log layer.
+    """
     def __init__(
             self,
             args,
@@ -237,14 +264,20 @@ class LTFGW_MLP_log(nn.Module):
             std_init=0.001,
             template_sizes=None):
         """
-        n_classes: number of classes for node classification
-        n_features: number of features for each node
-        n_templates: number of templates to use for LTFGW
-        n_templates_nodes: number of nodes for each template for LTFGW
-        hidden_layer: number of hidden dimensions
-        alpha0: alpha paramameter for Fused Gromov Wasserstein, if None it is learned
-        train_node_weights: wether to learn node weights on the templates for LFTGW
-        skip_connection: wether to put MLP and LTFGW in parallel
+        n_classes: int
+           Number of classes for node classification.
+        n_features: int
+           Number of features for each node.
+        n_features: int, optional
+          Number of node features.
+        n_nodes: int
+           Number of nodes in the graph.  
+        mean_init: float, optional
+          Mean of the random normal law to initialize the template features.
+        std_init:  float, optional
+          Std of the random normal law to initialize the template features.
+        template_sizes: if None, all template have the same number of nodes. 
+          Else, list of the number of nodes of the templates. 
 
         """
 
@@ -273,7 +306,6 @@ class LTFGW_MLP_log(nn.Module):
             self.n_classes)
         self.Linear3 = Linear(self.n_templates, self.n_classes)
         self.LTFGW = LTFGW_log(
-            self.n_nodes,
             self.n_templates,
             self.n_templates_nodes,
             self.hidden_layer,
@@ -392,6 +424,9 @@ class GCN_JK(torch.nn.Module):
         return x, x
 
 class LTFGW_MLP_semirelaxed(nn.Module):
+    """"
+    Architecture combining a MLP and the LTFGW_semirelaxed layer.
+    """
     def __init__(
             self,
             args,
@@ -402,14 +437,20 @@ class LTFGW_MLP_semirelaxed(nn.Module):
             std_init=0.001,
             template_sizes=None):
         """
-        n_classes: number of classes for node classification
-        n_features: number of features for each node
-        n_templates: number of templates to use for LTFGW
-        n_templates_nodes: number of nodes for each template for LTFGW
-        hidden_layer: number of hidden dimensions
-        alpha0: alpha paramameter for Fused Gromov Wasserstein, if None it is learned
-        train_node_weights: wether to learn node weights on the templates for LFTGW
-        skip_connection: wether to put MLP and LTFGW in parallel
+        n_classes: int
+           Number of classes for node classification.
+        n_features: int
+           Number of features for each node.
+        n_features: int, optional
+          Number of node features.
+        n_nodes: int
+           Number of nodes in the graph.  
+        mean_init: float, optional
+          Mean of the random normal law to initialize the template features.
+        std_init:  float, optional
+          Std of the random normal law to initialize the template features.
+        template_sizes: if None, all template have the same number of nodes. 
+          Else, list of the number of nodes of the templates. 
 
         """
 
@@ -439,7 +480,6 @@ class LTFGW_MLP_semirelaxed(nn.Module):
             self.n_classes)
         self.Linear3 = Linear(self.n_templates, self.n_classes)
         self.LTFGW = LTFGW_semirelaxed(
-            self.n_nodes,
             self.n_templates,
             self.n_templates_nodes,
             self.hidden_layer,
@@ -472,6 +512,9 @@ class LTFGW_MLP_semirelaxed(nn.Module):
 
 
 class LTFGW_MLP_dropout(nn.Module):
+    """"
+    Architecture combining a MLP and the LTFGW layer. One dropout is added at the begining.
+    """
     def __init__(
             self,
             args,
@@ -482,14 +525,20 @@ class LTFGW_MLP_dropout(nn.Module):
             std_init=0.001,
             template_sizes=None):
         """
-        n_classes: number of classes for node classification
-        n_features: number of features for each node
-        n_templates: number of templates to use for LTFGW
-        n_templates_nodes: number of nodes for each template for LTFGW
-        hidden_layer: number of hidden dimensions
-        alpha0: alpha paramameter for Fused Gromov Wasserstein, if None it is learned
-        train_node_weights: wether to learn node weights on the templates for LFTGW
-        skip_connection: wether to put MLP and LTFGW in parallel
+        n_classes: int
+           Number of classes for node classification.
+        n_features: int
+           Number of features for each node.
+        n_features: int, optional
+          Number of node features.
+        n_nodes: int
+           Number of nodes in the graph.  
+        mean_init: float, optional
+          Mean of the random normal law to initialize the template features.
+        std_init:  float, optional
+          Std of the random normal law to initialize the template features.
+        template_sizes: if None, all template have the same number of nodes. 
+          Else, list of the number of nodes of the templates. 
 
         """
 
@@ -520,7 +569,6 @@ class LTFGW_MLP_dropout(nn.Module):
         self.Linear3 = Linear(self.n_templates, self.n_classes)
 
         self.LTFGW = LTFGW(
-            self.n_nodes,
             self.n_templates,
             self.n_templates_nodes,
             self.hidden_layer,
@@ -554,6 +602,9 @@ class LTFGW_MLP_dropout(nn.Module):
 
 
 class LTFGW_MLP_dropout_relu(nn.Module):
+    """"
+    Architecture combining a MLP and the LTFGW layer. The relu layer is placed right after the first Linear.
+    """
     def __init__(
             self,
             args,
@@ -564,14 +615,20 @@ class LTFGW_MLP_dropout_relu(nn.Module):
             std_init=0.001,
             template_sizes=None):
         """
-        n_classes: number of classes for node classification
-        n_features: number of features for each node
-        n_templates: number of templates to use for LTFGW
-        n_templates_nodes: number of nodes for each template for LTFGW
-        hidden_layer: number of hidden dimensions
-        alpha0: alpha paramameter for Fused Gromov Wasserstein, if None it is learned
-        train_node_weights: wether to learn node weights on the templates for LFTGW
-        skip_connection: wether to put MLP and LTFGW in parallel
+        n_classes: int
+           Number of classes for node classification.
+        n_features: int
+           Number of features for each node.
+        n_features: int, optional
+          Number of node features.
+        n_nodes: int
+           Number of nodes in the graph.  
+        mean_init: float, optional
+          Mean of the random normal law to initialize the template features.
+        std_init:  float, optional
+          Std of the random normal law to initialize the template features.
+        template_sizes: if None, all template have the same number of nodes. 
+          Else, list of the number of nodes of the templates. 
 
         """
 
@@ -642,14 +699,20 @@ class LTFGW_MLP_dropout_relu_one_node(nn.Module):
             mean_init=0,
             std_init=0.001):
         """
-        n_classes: number of classes for node classification
-        n_features: number of features for each node
-        n_templates: number of templates to use for LTFGW
-        n_templates_nodes: number of nodes for each template for LTFGW
-        hidden_layer: number of hidden dimensions
-        alpha0: alpha paramameter for Fused Gromov Wasserstein, if None it is learned
-        train_node_weights: wether to learn node weights on the templates for LFTGW
-        skip_connection: wether to put MLP and LTFGW in parallel
+        n_classes: int
+           Number of classes for node classification.
+        n_features: int
+           Number of features for each node.
+        n_features: int, optional
+          Number of node features.
+        n_nodes: int
+           Number of nodes in the graph.  
+        mean_init: float, optional
+          Mean of the random normal law to initialize the template features.
+        std_init:  float, optional
+          Std of the random normal law to initialize the template features.
+        template_sizes: if None, all template have the same number of nodes. 
+          Else, list of the number of nodes of the templates. 
 
         """
 
@@ -678,7 +741,6 @@ class LTFGW_MLP_dropout_relu_one_node(nn.Module):
             self.n_classes)
         self.Linear3 = Linear(self.n_templates, self.n_classes)
         self.LTFGW = LTFGW_one_node(
-            self.n_nodes,
             self.n_templates,
             self.n_templates_nodes,
             self.hidden_layer,

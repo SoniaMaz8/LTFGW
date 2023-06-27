@@ -8,12 +8,23 @@ def template_initialisation(n_nodes, n_templates, n_features, mean, std, templat
     """"
     Function that initialises templates for the LTFGW layer
     Input:
-      n_templates: number of templates
-      n_nodes: number of nodes per template
-      n_features: number of features for the nodes
+      n_templates: int
+        Number of templates.
+      n_nodes: int
+        Number of nodes per template.
+      n_features: int
+        Number of features for the nodes.
+      mean: float
+        Mean of the random normal law to initialize the template features.
+      std: float
+        Std of the random normal law to initialize the template features.
+      template_sizes: bool
+         If None, all template have the same number of nodes. 
+         Else, list of the number of nodes of the templates. 
     Output:
       Templates: list of the adjancecy matrices of the templates
       Templates_features: list of the features of the nodes of each template
+      q0: list of weights of the templates
     """
     if template_sizes==None:
         Templates = torch.rand((n_templates, n_nodes, n_nodes))
@@ -43,28 +54,50 @@ def template_initialisation(n_nodes, n_templates, n_features, mean, std, templat
 
 
 class LTFGW_log(nn.Module):
-    """ Layer for the local TFWG """
+    """ Layer for the local TFWG
+
+    Computes an embedding for each node by computing a 1 dimensional array of distances between learned templates
+      and the node's neighbourhood.
+
+    The distance used is the fused Gromov-Wasserstein distance.  
+    
+    The output is the log of the TFGW layer.
+    
+    """
 
     def __init__(
             self,
-            n_nodes,
             n_templates=10,
             n_templates_nodes=10,
             n_features=10,
             k=1,
-            alpha0=None,
             mean_init=0,
             std_init=0.001,
             train_node_weights=True,
+            q0=None,
             shortest_path=False,
             template_sizes=None):
         """
-        n_features: number of node features
-        n_templates: number of graph templates
-        n_templates_nodes: number of nodes in each template
-        alpha0: trade-off for the fused gromov-wasserstein distance. If None, alpha is optimised, else it is fixed at the given value.
-        q0: weights on the nodes of the templates. If None, q0 is optimised, else it is fixed at the given value (must sum to 1 along the lines).
-        local alpha: wether to learn one tradeoff parameter for the FGW for each node or for the whole graph
+        n_templates: int, optional
+          Number of graph templates.
+        n_templates_nodes: int, optional
+          Number of nodes in each template.
+        n_features: int, optional
+          Number of node features.
+        k: int, optional
+          Number of hops fot he nodes' neighbourhood.
+        mean_init: float, optional
+          Mean of the random normal law to initialize the template features.
+        std_init:  float, optional
+          Std of the random normal law to initialize the template features.
+        train_node_weights: bool, optional
+          If True, the node weights are trained.
+          Else they are uniform.
+        shortest_path: bool, optional
+          If True, the templates are characterized by their shortest path matrix.
+          Else, the adjacency matrix is used.
+        template_sizes: if None, all template have the same number of nodes. 
+          Else, list of the number of nodes of the templates. 
         """
         super().__init__()
 
@@ -124,11 +157,17 @@ class LTFGW_log(nn.Module):
         return x
 
 class LTFGW(nn.Module):
-    """ Layer for the local TFWG """
+    """ Layer for the local TFWG 
+
+    Computes an embedding for each node by computing a 1 dimensional array of distances between learned templates
+      and the node's neighbourhood.
+
+    The distance used is the fused Gromov-Wasserstein distance.
+    
+    """
 
     def __init__(
             self,
-            n_nodes,
             n_templates=10,
             n_templates_nodes=10,
             n_features=10,
@@ -140,12 +179,26 @@ class LTFGW(nn.Module):
             shortest_path=False,
             template_sizes=None):
         """
-        n_features: number of node features
-        n_templates: number of graph templates
-        n_templates_nodes: number of nodes in each template
-        alpha0: trade-off for the fused gromov-wasserstein distance. If None, alpha is optimised, else it is fixed at the given value.
-        q0: weights on the nodes of the templates. If None, q0 is optimised, else it is fixed at the given value (must sum to 1 along the lines).
-        local alpha: wether to learn one tradeoff parameter for the FGW for each node or for the whole graph
+        n_templates: int, optional
+          Number of graph templates.
+        n_templates_nodes: int, optional
+          Number of nodes in each template.
+        n_features: int, optional
+          Number of node features.
+        k: int, optional
+          Number of hops fot he nodes' neighbourhood.
+        mean_init: float, optional
+          Mean of the random normal law to initialize the template features.
+        std_init:  float, optional
+          Std of the random normal law to initialize the template features.
+        train_node_weights: bool, optional
+          If True, the node weights are trained.
+          Else they are uniform.
+        shortest_path: bool, optional
+          If True, the templates are characterized by their shortest path matrix.
+          Else, the adjacency matrix is used.
+        template_sizes: if None, all template have the same number of nodes. 
+          Else, list of the number of nodes of the templates. 
         """
         super().__init__()
 
@@ -207,11 +260,17 @@ class LTFGW(nn.Module):
 
         
 class LTFGW_semirelaxed(nn.Module):
-    """ Layer for the local TFWG """
+    """ Layer for the local TFWG 
+    
+    Computes an embedding for each node by computing a 1 dimensional array of distances between learned templates
+      and the node's neighbourhood.
+
+    The distance used is the semi relaxde fused Gromov-Wasserstein distance.
+    
+    """
 
     def __init__(
             self,
-            n_nodes,
             n_templates=10,
             n_templates_nodes=10,
             n_features=10,
@@ -223,12 +282,27 @@ class LTFGW_semirelaxed(nn.Module):
             template_sizes=None,
             reg=0):
         """
-        n_features: number of node features
-        n_templates: number of graph templates
-        n_templates_nodes: number of nodes in each template
-        alpha0: trade-off for the fused gromov-wasserstein distance. If None, alpha is optimised, else it is fixed at the given value.
-        q0: weights on the nodes of the templates. If None, q0 is optimised, else it is fixed at the given value (must sum to 1 along the lines).
-        local alpha: wether to learn one tradeoff parameter for the FGW for each node or for the whole graph
+        n_templates: int, optional
+          Number of graph templates.
+        n_templates_nodes: int, optional
+          Number of nodes in each template.
+        n_features: int, optional
+          Number of node features.
+        k: int, optional
+          Number of hops fot he nodes' neighbourhood.
+        mean_init: float, optional
+          Mean of the random normal law to initialize the template features.
+        std_init:  float, optional
+          Std of the random normal law to initialize the template features.
+        shortest_path: bool, optional
+          If True, the templates are characterized by their shortest path matrix.
+          Else, the adjacency matrix is used.
+        template_sizes: if None, all template have the same number of nodes. 
+          Else, list of the number of nodes of the templates. 
+        reg: float
+          If None, the distance used is the semi relaxed fused Gromov-Wasserstein.
+          Else, the entropic semirelaxed Gromov-Wasserstein is used with the regularisation reg.
+
         """
         super().__init__()
 

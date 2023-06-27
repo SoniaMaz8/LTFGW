@@ -19,6 +19,11 @@ def get_model(
         std_init,
         template_sizes):
     
+    """"
+    Input: model name
+    Output: model
+    """
+    
     
     if model_name == 'LTFGW_GCN':
         model = LTFGW_GCN(args, n_classes, n_features, n_nodes, template_sizes)
@@ -112,7 +117,10 @@ def get_dataset(dataset_name):
         n_classes: number of classes
         n_features: number of node features
         test_graph: wether there is a separate graph for testing
-
+        graph_type: type of graph (single or multi)
+        mean: features' mean
+        std: features' std 
+        
     """
 
     if dataset_name == 'Citeseer':
