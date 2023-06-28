@@ -8,7 +8,7 @@ from torch_geometric.nn import APPNP
 
 
 class GCN(nn.Module):
-    def __init__(self, args, n_classes, n_features):
+    def __init__(self, n_classes, n_features, hidden_layer, n_hidden_layer, dropout):
         """
         n_classes: int
            Number of classes for node classification.
@@ -19,9 +19,9 @@ class GCN(nn.Module):
 
         self.n_classes = n_classes
         self.n_features = n_features
-        self.hidden_layer = args['hidden_layer']
-        self.n_hidden_layers = args['n_hidden_layer']
-        self.dropout = args['dropout']
+        self.hidden_layer = hidden_layer
+        self.n_hidden_layers = n_hidden_layer
+        self.dropout = dropout
 
         self.first_conv = GCNConv(self.n_features, self.hidden_layer)
         self.dropout = torch.nn.Dropout(p=self.dropout)
@@ -54,33 +54,96 @@ class GCN(nn.Module):
 class LTFGW_GCN(nn.Module):
     """"
     Architecture combining a GCN and the LTFGW layer.
-    """
-    def __init__(self, args, n_classes, n_features, n_nodes, template_sizes=None):
-        """
+
+        Parameters
+        ----------
+
         n_classes: int
-           Number of classes for node classification.
-        n_features: int
-           Number of features for each node.
-        n_nodes: int
-           Number of nodes in the graph.
+        Number of classes
+        n_features: int, optional
+            Number of node features.       
+        n_templates: int, optional
+            Number of graph templates.
+        n_templates_nodes: int, optional
+            Number of nodes in each template.
+        hidden_layer: int
+            Hidden dimension.
+        dropout: float
+            Dropout.
+        shortest_path: bool, optional
+            If True, the templates are characterized by their shortest path matrix.
+            Else, the adjacency matrix is used.       
+        k: int, optional
+            Number of hops fot he nodes' neighbourhood.
+        mean_init: float
+            Mean of the random normal law to initialize the template features.
+        std_init: float
+            Std of the random normal law to initialize the template features. 
+        log: bool
+            If True the log of the output of the layer is used.  
+        alpha0: float
+            Trade off parameter for the Fused Gromov-Wasserstein distance.
+            If None, it is learned. 
+        train_node_weights: bool, optional
+            If True, the node weights are trained.
+            Else they are uniform.
         template_sizes: if None, all template have the same number of nodes. 
-          Else, list of the number of nodes of the templates. 
-          
+            Else, list of the number of nodes of the templates.      
+    """
+    def __init__(self, n_classes, n_features ,n_templates,n_templates_nodes,hidden_layer,dropout,shortest_path,k,mean_init,std_init,log=False,alpha0=None,train_node_weights=True, skip_connection=False ,template_sizes=None):
+
+        """
+        Architecture combining a GCN and the LTFGW layer.
+
+        Parameters
+        ----------
+
+        n_classes: int
+        Number of classes
+        n_features: int, optional
+            Number of node features.       
+        n_templates: int, optional
+            Number of graph templates.
+        n_templates_nodes: int, optional
+            Number of nodes in each template.
+        hidden_layer: int
+            Hidden dimension.
+        dropout: float
+            Dropout.
+        shortest_path: bool, optional
+            If True, the templates are characterized by their shortest path matrix.
+            Else, the adjacency matrix is used.       
+        k: int, optional
+            Number of hops fot he nodes' neighbourhood.
+        mean_init: float
+            Mean of the random normal law to initialize the template features.
+        std_init: float
+            Std of the random normal law to initialize the template features. 
+        log: bool
+            If True the log of the output of the layer is used.  
+        alpha0: float
+            Trade off parameter for the Fused Gromov-Wasserstein distance.
+            If None, it is learned. 
+        train_node_weights: bool, optional
+            If True, the node weights are trained.
+            Else they are uniform.
+        template_sizes: if None, all template have the same number of nodes. 
+            Else, list of the number of nodes of the templates.     
+            
         """
         super().__init__()
 
         self.n_classes = n_classes
         self.n_features = n_features
-        self.n_templates = args['n_templates']
-        self.n_templates_nodes = args['n_templates_nodes']
-        self.hidden_layer = args['hidden_layer']
-        self.alpha0 = args['alpha0']
-        self.train_node_weights = args['train_node_weights'] == 'True'
-        self.skip_connection = args['skip_connection'] == 'True'
-        self.drop = args['dropout']
-        self.shortest_path = args['shortest_path']
-        self.k = args['k']
-        self.n_nodes = n_nodes
+        self.n_templates = n_templates
+        self.n_templates_nodes = n_templates_nodes
+        self.hidden_layer = hidden_layer
+        self.alpha0 = alpha0
+        self.train_node_weights = train_node_weights
+        self.skip_connection = skip_connection
+        self.drop = dropout
+        self.shortest_path = shortest_path
+        self.k = k
 
         self.dropout = torch.nn.Dropout(self.drop)
 
@@ -97,9 +160,12 @@ class LTFGW_GCN(nn.Module):
             self.hidden_layer,
             self.k,
             self.alpha0,
+            mean_init,
+            std_init,
             self.train_node_weights,
             self.shortest_path,
-            template_sizes)
+            template_sizes,
+            log)
 
     def forward(self, x, edge_index):
 
@@ -119,8 +185,34 @@ class LTFGW_GCN(nn.Module):
 
 
 class MLP(nn.Module):
-    def __init__(self, args, n_classes, n_features):
+    """
+    MLP architecture
+
+    Parameters
+    ----------
+    n_hidden_layer:int
+        Number of linear layers.
+    hidden_layer: int
+        Hidden dimension.
+    dropout: float
+        Dropout.
+    n_classes: int
+        Number of classes for node classification.
+    n_features: int
+        Number of features for each node.
+    """
+    def __init__(self, n_hidden_layer, hidden_layer, dropout, n_classes, n_features):
         """
+        MLP architecture
+
+        Parameters
+        ----------
+        n_hidden_layer:int
+           Number of linear layers.
+        hidden_layer: int
+           Hidden dimension.
+        dropout: float
+           Dropout.
         n_classes: int
            Number of classes for node classification.
         n_features: int
@@ -130,9 +222,9 @@ class MLP(nn.Module):
 
         self.n_classes = n_classes
         self.n_features = n_features
-        self.n_hidden_layers = args['n_hidden_layer']
-        self.hidden_layer = args['hidden_layer']
-        self.drop = args['dropout']
+        self.n_hidden_layers = n_hidden_layer
+        self.hidden_layer = hidden_layer
+        self.drop = dropout
 
         self.first_linear = Linear(self.n_features, self.hidden_layer)
         self.dropout1 = torch.nn.Dropout(self.drop)
@@ -168,31 +260,80 @@ class MLP(nn.Module):
 class LTFGW_MLP(nn.Module):
     """"
     Architecture combining a MLP and the LTFGW layer.
+
+    Parameters
+    ----------
+
+    n_classes: int
+    Number of classes
+    n_features: int, optional
+        Number of node features.       
+    n_templates: int, optional
+        Number of graph templates.
+    n_templates_nodes: int, optional
+        Number of nodes in each template.
+    hidden_layer: int
+        Hidden dimension.
+    dropout: float
+        Dropout.
+    shortest_path: bool, optional
+        If True, the templates are characterized by their shortest path matrix.
+        Else, the adjacency matrix is used.       
+    k: int, optional
+        Number of hops fot he nodes' neighbourhood.
+    mean_init: float
+        Mean of the random normal law to initialize the template features.
+    std_init: float
+        Std of the random normal law to initialize the template features. 
+    log: bool
+        If True the log of the output of the layer is used.  
+    alpha0: float
+        Trade off parameter for the Fused Gromov-Wasserstein distance.
+        If None, it is learned. 
+    train_node_weights: bool, optional
+        If True, the node weights are trained.
+        Else they are uniform.
+    template_sizes: if None, all template have the same number of nodes. 
+        Else, list of the number of nodes of the templates.  
     """
-    def __init__(
-            self,
-            args,
-            n_classes,
-            n_features,
-            n_nodes,
-            mean_init=0,
-            std_init=0.001,
-            template_sizes=None):
+    def __init__(self, n_classes, n_features ,n_templates,n_templates_nodes,hidden_layer,dropout,shortest_path,k,mean_init,std_init,log=False,alpha0=None,train_node_weights=True, skip_connection=False ,template_sizes=None):
         """
+        Architecture combining a MLP and the LTFGW layer.
+
+        Parameters
+        ----------
+
         n_classes: int
-           Number of classes for node classification.
-        n_features: int
-           Number of features for each node.
+        Number of classes
         n_features: int, optional
-          Number of node features.
-        n_nodes: int
-           Number of nodes in the graph.  
-        mean_init: float, optional
-          Mean of the random normal law to initialize the template features.
-        std_init:  float, optional
-          Std of the random normal law to initialize the template features.
+            Number of node features.       
+        n_templates: int, optional
+            Number of graph templates.
+        n_templates_nodes: int, optional
+            Number of nodes in each template.
+        hidden_layer: int
+            Hidden dimension.
+        dropout: float
+            Dropout.
+        shortest_path: bool, optional
+            If True, the templates are characterized by their shortest path matrix.
+            Else, the adjacency matrix is used.       
+        k: int, optional
+            Number of hops fot he nodes' neighbourhood.
+        mean_init: float
+            Mean of the random normal law to initialize the template features.
+        std_init: float
+            Std of the random normal law to initialize the template features. 
+        log: bool
+            If True the log of the output of the layer is used.  
+        alpha0: float
+            Trade off parameter for the Fused Gromov-Wasserstein distance.
+            If None, it is learned. 
+        train_node_weights: bool, optional
+            If True, the node weights are trained.
+            Else they are uniform.
         template_sizes: if None, all template have the same number of nodes. 
-          Else, list of the number of nodes of the templates. 
+            Else, list of the number of nodes of the templates.  
 
         """
 
@@ -200,16 +341,16 @@ class LTFGW_MLP(nn.Module):
 
         self.n_classes = n_classes
         self.n_features = n_features
-        self.n_templates = args['n_templates']
-        self.n_templates_nodes = args['n_templates_nodes']
-        self.hidden_layer = args['hidden_layer']
-        self.alpha0 = args['alpha0']
-        self.train_node_weights = args['train_node_weights'] == 'True'
-        self.skip_connection = args['skip_connection'] == 'True'
-        self.drop = args['dropout']
-        self.shortest_path = args['shortest_path']
-        self.k = args['k']
-        self.n_nodes = n_nodes
+        self.n_templates = n_templates
+        self.n_templates_nodes = n_templates_nodes
+        self.hidden_layer = hidden_layer
+        self.alpha0 = alpha0
+        self.train_node_weights = train_node_weights
+        self.skip_connection = skip_connection
+        self.drop = dropout
+        self.shortest_path = shortest_path
+        self.k = k
+        self.log=log
 
         self.dropout2 = torch.nn.Dropout(self.drop)
 
@@ -229,97 +370,11 @@ class LTFGW_MLP(nn.Module):
             std_init,
             self.train_node_weights,
             self.shortest_path,
-            template_sizes)
+            template_sizes,
+            self.log)
 
     def forward(self, x, edge_index):
 
-        x = self.Linear1(x)
-
-        if self.skip_connection:
-            y = self.LTFGW(x, edge_index)
-            x = torch.hstack([x, y])
-            x = x.relu()
-            x = self.dropout2(x)
-            x = self.Linear2(x)
-            x_latent = x
-
-        else:
-            x = self.LTFGW(x, edge_index)
-            x = self.Linear3(x)
-
-        return x, x_latent
-
-
-class LTFGW_MLP_log(nn.Module):
-    """"
-    Architecture combining a MLP and the LTFGW_log layer.
-    """
-    def __init__(
-            self,
-            args,
-            n_classes,
-            n_features,
-            n_nodes,
-            mean_init=0,
-            std_init=0.001,
-            template_sizes=None):
-        """
-        n_classes: int
-           Number of classes for node classification.
-        n_features: int
-           Number of features for each node.
-        n_features: int, optional
-          Number of node features.
-        n_nodes: int
-           Number of nodes in the graph.  
-        mean_init: float, optional
-          Mean of the random normal law to initialize the template features.
-        std_init:  float, optional
-          Std of the random normal law to initialize the template features.
-        template_sizes: if None, all template have the same number of nodes. 
-          Else, list of the number of nodes of the templates. 
-
-        """
-
-        super().__init__()
-
-        self.n_classes = n_classes
-        self.n_features = n_features
-        self.n_templates = args['n_templates']
-        self.n_templates_nodes = args['n_templates_nodes']
-        self.hidden_layer = args['hidden_layer']
-        self.alpha0 = args['alpha0']
-        self.train_node_weights = args['train_node_weights'] == 'True'
-        self.skip_connection = args['skip_connection'] == 'True'
-        self.drop = args['dropout']
-        self.shortest_path = args['shortest_path']
-        self.k = args['k']
-        self.n_nodes = n_nodes
-        
-        self.dropout1 = torch.nn.Dropout(self.drop)
-        self.dropout2 = torch.nn.Dropout(self.drop)
-
-        self.Linear1 = Linear(self.n_features, self.hidden_layer)
-        self.Linear2 = Linear(
-            self.hidden_layer +
-            self.n_templates,
-            self.n_classes)
-        self.Linear3 = Linear(self.n_templates, self.n_classes)
-        self.LTFGW = LTFGW_log(
-            self.n_templates,
-            self.n_templates_nodes,
-            self.hidden_layer,
-            self.k,
-            self.alpha0,
-            mean_init,
-            std_init,
-            self.train_node_weights,
-            self.shortest_path,
-            template_sizes)
-
-    def forward(self, x, edge_index):
-        
-        x = self.dropout1(x)
         x = self.Linear1(x)
 
         if self.skip_connection:
@@ -426,49 +481,104 @@ class GCN_JK(torch.nn.Module):
 class LTFGW_MLP_semirelaxed(nn.Module):
     """"
     Architecture combining a MLP and the LTFGW_semirelaxed layer.
-    """
-    def __init__(
-            self,
-            args,
-            n_classes,
-            n_features,
-            n_nodes,
-            mean_init=0,
-            std_init=0.001,
-            template_sizes=None):
-        """
-        n_classes: int
-           Number of classes for node classification.
-        n_features: int
-           Number of features for each node.
-        n_features: int, optional
-          Number of node features.
-        n_nodes: int
-           Number of nodes in the graph.  
-        mean_init: float, optional
-          Mean of the random normal law to initialize the template features.
-        std_init:  float, optional
-          Std of the random normal law to initialize the template features.
-        template_sizes: if None, all template have the same number of nodes. 
-          Else, list of the number of nodes of the templates. 
 
+    Parameters
+    ----------
+
+    n_classes: int
+        Number of classes
+    n_features: int, optional
+        Number of node features.       
+    n_templates: int, optional
+        Number of graph templates.
+    n_templates_nodes: int, optional
+        Number of nodes in each template.
+    hidden_layer: int
+        Hidden dimension.
+    dropout: float
+        Dropout.
+    shortest_path: bool, optional
+        If True, the templates are characterized by their shortest path matrix.
+        Else, the adjacency matrix is used.       
+    k: int, optional
+        Number of hops fot he nodes' neighbourhood.
+    mean_init: float
+        Mean of the random normal law to initialize the template features.
+    std_init: float
+        Std of the random normal law to initialize the template features. 
+    log: bool
+        If True the log of the output of the layer is used.  
+    alpha0: float
+        Trade off parameter for the Fused Gromov-Wasserstein distance.
+        If None, it is learned. 
+    train_node_weights: bool, optional
+        If True, the node weights are trained.
+        Else they are uniform.
+    template_sizes: if None, all template have the same number of nodes. 
+        Else, list of the number of nodes of the templates.   
+    reg: float
+        Regularisation parameter for the semi-relaxed Fused Gromov Wasserstein distance.     
+                   
+    
+    """
+    def __init__(self, n_classes, n_features ,n_templates,n_templates_nodes,hidden_layer,dropout,shortest_path,k,mean_init,std_init,log=False,alpha0=None,train_node_weights=True, skip_connection=False ,template_sizes=None, reg=0):
+        """"
+        Architecture combining a MLP and the LTFGW_semirelaxed layer.
+
+        Parameters
+        ----------
+
+        n_classes: int
+            Number of classes
+        n_features: int, optional
+            Number of node features.       
+        n_templates: int, optional
+            Number of graph templates.
+        n_templates_nodes: int, optional
+            Number of nodes in each template.
+        hidden_layer: int
+            Hidden dimension.
+        dropout: float
+            Dropout.
+        shortest_path: bool, optional
+            If True, the templates are characterized by their shortest path matrix.
+            Else, the adjacency matrix is used.       
+        k: int, optional
+            Number of hops fot he nodes' neighbourhood.
+        mean_init: float
+            Mean of the random normal law to initialize the template features.
+        std_init: float
+            Std of the random normal law to initialize the template features. 
+        log: bool
+            If True the log of the output of the layer is used.  
+        alpha0: float
+            Trade off parameter for the Fused Gromov-Wasserstein distance.
+            If None, it is learned. 
+        train_node_weights: bool, optional
+            If True, the node weights are trained.
+            Else they are uniform.
+        template_sizes: if None, all template have the same number of nodes. 
+            Else, list of the number of nodes of the templates. 
+        reg: float
+            Regularisation parameter for the semi-relaxed Fused Gromov Wasserstein distance.     
+        
         """
 
         super().__init__()
 
         self.n_classes = n_classes
         self.n_features = n_features
-        self.n_templates = args['n_templates']
-        self.n_templates_nodes = args['n_templates_nodes']
-        self.hidden_layer = args['hidden_layer']
-        self.alpha0 = args['alpha0']
-        self.train_node_weights = args['train_node_weights'] == 'True'
-        self.skip_connection = args['skip_connection'] == 'True'
-        self.drop = args['dropout']
-        self.shortest_path = args['shortest_path'] == 'True'
-        self.k = args['k']
-        self.n_nodes = n_nodes
-        self.reg=args['reg']
+        self.n_templates = n_templates
+        self.n_templates_nodes = n_templates_nodes
+        self.hidden_layer = hidden_layer
+        self.alpha0 = alpha0
+        self.train_node_weights = train_node_weights
+        self.skip_connection = skip_connection
+        self.drop = dropout
+        self.shortest_path = shortest_path
+        self.k = k
+        self.reg=reg
+        self.log=log
 
         self.dropout1 = torch.nn.Dropout(self.drop)
         self.dropout2 = torch.nn.Dropout(self.drop)
@@ -489,7 +599,8 @@ class LTFGW_MLP_semirelaxed(nn.Module):
             self.alpha0,
             self.shortest_path,
             template_sizes,
-            self.reg)
+            self.reg,
+            self.log)
 
     def forward(self, x, edge_index):
 
@@ -514,31 +625,80 @@ class LTFGW_MLP_semirelaxed(nn.Module):
 class LTFGW_MLP_dropout(nn.Module):
     """"
     Architecture combining a MLP and the LTFGW layer. One dropout is added at the begining.
+
+    Parameters
+    ----------
+
+    n_classes: int
+        Number of classes
+    n_features: int, optional
+        Number of node features.       
+    n_templates: int, optional
+        Number of graph templates.
+    n_templates_nodes: int, optional
+        Number of nodes in each template.
+    hidden_layer: int
+        Hidden dimension.
+    dropout: float
+        Dropout.
+    shortest_path: bool, optional
+        If True, the templates are characterized by their shortest path matrix.
+        Else, the adjacency matrix is used.       
+    k: int, optional
+        Number of hops fot he nodes' neighbourhood.
+    mean_init: float
+        Mean of the random normal law to initialize the template features.
+    std_init: float
+        Std of the random normal law to initialize the template features. 
+    log: bool
+        If True the log of the output of the layer is used.  
+    alpha0: float
+        Trade off parameter for the Fused Gromov-Wasserstein distance.
+        If None, it is learned. 
+    train_node_weights: bool, optional
+        If True, the node weights are trained.
+        Else they are uniform.
+    template_sizes: if None, all template have the same number of nodes. 
+        Else, list of the number of nodes of the templates. 
     """
-    def __init__(
-            self,
-            args,
-            n_classes,
-            n_features,
-            n_nodes,
-            mean_init=0,
-            std_init=0.001,
-            template_sizes=None):
+    def __init__(self, n_classes, n_features ,n_templates,n_templates_nodes,hidden_layer,dropout,shortest_path,k,mean_init,std_init,log=False,alpha0=None,train_node_weights=True, skip_connection=False ,template_sizes=None):
         """
+        Architecture combining a MLP and the LTFGW layer. One dropout is added at the begining.
+
+        Parameters
+        ----------
+
         n_classes: int
-           Number of classes for node classification.
-        n_features: int
-           Number of features for each node.
+            Number of classes
         n_features: int, optional
-          Number of node features.
-        n_nodes: int
-           Number of nodes in the graph.  
-        mean_init: float, optional
-          Mean of the random normal law to initialize the template features.
-        std_init:  float, optional
-          Std of the random normal law to initialize the template features.
+            Number of node features.       
+        n_templates: int, optional
+            Number of graph templates.
+        n_templates_nodes: int, optional
+            Number of nodes in each template.
+        hidden_layer: int
+            Hidden dimension.
+        dropout: float
+            Dropout.
+        shortest_path: bool, optional
+            If True, the templates are characterized by their shortest path matrix.
+            Else, the adjacency matrix is used.       
+        k: int, optional
+            Number of hops fot he nodes' neighbourhood.
+        mean_init: float
+            Mean of the random normal law to initialize the template features.
+        std_init: float
+            Std of the random normal law to initialize the template features. 
+        log: bool
+            If True the log of the output of the layer is used.  
+        alpha0: float
+            Trade off parameter for the Fused Gromov-Wasserstein distance.
+            If None, it is learned. 
+        train_node_weights: bool, optional
+            If True, the node weights are trained.
+            Else they are uniform.
         template_sizes: if None, all template have the same number of nodes. 
-          Else, list of the number of nodes of the templates. 
+            Else, list of the number of nodes of the templates. 
 
         """
 
@@ -546,16 +706,15 @@ class LTFGW_MLP_dropout(nn.Module):
 
         self.n_classes = n_classes
         self.n_features = n_features
-        self.n_templates = args['n_templates']
-        self.n_templates_nodes = args['n_templates_nodes']
-        self.hidden_layer = args['hidden_layer']
-        self.alpha0 = args['alpha0']
-        self.train_node_weights = args['train_node_weights'] == 'True'
-        self.skip_connection = args['skip_connection'] == 'True'
-        self.drop = args['dropout']
-        self.shortest_path = args['shortest_path']
-        self.k = args['k']
-        self.n_nodes = n_nodes
+        self.n_templates = n_templates
+        self.n_templates_nodes = n_templates_nodes
+        self.hidden_layer = hidden_layer
+        self.alpha0 = alpha0
+        self.train_node_weights = train_node_weights
+        self.skip_connection = skip_connection
+        self.drop = dropout
+        self.shortest_path = shortest_path
+        self.k = k
         self.template_sizes=template_sizes
 
         self.dropout1 = torch.nn.Dropout(self.drop)
@@ -578,7 +737,8 @@ class LTFGW_MLP_dropout(nn.Module):
             std_init,
             self.train_node_weights,
             self.shortest_path,
-            self.template_sizes)
+            self.template_sizes,
+            self.log)
 
     def forward(self, x, edge_index):
 
@@ -603,32 +763,83 @@ class LTFGW_MLP_dropout(nn.Module):
 
 class LTFGW_MLP_dropout_relu(nn.Module):
     """"
-    Architecture combining a MLP and the LTFGW layer. The relu layer is placed right after the first Linear.
+    Architecture combining a MLP and the LTFGW layer. The relu is placed right after the first Linear.
+
+    Parameters
+    ----------
+
+    n_classes: int
+        Number of classes
+    n_features: int, optional
+        Number of node features.       
+    n_templates: int, optional
+        Number of graph templates.
+    n_templates_nodes: int, optional
+        Number of nodes in each template.
+    hidden_layer: int
+        Hidden dimension.
+    dropout: float
+        Dropout.
+    shortest_path: bool, optional
+        If True, the templates are characterized by their shortest path matrix.
+        Else, the adjacency matrix is used.       
+    k: int, optional
+        Number of hops fot he nodes' neighbourhood.
+    mean_init: float
+        Mean of the random normal law to initialize the template features.
+    std_init: float
+        Std of the random normal law to initialize the template features. 
+    log: bool
+        If True the log of the output of the layer is used.  
+    alpha0: float
+        Trade off parameter for the Fused Gromov-Wasserstein distance.
+        If None, it is learned. 
+    train_node_weights: bool, optional
+        If True, the node weights are trained.
+        Else they are uniform.
+    template_sizes: if None, all template have the same number of nodes. 
+        Else, list of the number of nodes of the templates. 
+
     """
-    def __init__(
-            self,
-            args,
-            n_classes,
-            n_features,
-            n_nodes,
-            mean_init=0,
-            std_init=0.001,
-            template_sizes=None):
+    def __init__(self, n_classes, n_features ,n_templates,n_templates_nodes,hidden_layer,dropout,shortest_path,k,mean_init,std_init,log=False,alpha0=None,train_node_weights=True, skip_connection=False ,template_sizes=None):
         """
+        Architecture combining a MLP and the LTFGW layer. The relu is placed right after the first Linear.
+
+        Parameters
+        ----------
+
         n_classes: int
-           Number of classes for node classification.
-        n_features: int
-           Number of features for each node.
+            Number of classes
         n_features: int, optional
-          Number of node features.
-        n_nodes: int
-           Number of nodes in the graph.  
-        mean_init: float, optional
-          Mean of the random normal law to initialize the template features.
-        std_init:  float, optional
-          Std of the random normal law to initialize the template features.
+            Number of node features.       
+        n_templates: int, optional
+            Number of graph templates.
+        n_templates_nodes: int, optional
+            Number of nodes in each template.
+        hidden_layer: int
+            Hidden dimension.
+        dropout: float
+            Dropout.
+        shortest_path: bool, optional
+            If True, the templates are characterized by their shortest path matrix.
+            Else, the adjacency matrix is used.       
+        k: int, optional
+            Number of hops fot he nodes' neighbourhood.
+        mean_init: float
+            Mean of the random normal law to initialize the template features.
+        std_init: float
+            Std of the random normal law to initialize the template features. 
+        log: bool
+            If True the log of the output of the layer is used.  
+        alpha0: float
+            Trade off parameter for the Fused Gromov-Wasserstein distance.
+            If None, it is learned. 
+        train_node_weights: bool, optional
+            If True, the node weights are trained.
+            Else they are uniform.
         template_sizes: if None, all template have the same number of nodes. 
-          Else, list of the number of nodes of the templates. 
+            Else, list of the number of nodes of the templates. 
+
 
         """
 
@@ -636,16 +847,15 @@ class LTFGW_MLP_dropout_relu(nn.Module):
 
         self.n_classes = n_classes
         self.n_features = n_features
-        self.n_templates = args['n_templates']
-        self.n_templates_nodes = args['n_templates_nodes']
-        self.hidden_layer = args['hidden_layer']
-        self.alpha0 = args['alpha0']
-        self.train_node_weights = args['train_node_weights'] == 'True'
-        self.skip_connection = args['skip_connection'] == 'True'
-        self.drop = args['dropout']
-        self.shortest_path = args['shortest_path']
-        self.k = args['k']
-        self.n_nodes = n_nodes
+        self.n_templates = n_templates
+        self.n_templates_nodes = n_templates_nodes
+        self.hidden_layer = hidden_layer
+        self.alpha0 = alpha0
+        self.train_node_weights = train_node_weights
+        self.skip_connection = skip_connection
+        self.drop = dropout
+        self.shortest_path = shortest_path
+        self.k = k
 
         self.dropout1 = torch.nn.Dropout(self.drop)
         self.dropout2 = torch.nn.Dropout(self.drop)
@@ -667,88 +877,6 @@ class LTFGW_MLP_dropout_relu(nn.Module):
             self.train_node_weights,
             self.shortest_path,
             template_sizes)
-
-    def forward(self, x, edge_index):
-
-        x = self.dropout1(x)
-        x = self.Linear1(x)
-        x = x.relu()
-        
-        if self.skip_connection:
-            y = self.LTFGW(x, edge_index)
-            x = torch.hstack([x, y])
-            x = self.dropout2(x)
-            x = self.Linear2(x)
-            x_latent = x
-
-        else:
-            x = self.LTFGW(x, edge_index)
-            x = self.Linear3(x)
-
-        return x, x_latent
-
-
-class LTFGW_MLP_dropout_relu_one_node(nn.Module):
-    def __init__(
-            self,
-            args,
-            n_classes,
-            n_features,
-            n_nodes,
-            mean_init=0,
-            std_init=0.001):
-        """
-        n_classes: int
-           Number of classes for node classification.
-        n_features: int
-           Number of features for each node.
-        n_features: int, optional
-          Number of node features.
-        n_nodes: int
-           Number of nodes in the graph.  
-        mean_init: float, optional
-          Mean of the random normal law to initialize the template features.
-        std_init:  float, optional
-          Std of the random normal law to initialize the template features.
-        template_sizes: if None, all template have the same number of nodes. 
-          Else, list of the number of nodes of the templates. 
-
-        """
-
-        super().__init__()
-
-        self.n_classes = n_classes
-        self.n_features = n_features
-        self.n_templates = args['n_templates']
-        self.n_templates_nodes = args['n_templates_nodes']
-        self.hidden_layer = args['hidden_layer']
-        self.alpha0 = args['alpha0']
-        self.train_node_weights = args['train_node_weights'] == 'True'
-        self.skip_connection = args['skip_connection'] == 'True'
-        self.drop = args['dropout']
-        self.shortest_path = args['shortest_path']
-        self.k = args['k']
-        self.n_nodes = n_nodes
-
-        self.dropout1 = torch.nn.Dropout(self.drop)
-        self.dropout2 = torch.nn.Dropout(self.drop)
-
-        self.Linear1 = Linear(self.n_features, self.hidden_layer)
-        self.Linear2 = Linear(
-            self.hidden_layer +
-            self.n_templates,
-            self.n_classes)
-        self.Linear3 = Linear(self.n_templates, self.n_classes)
-        self.LTFGW = LTFGW_one_node(
-            self.n_templates,
-            self.n_templates_nodes,
-            self.hidden_layer,
-            self.k,
-            self.alpha0,
-            mean_init,
-            std_init,
-            self.train_node_weights,
-            self.shortest_path)
 
     def forward(self, x, edge_index):
 

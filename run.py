@@ -78,116 +78,77 @@ parser.add_argument('-template_sizes', type=int,nargs='+', default=None,
                     help='list of template sizes')
 parser.add_argument('-reg', type=float, default=0,
                     help='regularisation for entropic semi_relaxed')
+parser.add_argument('-log', type=str, default='False',
+                    help='If True, the log of the LTFGW is used')
 # parser.add_argument('-seeds', type=list, default=[1941488137,4198936517,983997847,4023022221,4019585660,2108550661,1648766618,629014539,3212139042,2424918363],
 #                    help='seeds to use for splits')
 
 
 args = vars(parser.parse_args())
 
-# general arguments
-# 'Citeseer' or 'Toy_graph_single' or 'Toy_graph_multi' or 'mutag' or 'cornell'
-dataset_name = args['dataset']
-# 'GCN', 'GCN_LTFGW', 'LTFGW_GCN' or 'MLP'  or 'LTFGW_MLP'
-model_name = args['model']
-save = args['save'] == 'True'  # wether to save the parameters and the model
-graph_type = args['graph_type']
-scheduler = args['scheduler'] == 'True'
 
 
-# training arguments
-n_epoch = args['nepochs']  # number of epochs
-lr = args['lr']  # learning rate
-weight_decay = args['wd']
-train_node_weights = args['train_node_weights'] == 'True'
+args['save'] = args['save'] == 'True'  
+args['scheduler'] = args['scheduler'] == 'True'
+args['train_node_weights'] = args['train_node_weights'] == 'True'
+args['shortest_path'] = args['shortest_path'] == 'True'
 
-# general layer arguments
-hidden_layer = args['hidden_layer']
-n_hidden_layer = args['n_hidden_layer']
-
-# args for LTFGW
-n_templates = args['n_templates']
-n_templates_nodes = args['n_templates_nodes']
-k = args['k']
-drop = args['dropout']
-shortest_path = args['shortest_path'] == 'True'
-template_sizes = args['template_sizes']
-
-if not template_sizes == None:
-   args['n_templates']=len(template_sizes)
+if not args['template_sizes'] == None:
+   args['n_templates']=len(args['template_sizes'])
 
 
 if not args['alpha0'] is None:
-    alpha0 = torch.as_tensor([args['alpha0']])
-else:
-    alpha0 = args['alpha0']
+    args['alpha0'] = torch.as_tensor([args['alpha0']])
 
-# seeds
-first_seed = args['first_seed']
-num_seeds = args['number_of_seeds']  # number of different seeds to train with
-
-# arguments for multigraphs
-batch_size = args['batch_size']
-random_split = args['random_split']
-
-device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+args['device'] = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
 # %%Training and testing
 
 criterion = torch.nn.CrossEntropyLoss()
 
 Test_accuracy = []
-seeds = torch.arange(first_seed, first_seed + num_seeds, 1)
+seeds = torch.arange(args['first_seed'], args['first_seed'] + args['num_seeds'], 1)
+
+# load dataset
+dataset, args['n_classes'], args['n_features'], test_graph, graph_type, args['mean_init'], args['std_init'] = get_dataset(
+    args['dataset_name'])
+
+args['n_nodes'] = len(dataset.x)
+
+if args['dataset_name'] == 'Toy_graph_single':
+    dataset_train, dataset_test = dataset
+    dataset = dataset_train
+else:
+    dataset_test = dataset
+
+method = args['model_name']    
 
 for seed in seeds:
     torch.manual_seed(seed)
 
-    # load dataset
-    dataset, n_classes, n_features, test_graph, graph_type, mean, std = get_dataset(
-        dataset_name)
-
-    n_nodes = len(dataset.x)
-
-    if dataset_name == 'Toy_graph_single':
-        dataset_train, dataset_test = dataset
-        dataset = dataset_train
+    model = get_model(**args)
+    model = model.to(args['device'])
+     
+    if args['alpha0'] is None:
+        filename_save, filename_best_model, filename_visus, filename_current_model, filename_templates, filename_alpha = get_filenames(seed=seed,method=method,**args)
     else:
-        dataset_test = dataset
-
-    model = get_model(
-        model_name,
-        args,
-        n_classes,
-        n_features,
-        n_nodes,
-        mean,
-        std,
-        template_sizes)
-    model = model.to(device)
-
-    method = model_name
-
-    if alpha0 is None:
-        filename_save, filename_best_model, filename_visus, filename_current_model, filename_templates, filename_alpha = get_filenames(
-            dataset_name, method, lr, n_templates, n_templates_nodes, alpha0, k, drop, weight_decay, hidden_layer, scheduler, seed,template_sizes)
-    else:
-        filename_save, filename_best_model, filename_visus, filename_current_model, filename_templates, filename_alpha = get_filenames(
-            dataset_name, method, lr, n_templates, n_templates_nodes, alpha0.item(), k, drop, shortest_path, weight_decay, hidden_layer, scheduler, seed,template_sizes)
+        filename_save, filename_best_model, filename_visus, filename_current_model, filename_templates, filename_alpha = get_filenames(seed=seed,method=method,**args)
 
     optimizer = torch.optim.Adam(
         model.parameters(),
-        lr=lr,
-        weight_decay=weight_decay)
+        lr=args['lr'],
+        weight_decay=args['weight_decay'])
 
     if graph_type == 'single_graph':
-        percls_trn = int(round(0.6 * len(dataset.y) / n_classes))
+        percls_trn = int(round(0.6 * len(dataset.y) / args['n_classes']))
         val_lb = int(round(0.2 * len(dataset.y)))
         dataset = random_planetoid_splits(
             dataset,
-            n_classes,
+            args['n_classes'],
             percls_trn=percls_trn,
             val_lb=val_lb,
             seed=seed)
-        dataset = dataset.to(device)
+        dataset = dataset.to(args['device'])
         loader = NeighborLoader(dataset,
                                 num_neighbors=[-1],
                                 input_nodes=dataset.train_mask,
@@ -201,38 +162,33 @@ for seed in seeds:
                                     batch_size=torch.sum(dataset.val_mask).item()
                                     )
         dataset_test = dataset
-        train(args,criterion,optimizer,loader,loader_val,model,filename_save,filename_best_model,filename_visus,filename_templates,filename_alpha,filename_current_model,save,scheduler, template_sizes)
+        train(**args,criterion,optimizer,loader,loader_val,model,filename_save,filename_best_model,filename_visus,filename_templates,filename_alpha,filename_current_model)
 
     elif graph_type == 'multi_graph':
         generator = torch.Generator().manual_seed(seed.item())
         train_dataset, val_dataset, test_dataset = torch.utils.data.random_split(
-            dataset, random_split, generator=generator)
+            dataset, args['random_split'], generator=generator)
         train_loader = DataLoader(
             train_dataset,
-            batch_size=batch_size,
+            batch_size=args['batch_size'],
             shuffle=True)
         val_loader = DataLoader(
             val_dataset,
-            batch_size=batch_size,
+            batch_size=args['batch_size'],
             shuffle=False)
         train_multi_graph(
             model,
             criterion,
             optimizer,
-            n_epoch,
-            save,
-            filename_save,
-            filename_best_model,
             train_loader,
-            val_loader,
-            filename_visus)
+            val_loader)
 
     elif graph_type == 'mini_batch':
-        percls_trn = int(round(0.6 * len(dataset.y) / n_classes))
+        percls_trn = int(round(0.6 * len(dataset.y) / args['n_classes']))
         val_lb = int(round(0.2 * len(dataset.y)))
         dataset = random_planetoid_splits(
             dataset,
-            n_classes,
+            args['n_classes'],
             percls_trn=percls_trn,
             val_lb=val_lb,
             seed=seed)
@@ -240,10 +196,10 @@ for seed in seeds:
         train_minibatch(
             model,
             dataset,
-            n_epoch,
+            args['n_epoch'],
             criterion,
             optimizer,
-            save,
+            args['save'] ,
             filename_save,
             filename_best_model,
             filename_visus,
@@ -266,20 +222,23 @@ for seed in seeds:
         test_acc = test(model, dataset_test, test_graph)
         Test_accuracy.append(test_acc)
 
-    filename_save_test = os.path.join(
-        'results',
-        method,
-        dataset_name,
-        "test_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}.csv".format(
-            first_seed,
-            lr,
-            n_templates,
-            n_templates_nodes,
-            alpha0,
-            k,
-            drop,
-            weight_decay,
-            hidden_layer))
+    if args['template_sizes']==None:
+
+        filename_save_test = os.path.join(
+            'results',
+            method,
+            args['dataset_name'],
+            "test_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler{}_log{}.csv".format(args['seed'],args['lr'],args['n_templates'],args['n_templates_nodes'],
+                args['alpha0'],args['k'],args['dropout'],args['wd'],args['hidden_layer'],args['scheduler'],args['log']))
+    else: 
+        
+        filename_save_test = os.path.join(
+            'results',
+            method,
+            args['dataset_name'],
+            "test_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler{}_log{}_tempsizes.csv".format(args['seed'],args['lr'],args['n_templates'],args['n_templates_nodes'],
+                args['alpha0'],args['k'],args['dropout'],args['wd'],args['hidden_layer'],args['scheduler'],args['log']))
+
     np.savetxt(filename_save_test, Test_accuracy)
 
 # print the performances

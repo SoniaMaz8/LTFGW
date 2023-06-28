@@ -10,98 +10,67 @@ from GNN.architectures import *
 
 
 def get_model(
-        model_name,
-        args,
-        n_classes,
-        n_features,
-        n_nodes,
-        mean_init,
-        std_init,
-        template_sizes):
+        model_name:str,
+        n_nodes:int,
+        mean_init:float,
+        std_init:float,
+        template_sizes,
+        args):
     
     """"
-    Input: model name
-    Output: model
+    Function to get the model.
+
+    Parameters
+    ----------
+
+    model_name: str
+      Name of the model.
+    n_classes: int
+      Number of classes for node classification.
+    n_features: int
+      Number of features for each node.
+    n_nodes: int
+      Number of nodes for the LTFGW templates.
+    mean_init: float
+      Mean of the normal distribution for the initialisation of the LTFGW templates.
+    std_init: float
+      Standard deviation of the normal distribution for the initialisation of the LTFGW templates.
+    template_sizes: if None, all template have the same number of nodes. 
+        Else, list of the number of nodes of the templates. 
+    
     """
+    if not model_name in ['LTFGW_GCN','MLP','GCN','LTFGW_MLP','ChebNet','GCN_JK','LTFGW_MLP_semirelaxed', 'LTFGW_MLP_dropout', 'LTFGW_MLP_dropout_relu', 'LTFGW_MLP_dropout_relu_one_node']:
+        raise ValueError(
+            'The model is not supported.')
     
-    
-    if model_name == 'LTFGW_GCN':
-        model = LTFGW_GCN(args, n_classes, n_features, n_nodes, template_sizes)
+    elif model_name == 'LTFGW_GCN':
+        model = LTFGW_GCN(**args)
 
     elif model_name == 'MLP':
-        model = MLP(args, n_classes, n_features)
+        model = MLP(**args)
 
     elif model_name == 'GCN':
-        model = GCN(args, n_classes, n_features)
+        model = GCN(**args)
 
     elif model_name == 'LTFGW_MLP':
-        model = LTFGW_MLP(
-            args,
-            n_classes,
-            n_features,
-            n_nodes,
-            mean_init=mean_init,
-            std_init=std_init,
-            template_sizes=template_sizes)
-
-
-    elif model_name == 'LTFGW_MLP_log':
-        model = LTFGW_MLP_log(
-            args,
-            n_classes,
-            n_features,
-            n_nodes,
-            mean_init=mean_init,
-            std_init=std_init,
-            template_sizes=template_sizes)
+        model = LTFGW_MLP(**args)
 
     elif model_name == 'ChebNet':
-        model = ChebNet(args, n_classes, n_features)
+        model = ChebNet(**args)
 
     elif model_name == 'GCN_JK':
-        model = GCN_JK(args, n_classes, n_features)
+        model = GCN_JK(**args)
 
     elif model_name == 'LTFGW_MLP_semirelaxed':
-        model = LTFGW_MLP_semirelaxed(
-            args,
-            n_classes,
-            n_features,
-            n_nodes,
-            mean_init,
-            std_init,
-            template_sizes=template_sizes,)
+        model = LTFGW_MLP_semirelaxed(**args)
         
 
     elif model_name == 'LTFGW_MLP_dropout':
-        model = LTFGW_MLP_dropout(
-            args,
-            n_classes,
-            n_features,
-            n_nodes,
-            mean_init=mean_init,
-            std_init=std_init,
-            template_sizes=template_sizes)
+        model = LTFGW_MLP_dropout(**args)
         
     
     elif model_name == 'LTFGW_MLP_dropout_relu':
-        model = LTFGW_MLP_dropout_relu(
-            args,
-            n_classes,
-            n_features,
-            n_nodes,
-            mean_init=mean_init,
-            std_init=std_init,
-            template_sizes=template_sizes) 
-
-    elif model_name == 'LTFGW_MLP_dropout_relu_one_node':
-        model = LTFGW_MLP_dropout_relu_one_node(
-            args,
-            n_classes,
-            n_features,
-            n_nodes,
-            mean_init=mean_init,
-            std_init=std_init,
-            template_sizes=template_sizes)          
+        model = LTFGW_MLP_dropout_relu(**args)          
 
     return model
 
@@ -110,17 +79,6 @@ def get_dataset(dataset_name):
     """
     Function that returns the dataset and the number of classes for a given
     dataset name
-
-    Input:
-        dataset_name: name of the dataset
-    Output:
-        dataset: dataset
-        n_classes: number of classes
-        n_features: number of node features
-        test_graph: wether there is a separate graph for testing
-        graph_type: type of graph (single or multi)
-        mean: features' mean
-        std: features' std 
 
     """
 
@@ -201,7 +159,8 @@ def get_filenames(
         hl,
         scheduler,
         seed=None,
-        template_sizes=None):
+        template_sizes=None,
+        log=False):
 
     if seed is None:
         filename_save = os.path.join(
@@ -219,7 +178,7 @@ def get_filenames(
             str(
                 seed.item()),
             'performances',
-            "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}.pkl".format(
+            "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_log{}.pkl".format(
                 lr,
                 n_temp,
                 n_nodes,
@@ -228,7 +187,8 @@ def get_filenames(
                 dropout,
                 wd,
                 hl,
-                scheduler))
+                scheduler,
+                log))
         filename_best_model = os.path.join(
             'results',
             method,
@@ -236,7 +196,7 @@ def get_filenames(
             str(
                 seed.item()),
             'best_model',
-            "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}.pt".format(
+            "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_log{}.pt".format(
                 lr,
                 n_temp,
                 n_nodes,
@@ -245,11 +205,12 @@ def get_filenames(
                 dropout,
                 wd,
                 hl,
-                scheduler))
+                scheduler,
+                log))
         filename_visus = os.path.join(
             'results', method, dataset_name, str(
-                seed.item()), 'visus', "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}.pkl".format(
-                lr, n_temp, n_nodes, alpha0, k, dropout, wd, hl, scheduler))
+                seed.item()), 'visus', "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_log.pkl".format(
+                lr, n_temp, n_nodes, alpha0, k, dropout, wd, hl, scheduler,log))
         filename_current_model = os.path.join(
             'results',
             method,
@@ -257,7 +218,7 @@ def get_filenames(
             str(
                 seed.item()),
             'current_model',
-            "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}.pt".format(
+            "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_log{}.pt".format(
                 lr,
                 n_temp,
                 n_nodes,
@@ -266,15 +227,16 @@ def get_filenames(
                 dropout,
                 wd,
                 hl,
-                scheduler))
+                scheduler,
+                log))
         filename_templates = os.path.join(
             'results', method, dataset_name, str(
-                seed.item()), 'templates', "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}.pkl".format(
-                lr, n_temp, n_nodes, alpha0, k, dropout, wd, hl, scheduler))
+                seed.item()), 'templates', "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_log{}.pkl".format(
+                lr, n_temp, n_nodes, alpha0, k, dropout, wd, hl, scheduler,log))
         filename_alphas = os.path.join(
             'results', method, dataset_name, str(
-                seed.item()), 'alphas', "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}.pkl".format(
-                lr, n_temp, n_nodes, alpha0, k, dropout, wd, hl, scheduler))
+                seed.item()), 'alphas', "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_log{}.pkl".format(
+                lr, n_temp, n_nodes, alpha0, k, dropout, wd, hl, scheduler,log))
         
     else:
         filename_save = os.path.join(
@@ -284,7 +246,7 @@ def get_filenames(
             str(
                 seed.item()),
             'performances',
-            "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_tempsizes.pkl".format(
+            "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_log{}_tempsizes.pkl".format(
                 lr,
                 n_temp,
                 n_nodes,
@@ -293,7 +255,8 @@ def get_filenames(
                 dropout,
                 wd,
                 hl,
-                scheduler))
+                scheduler,
+                log))
         filename_best_model = os.path.join(
             'results',
             method,
@@ -301,7 +264,7 @@ def get_filenames(
             str(
                 seed.item()),
             'best_model',
-            "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_tempsizes.pt".format(
+            "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_log{}_tempsizes.pt".format(
                 lr,
                 n_temp,
                 n_nodes,
@@ -310,11 +273,12 @@ def get_filenames(
                 dropout,
                 wd,
                 hl,
-                scheduler))
+                scheduler,
+                log))
         filename_visus = os.path.join(
             'results', method, dataset_name, str(
-                seed.item()), 'visus', "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_tempsizes.pkl".format(
-                lr, n_temp, n_nodes, alpha0, k, dropout, wd, hl, scheduler))
+                seed.item()), 'visus', "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_log{}_tempsizes.pkl".format(
+                lr, n_temp, n_nodes, alpha0, k, dropout, wd, hl, scheduler,log))
         filename_current_model = os.path.join(
             'results',
             method,
@@ -322,7 +286,7 @@ def get_filenames(
             str(
                 seed.item()),
             'current_model',
-            "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_tempsizes.pt".format(
+            "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_log{}_tempsizes.pt".format(
                 lr,
                 n_temp,
                 n_nodes,
@@ -331,15 +295,16 @@ def get_filenames(
                 dropout,
                 wd,
                 hl,
-                scheduler))
+                scheduler,
+                log))
         filename_templates = os.path.join(
             'results', method, dataset_name, str(
-                seed.item()), 'templates', "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_tempsizes.pkl".format(
-                lr, n_temp, n_nodes, alpha0, k, dropout, wd, hl, scheduler))
+                seed.item()), 'templates', "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_log{}_tempsizes.pkl".format(
+                lr, n_temp, n_nodes, alpha0, k, dropout, wd, hl, scheduler,log))
         filename_alphas = os.path.join(
             'results', method, dataset_name, str(
-                seed.item()), 'alphas', "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_tempsizes.pkl".format(
-                lr, n_temp, n_nodes, alpha0, k, dropout, wd, hl, scheduler))
+                seed.item()), 'alphas', "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_log{}_tempsizes.pkl".format(
+                lr, n_temp, n_nodes, alpha0, k, dropout, wd, hl, scheduler,log))
 
     return filename_save, filename_best_model, filename_visus, filename_current_model, filename_templates, filename_alphas
 
