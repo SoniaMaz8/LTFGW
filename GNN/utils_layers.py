@@ -240,7 +240,7 @@ def semi_relaxed_marginals_to_template(
 
             else:
 
-                T = entropic_semirelaxed_fused_gromov_wasserstein(C_sub, C_T[j], p, epsilon=reg, max_iter=20)
+                T = entropic_semirelaxed_fused_gromov_wasserstein(M,C_sub, C_T[j], p, alpha=alpha,epsilon=reg, max_iter=20)
 
             q =torch.sum(T,0)
 
