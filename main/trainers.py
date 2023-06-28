@@ -57,8 +57,8 @@ def train(args,criterion,optimizer,loader,loader_val,model,filename_save,filenam
         scheduler = StepLR(optimizer, 200, 0.8)
 
 
-    save_templates = args['model'] == 'LTFGW_MLP' or  args['model'] == 'LTFGW_GCN' or  args['model'] == 'LTFGW_MLP_log' or  args['model'] == 'LTFGW_MLP_dropout' or  args['model'] == 'LTFGW_MLP_semirelaxed' or args['model'] == 'LTFGW_MLP_dropout' or  args['model'] == 'LTFGW_MLP_dropout_relu'
-
+ #   save_templates = args['model'] == 'LTFGW_MLP' or  args['model'] == 'LTFGW_GCN' or  args['model'] == 'LTFGW_MLP_log' or  args['model'] == 'LTFGW_MLP_dropout' or  args['model'] == 'LTFGW_MLP_semirelaxed' or args['model'] == 'LTFGW_MLP_dropout' or  args['model'] == 'LTFGW_MLP_dropout_relu'
+    save_templates=False
     if save:
         # create dataframe to save performances
         df = pd.DataFrame(
