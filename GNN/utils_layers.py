@@ -9,7 +9,7 @@ from scipy.sparse.csgraph import shortest_path as function_shortest_path
 from torch_geometric.utils import k_hop_subgraph
 from torch_geometric.data import Data as GraphData
 from ot.gromov import semirelaxed_fused_gromov_wasserstein2 
-from ot.gromov import entropic_semirelaxed_fused_gromov_wasserstein2
+from ot.gromov import entropic_semirelaxed_fused_gromov_wasserstein
 import time
 from ot.backend import TorchBackend
 
@@ -240,7 +240,7 @@ def semi_relaxed_marginals_to_template(
 
             else:
 
-                T = entropic_semirelaxed_fused_gromov_wasserstein2(C_sub, C_T[j], p, epsilon=reg, max_iter=20)
+                T = entropic_semirelaxed_fused_gromov_wasserstein(C_sub, C_T[j], p, epsilon=reg, max_iter=20)
 
             q =torch.sum(T,0)
 
