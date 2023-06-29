@@ -49,7 +49,7 @@ parser.add_argument('-batch_size', type=int, default=5,
 parser.add_argument('-first_seed', type=int, default=20,
                     help='first seed to train with')
 parser.add_argument(
-    '-number_of_seeds',
+    '-n_seeds',
     type=int,
     default=1,
     help='number of seeds to train with, starting from the first')
@@ -107,7 +107,7 @@ args['device'] = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 criterion = torch.nn.CrossEntropyLoss()
 
 Test_accuracy = []
-seeds = torch.arange(args['first_seed'], args['first_seed'] + args['num_seeds'], 1)
+seeds = torch.arange(args['first_seed'], args['first_seed'] + args['n_seeds'], 1)
 
 # load dataset
 dataset, args['n_classes'], args['n_features'], test_graph, graph_type, args['mean_init'], args['std_init'] = get_dataset(
