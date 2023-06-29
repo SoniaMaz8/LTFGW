@@ -111,11 +111,11 @@ seeds = torch.arange(args['first_seed'], args['first_seed'] + args['n_seeds'], 1
 
 # load dataset
 dataset, args['n_classes'], args['n_features'], test_graph, graph_type, args['mean_init'], args['std_init'] = get_dataset(
-    args['dataset_name'])
+    args['dataset'])
 
 args['n_nodes'] = len(dataset.x)
 
-if args['dataset_name'] == 'Toy_graph_single':
+if args['dataset'] == 'Toy_graph_single':
     dataset_train, dataset_test = dataset
     dataset = dataset_train
 else:
@@ -227,7 +227,7 @@ for seed in seeds:
         filename_save_test = os.path.join(
             'results',
             method,
-            args['dataset_name'],
+            args['dataset'],
             "test_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler{}_log{}.csv".format(args['seed'],args['lr'],args['n_templates'],args['n_templates_nodes'],
                 args['alpha0'],args['k'],args['dropout'],args['wd'],args['hidden_layer'],args['scheduler'],args['log']))
     else: 
@@ -235,13 +235,13 @@ for seed in seeds:
         filename_save_test = os.path.join(
             'results',
             method,
-            args['dataset_name'],
+            args['dataset'],
             "test_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler{}_log{}_tempsizes.csv".format(args['seed'],args['lr'],args['n_templates'],args['n_templates_nodes'],
                 args['alpha0'],args['k'],args['dropout'],args['wd'],args['hidden_layer'],args['scheduler'],args['log']))
            
        
-    if not os.path.isdir(os.path.join('results',method,args['dataset_name'])):
-        os.mkdir(os.path.join('results',method,args['dataset_name']))
+    if not os.path.isdir(os.path.join('results',method,args['dataset'])):
+        os.mkdir(os.path.join('results',method,args['dataset']))
     np.savetxt(filename_save_test, Test_accuracy)
 
 # print the performances
