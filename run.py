@@ -38,7 +38,7 @@ parser.add_argument('-wd', type=float, default=5e-4,
                     help='weight decay')
 parser.add_argument('-n_templates', type=int, default=1,
                     help='number of templates for LTFGW')
-parser.add_argument('-n_templates_nodes', type=int, default=2,
+parser.add_argument('-n_template_nodes', type=int, default=2,
                     help='number of templates nodes for LTFGW')
 parser.add_argument('-hidden_layer', type=int, default=64,
                     help='hidden dimention')
@@ -88,19 +88,37 @@ args = vars(parser.parse_args())
 
 
 
-args['save'] = args['save'] == 'True'  
-args['scheduler'] = args['scheduler'] == 'True'
-args['train_node_weights'] = args['train_node_weights'] == 'True'
-args['shortest_path'] = args['shortest_path'] == 'True'
+save = args['save'] == 'True'  
+scheduler = args['scheduler'] == 'True'
+train_node_weights = args['train_node_weights'] == 'True'
+shortest_path = args['shortest_path'] == 'True'
+log=args['log']=='True'
+skip_connection=args['skip_connection']=='True'
 
 if not args['template_sizes'] == None:
    args['n_templates']=len(args['template_sizes'])
 
+alpha0=args['alpha0']
+if not alpha0 is None:
+    alpha0 = torch.as_tensor([args['alpha0']])
 
-if not args['alpha0'] is None:
-    args['alpha0'] = torch.as_tensor([args['alpha0']])
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-args['device'] = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+n_templates=args['n_templates']
+n_template_nodes=args['n_template_nodes']
+dataset_name=args['dataset']
+hidden_layer=args['hidden_layer']
+dropout=args['dropout']
+wd=args['wd']
+lr=args['lr']
+k=args['k']
+template_sizes=args['template_sizes']
+n_hidden_layer=args['n_hidden_layer']
+reg=args['reg']
+nepochs=args['nepochs']
+model_name=args['model']
+
+
 
 # %%Training and testing
 
@@ -110,12 +128,12 @@ Test_accuracy = []
 seeds = torch.arange(args['first_seed'], args['first_seed'] + args['n_seeds'], 1)
 
 # load dataset
-dataset, args['n_classes'], args['n_features'], test_graph, graph_type, args['mean_init'], args['std_init'] = get_dataset(
+dataset, n_classes, n_features, test_graph, graph_type, mean_init, std_init = get_dataset(
     args['dataset'])
 
-args['n_nodes'] = len(dataset.x)
+n_nodes = len(dataset.x)
 
-if args['dataset'] == 'Toy_graph_single':
+if dataset_name == 'Toy_graph_single':
     dataset_train, dataset_test = dataset
     dataset = dataset_train
 else:
@@ -126,29 +144,72 @@ method = args['model']
 for seed in seeds:
     torch.manual_seed(seed)
 
-    model = get_model(args['model'],args['n_nodes'],args['mean_init'],args['std_init'],args['template_sizes'],args)
-    model = model.to(args['device'])
+    model = get_model( model_name,
+        n_classes,
+        n_features,
+        n_templates,
+        n_template_nodes,
+        hidden_layer,
+        dropout,
+        shortest_path,
+        k,
+        mean_init,
+        std_init,
+        log,
+        alpha0,
+        train_node_weights,
+        skip_connection,
+        template_sizes,
+        n_hidden_layer,
+        reg)
+    model = model.to(device)
      
-    if args['alpha0'] is None:
-        filename_save, filename_best_model, filename_visus, filename_current_model, filename_templates, filename_alpha = get_filenames(seed=seed,method=method,**args)
+    if alpha0 is None:
+        filename_save, filename_best_model, filename_visus, filename_current_model, filename_templates, filename_alpha = get_filenames(args['dataset'],
+        method,
+        lr,
+        n_templates,
+        n_template_nodes,
+        alpha0,
+        k,
+        dropout,
+        wd,
+        hidden_layer,
+        scheduler,
+        seed,
+        template_sizes,
+        log)
     else:
-        filename_save, filename_best_model, filename_visus, filename_current_model, filename_templates, filename_alpha = get_filenames(seed=seed,method=method,**args)
+        filename_save, filename_best_model, filename_visus, filename_current_model, filename_templates, filename_alpha = get_filenames(args['dataset'],
+        method,
+        lr,
+        n_templates,
+        n_nodes,
+        alpha0.item(),
+        k,
+        dropout,
+        wd,
+        hidden_layer,
+        scheduler,
+        seed,
+        template_sizes,
+        log)
 
     optimizer = torch.optim.Adam(
         model.parameters(),
-        lr=args['lr'],
-        weight_decay=args['weight_decay'])
+        lr=lr,
+        weight_decay=wd)
 
     if graph_type == 'single_graph':
-        percls_trn = int(round(0.6 * len(dataset.y) / args['n_classes']))
+        percls_trn = int(round(0.6 * len(dataset.y) / n_classes))
         val_lb = int(round(0.2 * len(dataset.y)))
         dataset = random_planetoid_splits(
             dataset,
-            args['n_classes'],
+            n_classes,
             percls_trn=percls_trn,
             val_lb=val_lb,
             seed=seed)
-        dataset = dataset.to(args['device'])
+        dataset = dataset.to(device)
         loader = NeighborLoader(dataset,
                                 num_neighbors=[-1],
                                 input_nodes=dataset.train_mask,
@@ -162,7 +223,7 @@ for seed in seeds:
                                     batch_size=torch.sum(dataset.val_mask).item()
                                     )
         dataset_test = dataset
-        train(criterion,optimizer,loader,loader_val,model,filename_save,filename_best_model,filename_visus,filename_templates,filename_alpha,filename_current_model,**args)
+        train(criterion,optimizer,loader,loader_val,model,filename_save,filename_best_model,filename_visus,filename_templates,filename_alpha,filename_current_model,save,scheduler, template_sizes,nepochs)
 
     elif graph_type == 'multi_graph':
         generator = torch.Generator().manual_seed(seed.item())
@@ -184,11 +245,11 @@ for seed in seeds:
             val_loader)
 
     elif graph_type == 'mini_batch':
-        percls_trn = int(round(0.6 * len(dataset.y) / args['n_classes']))
+        percls_trn = int(round(0.6 * len(dataset.y) / n_classes))
         val_lb = int(round(0.2 * len(dataset.y)))
         dataset = random_planetoid_splits(
             dataset,
-            args['n_classes'],
+            n_classes,
             percls_trn=percls_trn,
             val_lb=val_lb,
             seed=seed)
@@ -196,10 +257,10 @@ for seed in seeds:
         train_minibatch(
             model,
             dataset,
-            args['n_epoch'],
+            n_epoch,
             criterion,
             optimizer,
-            args['save'] ,
+            save ,
             filename_save,
             filename_best_model,
             filename_visus,
@@ -228,20 +289,20 @@ for seed in seeds:
             'results',
             method,
             args['dataset'],
-            "test_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler{}_log{}.csv".format(args['seed'],args['lr'],args['n_templates'],args['n_templates_nodes'],
-                args['alpha0'],args['k'],args['dropout'],args['wd'],args['hidden_layer'],args['scheduler'],args['log']))
+            "test_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler{}_log{}.csv".format(seed,lr,n_templates,n_templates_nodes,
+                alpha0,k,dropout,wd,hidden_layer,scheduler,log))
     else: 
 
         filename_save_test = os.path.join(
             'results',
             method,
             args['dataset'],
-            "test_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler{}_log{}_tempsizes.csv".format(args['seed'],args['lr'],args['n_templates'],args['n_templates_nodes'],
-                args['alpha0'],args['k'],args['dropout'],args['wd'],args['hidden_layer'],args['scheduler'],args['log']))
+            "test_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler{}_log{}_tempsizes.csv".format(seed,lr,n_templates,n_templates_nodes,
+                alpha0,k,dropout,wd,hidden_layer,scheduler,log))
            
        
-    if not os.path.isdir(os.path.join('results',method,args['dataset'])):
-        os.mkdir(os.path.join('results',method,args['dataset']))
+    if not os.path.isdir(os.path.join('results',method,datast_name)):
+        os.mkdir(os.path.join('results',method,dataset_name))
     np.savetxt(filename_save_test, Test_accuracy)
 
 # print the performances

@@ -203,7 +203,7 @@ class MLP(nn.Module):
     """
     def __init__(self, n_hidden_layer, hidden_layer, dropout, n_classes, n_features):
         """
-        MLP architecture
+        G architecture
 
         Parameters
         ----------
@@ -393,12 +393,12 @@ class LTFGW_MLP(nn.Module):
 
 
 class ChebNet(torch.nn.Module):
-    def __init__(self, args, n_classes, n_features):
+    def __init__(self, dropout, n_classes, n_features):
         super(ChebNet, self).__init__()
 
         self.n_features = n_features
         self.n_classes = n_classes
-        self.drop = args['dropout']
+        self.drop = dropout
 
         self.conv1 = ChebConv(self.n_features, 32, K=2)
         self.conv2 = ChebConv(32, self.n_classes, K=2)
@@ -447,21 +447,21 @@ class GAT(torch.nn.Module):
 
 
 class GCN_JK(torch.nn.Module):
-    def __init__(self, args, n_classes, n_features):
+    def __init__(self, n_classes, n_features, hidden_layer):
         in_channels = n_features
         out_channels = n_classes
 
-        self.drop = args['dropout']
+        self.drop = dropout
 
         super(GCN_JK, self).__init__()
-        self.conv1 = GCNConv(in_channels, args['dim_hidden_layer'])
+        self.conv1 = GCNConv(in_channels, hidden_layer)
         self.conv2 = GCNConv(
-            args['dim_hidden_layer'],
-            args['dim_hidden_layer'])
-        self.lin1 = torch.nn.Linear(2 * args['dim_hidden_layer'], out_channels)
+            hidden_layer,
+            hidden_layer)
+        self.lin1 = torch.nn.Linear(2 * hidden_layer, out_channels)
         self.one_step = APPNP(K=1, alpha=0)
         self.JK = JumpingKnowledge(mode='cat',
-                                   channels=args['dim_hidden_layer'],
+                                   channels=hidden_layer,
                                    num_layers=8
                                    )
 
@@ -716,6 +716,7 @@ class LTFGW_MLP_dropout(nn.Module):
         self.shortest_path = shortest_path
         self.k = k
         self.template_sizes=template_sizes
+        self.log=log
 
         self.dropout1 = torch.nn.Dropout(self.drop)
         self.dropout2 = torch.nn.Dropout(self.drop)

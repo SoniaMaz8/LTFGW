@@ -11,11 +11,24 @@ from GNN.architectures import *
 
 def get_model(
         model_name:str,
-        n_nodes:int,
+        n_classes:int,
+        n_features:int,
+        n_templates:int,
+        n_templates_nodes:int,
+        hidden_layer:int,
+        dropout:float,
+        shortest_path:bool,
+        k:int,
         mean_init:float,
         std_init:float,
+        log:bool,
+        alpha0,
+        train_node_weights:bool,
+        skip_connection:bool,
         template_sizes,
-        args):
+        n_hidden_layer:int,
+        reg):
+
     
     """"
     Function to get the model.
@@ -44,33 +57,33 @@ def get_model(
             'The model is not supported.')
     
     elif model_name == 'LTFGW_GCN':
-        model = LTFGW_GCN(**args)
+        model = LTFGW_GCN(n_classes, n_features ,n_templates,n_templates_nodes,hidden_layer,dropout,shortest_path,k,mean_init,std_init,log,alpha0,train_node_weights, skip_connection ,template_sizes)
 
     elif model_name == 'MLP':
-        model = MLP(**args)
+        model = MLP(n_hidden_layer, hidden_layer, dropout, n_classes, n_features)
 
     elif model_name == 'GCN':
-        model = GCN(**args)
+        model = GCN( n_classes, n_features, hidden_layer, n_hidden_layer, dropout)
 
     elif model_name == 'LTFGW_MLP':
-        model = LTFGW_MLP(**args)
+        model = LTFGW_MLP(n_classes, n_features ,n_templates,n_templates_nodes,hidden_layer,dropout,shortest_path,k,mean_init,std_init,log,alpha0,train_node_weights, skip_connection ,template_sizes)
 
     elif model_name == 'ChebNet':
-        model = ChebNet(**args)
+        model = ChebNet(dropout, n_classes, n_features)
 
     elif model_name == 'GCN_JK':
-        model = GCN_JK(**args)
+        model = GCN_JK(n_classes, n_features, hidden_layer)
 
     elif model_name == 'LTFGW_MLP_semirelaxed':
-        model = LTFGW_MLP_semirelaxed(**args)
+        model = LTFGW_MLP_semirelaxed(n_classes, n_features ,n_templates,n_templates_nodes,hidden_layer,dropout,shortest_path,k,mean_init,std_init,log,alpha0,train_node_weights, skip_connection,template_sizes, reg)
         
 
     elif model_name == 'LTFGW_MLP_dropout':
-        model = LTFGW_MLP_dropout(**args)
+        model = LTFGW_MLP_dropout(n_classes, n_features ,n_templates,n_templates_nodes,hidden_layer,dropout,shortest_path,k,mean_init,std_init,log,alpha0,train_node_weights, skip_connection ,template_sizes)
         
     
     elif model_name == 'LTFGW_MLP_dropout_relu':
-        model = LTFGW_MLP_dropout_relu(**args)          
+        model = LTFGW_MLP_dropout_relu( n_classes, n_features ,n_templates,n_templates_nodes,hidden_layer,dropout,shortest_path,k,mean_init,std_init,log,alpha0,train_node_weights, skip_connection ,template_sizes)          
 
     return model
 
@@ -147,32 +160,35 @@ def get_dataset(dataset_name):
 
 
 def get_filenames(
-        dataset_name,
+        dataset,
         method,
         lr,
-        n_temp,
+        n_templates,
         n_nodes,
         alpha0,
         k,
         dropout,
         wd,
-        hl,
+        hidden_layer,
         scheduler,
         seed=None,
         template_sizes=None,
         log=False):
     
-    performance_dir=os.path.join('results',method,dataset_name,str(
+    hl=hidden_layer
+    n_temp=n_templates
+    
+    performance_dir=os.path.join('results',method,dataset,str(
                 seed.item()),'performances')
-    best_model_dir=os.path.join('results',method,dataset_name,str(
+    best_model_dir=os.path.join('results',method,dataset,str(
                 seed.item()),'best_model')
-    current_model_dir= os.path.join('results',method,dataset_name,str(
+    current_model_dir= os.path.join('results',method,dataset,str(
                 seed.item()),'current_model')
-    visus_dir= os.path.join('results',method,dataset_name,str(
+    visus_dir= os.path.join('results',method,dataset,str(
                 seed.item()),'visus')
-    templates_dir= os.path.join('results',method,dataset_name,str(
+    templates_dir= os.path.join('results',method,dataset,str(
                 seed.item()),'templates')
-    alphas_dir= os.path.join('results',method,dataset_name,str(
+    alphas_dir= os.path.join('results',method,dataset,str(
                 seed.item()),'alphas')
     if not os.path.isdir(performance_dir):
         os.mkdir(performance_dir)

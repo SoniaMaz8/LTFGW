@@ -48,17 +48,20 @@ def val_epoch(dataset, model, criterion):
     return loss_val, val_acc
 
 
-def train(args,criterion,optimizer,loader,loader_val,model,filename_save,filename_best_model,filename_visus,filename_templates,filename_alpha,filename_current_model,save,schedule, template_sizes):
+def train(criterion,optimizer,loader,loader_val,model,filename_save,filename_best_model,filename_visus,filename_templates,filename_alpha,filename_current_model,save,schedule, template_sizes,nepochs):
 
     best_val_perf = 0
     Templates = []
     alphas = []
-    if args['scheduler']:
+    if schedule:
         scheduler = StepLR(optimizer, 200, 0.8)
 
+    if save:
+      save_templates = args['model'] == 'LTFGW_MLP' or  args['model'] == 'LTFGW_GCN' or  args['model'] == 'LTFGW_MLP_log' or  args['model'] == 'LTFGW_MLP_dropout' or  args['model'] == 'LTFGW_MLP_semirelaxed' or args['model'] == 'LTFGW_MLP_dropout' or  args['model'] == 'LTFGW_MLP_dropout_relu'
+    
+    else: 
+        save_templates=False
 
- #   save_templates = args['model'] == 'LTFGW_MLP' or  args['model'] == 'LTFGW_GCN' or  args['model'] == 'LTFGW_MLP_log' or  args['model'] == 'LTFGW_MLP_dropout' or  args['model'] == 'LTFGW_MLP_semirelaxed' or args['model'] == 'LTFGW_MLP_dropout' or  args['model'] == 'LTFGW_MLP_dropout_relu'
-    save_templates=False
     if save:
         # create dataframe to save performances
         df = pd.DataFrame(
@@ -71,7 +74,7 @@ def train(args,criterion,optimizer,loader,loader_val,model,filename_save,filenam
                 'best_validation_accuracy'])
         df.to_pickle(filename_save)
 
-    for epoch in tqdm(range(args['nepochs'])):
+    for epoch in tqdm(range(nepochs)):
         train_losses = []
         val_losses = []
         train_accs = []
