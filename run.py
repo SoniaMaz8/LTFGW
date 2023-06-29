@@ -126,7 +126,7 @@ method = args['model']
 for seed in seeds:
     torch.manual_seed(seed)
 
-    model = get_model(**args)
+    model = get_model(args['model'],args['n_nodes'],args['mean_init'],args['std_init'],args['template_sizes'],args)
     model = model.to(args['device'])
      
     if args['alpha0'] is None:
