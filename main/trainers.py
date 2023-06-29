@@ -48,7 +48,7 @@ def val_epoch(dataset, model, criterion):
     return loss_val, val_acc
 
 
-def train(criterion,optimizer,loader,loader_val,model,filename_save,filename_best_model,filename_visus,filename_templates,filename_alpha,filename_current_model,save,schedule, template_sizes,nepochs):
+def train(criterion,optimizer,loader,loader_val,model,filename_save,filename_best_model,filename_visus,filename_templates,filename_alpha,filename_current_model,save,schedule, template_sizes,nepochs,model_name):
 
     best_val_perf = 0
     Templates = []
@@ -57,7 +57,7 @@ def train(criterion,optimizer,loader,loader_val,model,filename_save,filename_bes
         scheduler = StepLR(optimizer, 200, 0.8)
 
     if save:
-      save_templates = args['model'] == 'LTFGW_MLP' or  args['model'] == 'LTFGW_GCN' or  args['model'] == 'LTFGW_MLP_log' or  args['model'] == 'LTFGW_MLP_dropout' or  args['model'] == 'LTFGW_MLP_semirelaxed' or args['model'] == 'LTFGW_MLP_dropout' or  args['model'] == 'LTFGW_MLP_dropout_relu'
+      save_templates = model_name in ['LTFGW_MLP','LTFGW_GCN','LTFGW_MLP_log','LTFGW_MLP_dropout','LTFGW_MLP_semirelaxed','LTFGW_MLP_dropout','LTFGW_MLP_dropout_relu']
     
     else: 
         save_templates=False
