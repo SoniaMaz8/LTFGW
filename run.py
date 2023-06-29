@@ -231,14 +231,17 @@ for seed in seeds:
             "test_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler{}_log{}.csv".format(args['seed'],args['lr'],args['n_templates'],args['n_templates_nodes'],
                 args['alpha0'],args['k'],args['dropout'],args['wd'],args['hidden_layer'],args['scheduler'],args['log']))
     else: 
-        
+
         filename_save_test = os.path.join(
             'results',
             method,
             args['dataset_name'],
             "test_seed{}_lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler{}_log{}_tempsizes.csv".format(args['seed'],args['lr'],args['n_templates'],args['n_templates_nodes'],
                 args['alpha0'],args['k'],args['dropout'],args['wd'],args['hidden_layer'],args['scheduler'],args['log']))
-
+           
+       
+    if not os.path.isdir(os.path.join('results',method,args['dataset_name'])):
+        os.mkdir(os.path.join('results',method,args['dataset_name']))
     np.savetxt(filename_save_test, Test_accuracy)
 
 # print the performances
