@@ -4,7 +4,7 @@ import torch_geometric
 from torch_geometric.loader import NeighborLoader, DataLoader, ClusterData, ClusterLoader, DataLoader
 from GNN.architectures import *
 
-from GNN.utils import *
+from main.utils import *
 from main.trainers import *
 import os
 import torch
@@ -162,7 +162,7 @@ for seed in seeds:
                                     batch_size=torch.sum(dataset.val_mask).item()
                                     )
         dataset_test = dataset
-        train(**args,criterion,optimizer,loader,loader_val,model,filename_save,filename_best_model,filename_visus,filename_templates,filename_alpha,filename_current_model)
+        train(criterion,optimizer,loader,loader_val,model,filename_save,filename_best_model,filename_visus,filename_templates,filename_alpha,filename_current_model,**args)
 
     elif graph_type == 'multi_graph':
         generator = torch.Generator().manual_seed(seed.item())
