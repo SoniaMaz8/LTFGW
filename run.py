@@ -121,7 +121,7 @@ if args['dataset'] == 'Toy_graph_single':
 else:
     dataset_test = dataset
 
-method = args['model_name']    
+method = args['model']    
 
 for seed in seeds:
     torch.manual_seed(seed)
