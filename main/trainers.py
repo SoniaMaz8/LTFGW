@@ -125,9 +125,9 @@ def train(criterion,optimizer,loader,loader_val,model,filename_save,filename_bes
 
             if save_templates and template_sizes==None:
 
-                df = torch.load(filename_current_model)
-                Templates.append(df['model_state_dict']['LTFGW.templates'])
-                alphas.append(df['model_state_dict']['LTFGW.alpha0'])
+                df_model = torch.load(filename_current_model)
+                Templates.append(df_model['model_state_dict']['LTFGW.templates'])
+                alphas.append(df_model['model_state_dict']['LTFGW.alpha0'])
 
         end = time.time()
         df.to_pickle(filename_save)
