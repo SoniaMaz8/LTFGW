@@ -156,7 +156,7 @@ def get_dataset(dataset_name):
     elif dataset_name == 'anti_sbm':
         dataset = torch.load('data/anti_sbm.pt')
         n_classes = 3
-        n_features = 1
+        n_features = 3
         test_graph = False
         graph_type = 'single_graph'    
 
