@@ -257,7 +257,7 @@ for seed in seeds:
         train_minibatch(
             model,
             dataset,
-            n_epoch,
+            nepochs,
             criterion,
             optimizer,
             save ,
@@ -301,7 +301,7 @@ for seed in seeds:
                 alpha0,k,dropout,wd,hidden_layer,scheduler,log))
            
        
-    if not os.path.isdir(os.path.join('results',method,datast_name)):
+    if not os.path.isdir(os.path.join('results',method,dataset_name)):
         os.mkdir(os.path.join('results',method,dataset_name))
     np.savetxt(filename_save_test, Test_accuracy)
 

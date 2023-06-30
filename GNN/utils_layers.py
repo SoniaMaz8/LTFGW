@@ -147,11 +147,6 @@ def distance_to_template(
                 else:
                     qj[0] += abs(sum_q - sum_p)
 
-            torch.save(M,'M.pt')
-            torch.save(C_sub,'C_sub.pt')
-            torch.save(C_T[j],'C_T[j].pt')
-            torch.save(p,'p.pt')
-            torch.save(qj,'qj.pt')
             dist = ot.gromov.fused_gromov_wasserstein2(
                     M, C_sub, torch.Tensor(C_T[j]), p, qj, alpha=alpha, symmetric=True, max_iter=20)
             distances[i, j] = dist

@@ -153,6 +153,13 @@ def get_dataset(dataset_name):
         test_graph = False
         graph_type = 'single_graph'
 
+    elif dataset_name == 'anti_sbm':
+        dataset = torch.load('data/anti_sbm.pt')
+        n_classes = 3
+        n_features = 1
+        test_graph = False
+        graph_type = 'single_graph'    
+
     mean = float(torch.mean(dataset.x).item())
     std = float(torch.std(dataset.x).item())
 
@@ -160,7 +167,7 @@ def get_dataset(dataset_name):
 
 
 def get_filenames(
-        dataset,
+        dataset_name,
         method,
         lr,
         n_templates,
@@ -178,30 +185,30 @@ def get_filenames(
     hl=hidden_layer
     n_temp=n_templates
     
-    performance_dir=os.path.join('results',method,dataset,str(
+    performance_dir=os.path.join('results',method,dataset_name,str(
                 seed.item()),'performances')
-    best_model_dir=os.path.join('results',method,dataset,str(
+    best_model_dir=os.path.join('results',method,dataset_name,str(
                 seed.item()),'best_model')
-    current_model_dir= os.path.join('results',method,dataset,str(
+    current_model_dir= os.path.join('results',method,dataset_name,str(
                 seed.item()),'current_model')
-    visus_dir= os.path.join('results',method,dataset,str(
+    visus_dir= os.path.join('results',method,dataset_name,str(
                 seed.item()),'visus')
-    templates_dir= os.path.join('results',method,dataset,str(
+    templates_dir= os.path.join('results',method,dataset_name,str(
                 seed.item()),'templates')
-    alphas_dir= os.path.join('results',method,dataset,str(
+    alphas_dir= os.path.join('results',method,dataset_name,str(
                 seed.item()),'alphas')
     if not os.path.isdir(performance_dir):
-        os.mkdir(performance_dir)
+        os.makedirs(performance_dir)
     if not os.path.isdir(best_model_dir):
-        os.mkdir(best_model_dir)
+        os.makedirs(best_model_dir)
     if not os.path.isdir(current_model_dir):
-        os.mkdir(current_model_dir)
+        os.makedirs(current_model_dir)
     if not os.path.isdir(visus_dir):
-        os.mkdir(visus_dir)
+        os.makedirs(visus_dir)
     if not os.path.isdir(templates_dir):
-        os.mkdir(templates_dir)
+        os.makedirs(templates_dir)
     if not os.path.isdir(alphas_dir):
-        os.mkdir(alphas_dir)
+        os.makedirs(alphas_dir)
 
     if seed is None:
         filename_save = os.path.join(
