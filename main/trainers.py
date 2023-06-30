@@ -72,15 +72,15 @@ def train(criterion,optimizer,loader,loader_val,model,filename_save,filename_bes
                 'validation_accuracy',
                 'test_accuracy',
                 'best_validation_accuracy'])
-        df.to_csv(filename_save)
-
+    
     for epoch in tqdm(range(nepochs)):
         train_losses = []
         val_losses = []
         train_accs = []
         val_accs = []
-
+        
         start = time.time()
+        
         for dataset in loader:
             loss, train_acc, x_latent = train_epoch(
                 dataset, model, criterion, optimizer)
@@ -99,7 +99,6 @@ def train(criterion,optimizer,loader,loader_val,model,filename_save,filename_bes
         mean_val_loss = torch.mean(torch.tensor(val_losses))
 
         if save:
-            df = pd.read_csv(filename_save)
             # add performances to the dataframe
             df.at[epoch, 'loss'] = mean_train_loss
             df.at[epoch, 'train_accuracy'] = mean_train_acc
@@ -120,7 +119,6 @@ def train(criterion,optimizer,loader,loader_val,model,filename_save,filename_bes
                 df_x = pd.DataFrame(x_latent)
                 df_x.to_csv(filename_visus)
 
-            df.to_csv(filename_save)
             torch.save({'model_state_dict': model.state_dict(),
                         'optimizer_state_dict': optimizer.state_dict()},
                        filename_current_model)
@@ -132,10 +130,11 @@ def train(criterion,optimizer,loader,loader_val,model,filename_save,filename_bes
                 alphas.append(df['model_state_dict']['LTFGW.alpha0'])
 
         end = time.time()
+        df.to_pickle(filename_save)
         # print performances
         print(f'Epoch: {epoch:03d},time:{end-start:.4f}, Loss: {mean_train_loss:.4f},Loss validation: {mean_val_loss:.4f},Train Accuracy: {mean_train_acc:.4f},Validation Accuracy:{mean_val_acc:.4f}')
 
-        if save_templates:
+        if save_templates and template_sizes==None:
             torch.save(Templates, filename_templates)
             torch.save(alphas, filename_alpha)
 

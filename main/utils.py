@@ -221,7 +221,7 @@ def get_filenames(
     elif template_sizes==None:
         filename_save = os.path.join(
             performance_dir,
-            "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_log{}.csv".format(
+            "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_log{}.pkl".format(
                 lr,
                 n_temp,
                 n_nodes,
@@ -234,7 +234,7 @@ def get_filenames(
                 log))
         filename_best_model = os.path.join(
             best_model_dir,
-            "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_log{}.pt".format(
+            "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_log{}.pkl".format(
                 lr,
                 n_temp,
                 n_nodes,
@@ -246,7 +246,7 @@ def get_filenames(
                 scheduler,
                 log))
         filename_visus = os.path.join(
-            visus_dir, "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_log{}.csv".format(
+            visus_dir, "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_log{}.pkl".format(
                 lr, n_temp, n_nodes, alpha0, k, dropout, wd, hl, scheduler,log))
         filename_current_model = os.path.join(
             current_model_dir,
@@ -262,17 +262,17 @@ def get_filenames(
                 scheduler,
                 log))
         filename_templates = os.path.join(
-                templates_dir, "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_log{}.csv".format(
+                templates_dir, "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_log{}.pkl".format(
                 lr, n_temp, n_nodes, alpha0, k, dropout, wd, hl, scheduler,log))
         filename_alphas = os.path.join(
             alphas_dir,
-            "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_log{}.csv".format(
+            "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_log{}.pkl".format(
                 lr, n_temp, n_nodes, alpha0, k, dropout, wd, hl, scheduler,log))
         
     else:
         filename_save = os.path.join(
             performance_dir,
-            "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_log{}_tempsizes.csv".format(
+            "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_log{}_tempsizes.pkl".format(
                 lr,
                 n_temp,
                 n_nodes,
@@ -297,7 +297,7 @@ def get_filenames(
                 scheduler,
                 log))
         filename_visus = os.path.join(
-            visus_dir, "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_log{}_tempsizes.csv".format(
+            visus_dir, "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_log{}_tempsizes.pkl".format(
                 lr, n_temp, n_nodes, alpha0, k, dropout, wd, hl, scheduler,log))
         filename_current_model = os.path.join(
             current_model_dir,
@@ -313,10 +313,10 @@ def get_filenames(
                 scheduler,
                 log))
         filename_templates = os.path.join(
-            templates_dir, "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_log{}_tempsizes.csv".format(
+            templates_dir, "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_log{}_tempsizes.pkl".format(
                 lr, n_temp, n_nodes, alpha0, k, dropout, wd, hl, scheduler,log))
         filename_alphas = os.path.join(
-            alphas_dir, "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_log{}_tempsizes.csv".format(
+            alphas_dir, "lr{}_n_temp{}_n_nodes{}_alpha0{}_k{}_drop{}_wd{}_hl{}_scheduler_{}_log{}_tempsizes.pkl".format(
                 lr, n_temp, n_nodes, alpha0, k, dropout, wd, hl, scheduler,log))
 
     return filename_save, filename_best_model, filename_visus, filename_current_model, filename_templates, filename_alphas
