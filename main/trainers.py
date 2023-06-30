@@ -72,7 +72,7 @@ def train(criterion,optimizer,loader,loader_val,model,filename_save,filename_bes
                 'validation_accuracy',
                 'test_accuracy',
                 'best_validation_accuracy'])
-        df.to_pickle(filename_save)
+        df.to_csv(filename_save)
 
     for epoch in tqdm(range(nepochs)):
         train_losses = []
@@ -99,7 +99,7 @@ def train(criterion,optimizer,loader,loader_val,model,filename_save,filename_bes
         mean_val_loss = torch.mean(torch.tensor(val_losses))
 
         if save:
-            df = pd.read_pickle(filename_save)
+            df = pd.read_csv(filename_save)
             # add performances to the dataframe
             df.at[epoch, 'loss'] = mean_train_loss
             df.at[epoch, 'train_accuracy'] = mean_train_acc
@@ -120,7 +120,7 @@ def train(criterion,optimizer,loader,loader_val,model,filename_save,filename_bes
                 df_x = pd.DataFrame(x_latent)
                 df_x.to_csv(filename_visus)
 
-            df.to_pickle(filename_save)
+            df.to_csv(filename_save)
             torch.save({'model_state_dict': model.state_dict(),
                         'optimizer_state_dict': optimizer.state_dict()},
                        filename_current_model)
