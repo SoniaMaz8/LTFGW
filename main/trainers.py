@@ -130,7 +130,9 @@ def train(criterion,optimizer,loader,loader_val,model,filename_save,filename_bes
                 alphas.append(df_model['model_state_dict']['LTFGW.alpha0'])
 
         end = time.time()
-        df.to_pickle(filename_save)
+
+        if save:
+          df.to_pickle(filename_save)
         # print performances
         print(f'Epoch: {epoch:03d},time:{end-start:.4f}, Loss: {mean_train_loss:.4f},Loss validation: {mean_val_loss:.4f},Train Accuracy: {mean_train_acc:.4f},Validation Accuracy:{mean_val_acc:.4f}')
 
