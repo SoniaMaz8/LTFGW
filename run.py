@@ -40,7 +40,7 @@ parser.add_argument('-n_templates', type=int, default=1,
                     help='number of templates for LTFGW')
 parser.add_argument('-n_template_nodes', type=int, default=2,
                     help='number of templates nodes for LTFGW')
-parser.add_argument('-hidden_layer', type=int, default=2,
+parser.add_argument('-hidden_layer', type=int, default=3,
                     help='hidden dimention')
 parser.add_argument('-n_hidden_layer', type=int, default=0,
                     help='number of hidden layers')

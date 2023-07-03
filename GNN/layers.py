@@ -227,7 +227,8 @@ class LTFGW_semirelaxed(nn.Module):
             alpha0=None,
             shortest_path=False,
             template_sizes=None,
-            reg=0):
+            reg=0,
+            log=False):
         """
         n_templates: int, optional
           Number of graph templates.

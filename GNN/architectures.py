@@ -519,7 +519,6 @@ class LTFGW_MLP_semirelaxed(nn.Module):
     reg: float
         Regularisation parameter for the semi-relaxed Fused Gromov Wasserstein distance.     
                    
-    
     """
     def __init__(self, n_classes, n_features ,n_templates,n_templates_nodes,hidden_layer,dropout,shortest_path,k,mean_init,std_init,log=False,alpha0=None,train_node_weights=True, skip_connection=False ,template_sizes=None, reg=0):
         """"
