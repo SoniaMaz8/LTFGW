@@ -7,6 +7,7 @@ from torch_geometric.utils import to_networkx
 import os
 from data.convert_datasets import Citeseer_data
 from GNN.architectures import *
+from GNN.layers import LTFGW
 
 
 def get_model(
@@ -52,7 +53,7 @@ def get_model(
         Else, list of the number of nodes of the templates. 
     
     """
-    if not model_name in ['LTFGW_GCN','MLP','GCN','LTFGW_MLP','ChebNet','GCN_JK','LTFGW_MLP_semirelaxed', 'LTFGW_MLP_dropout', 'LTFGW_MLP_dropout_relu', 'LTFGW_MLP_dropout_relu_one_node']:
+    if not model_name in ['LTFGW_GCN','MLP','GCN','LTFGW_MLP','ChebNet','GCN_JK','LTFGW_MLP_semirelaxed', 'LTFGW_MLP_dropout', 'LTFGW_MLP_dropout_relu', 'LTFGW_MLP_dropout_relu_one_node','LTFGW_GCN_dropout','LTFGW']:
         raise ValueError(
             'The model is not supported.')
     
@@ -77,10 +78,14 @@ def get_model(
     elif model_name == 'LTFGW_MLP_semirelaxed':
         model = LTFGW_MLP_semirelaxed(n_classes, n_features ,n_templates,n_templates_nodes,hidden_layer,dropout,shortest_path,k,mean_init,std_init,log,alpha0,train_node_weights, skip_connection,template_sizes, reg)
         
-
     elif model_name == 'LTFGW_MLP_dropout':
         model = LTFGW_MLP_dropout(n_classes, n_features ,n_templates,n_templates_nodes,hidden_layer,dropout,shortest_path,k,mean_init,std_init,log,alpha0,train_node_weights, skip_connection ,template_sizes)
-        
+
+    elif model_name == 'LTFGW_GCN_dropout':
+        model = LTFGW_MLP_dropout(n_classes, n_features ,n_templates,n_templates_nodes,hidden_layer,dropout,shortest_path,k,mean_init,std_init,log,alpha0,train_node_weights, skip_connection ,template_sizes)
+  
+    elif model_name == 'LTFGW':
+        model = LTFGW( n_templates, n_templates_nodes ,n_features,k,alpha0,mean_init,std_init,train_node_weights,shortest_path, template_sizes, log)      
     
     elif model_name == 'LTFGW_MLP_dropout_relu':
         model = LTFGW_MLP_dropout_relu( n_classes, n_features ,n_templates,n_templates_nodes,hidden_layer,dropout,shortest_path,k,mean_init,std_init,log,alpha0,train_node_weights, skip_connection ,template_sizes)          
@@ -94,6 +99,10 @@ def get_dataset(dataset_name):
     dataset name
 
     """
+
+    if not dataset_name in ['Citeseer','Toy_graph_single','Toy_graph_multi','mutag','cornell','cornell_directed','chameleon', 'wisconsin', 'anti_sbm','anti_sbm1']:
+        raise ValueError(
+            'The dataset is not supported.')
 
     if dataset_name == 'Citeseer':
         dataset = Citeseer_data()
@@ -158,7 +167,14 @@ def get_dataset(dataset_name):
         n_classes = 3
         n_features = 3
         test_graph = False
-        graph_type = 'single_graph'    
+        graph_type = 'single_graph'
+
+    elif dataset_name == 'anti_sbm1':
+        dataset = torch.load('data/anti_sbm1.pt')
+        n_classes = 3
+        n_features = 3
+        test_graph = False
+        graph_type = 'single_graph'        
 
     mean = float(torch.mean(dataset.x).item())
     std = float(torch.std(dataset.x).item())

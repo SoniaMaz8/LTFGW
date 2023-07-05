@@ -145,7 +145,7 @@ def distance_to_template(
                 if sum_q > sum_p:
                     p[0] += abs(sum_q - sum_p)
                 else:
-                    qj[0] += abs(sum_q - sum_p)
+                    qj[0] += abs(sum_q - sum_p)     
 
             dist = ot.gromov.fused_gromov_wasserstein2(
                     M, C_sub, torch.Tensor(C_T[j]), p, qj, alpha=alpha, symmetric=True, max_iter=20)
@@ -238,6 +238,7 @@ def semi_relaxed_marginals_to_template(
                 T = entropic_semirelaxed_fused_gromov_wasserstein(M,C_sub, C_T[j], p, alpha=alpha,epsilon=reg, max_iter=20)
 
             q =torch.sum(T,0)
+#            print(q)
 
             marginals[i, j*n_templates_nodes:(j+1)*n_templates_nodes] = q
     return marginals.to(device)
