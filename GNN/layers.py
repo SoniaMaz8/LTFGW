@@ -202,8 +202,9 @@ class LTFGW(nn.Module):
                 q,
                 self.k,
                 self.shortest_path)  
+            
              
-        return x,x
+        return x
 
         
 class LTFGW_semirelaxed(nn.Module):

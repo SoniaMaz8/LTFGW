@@ -201,14 +201,25 @@ for seed in seeds:
         weight_decay=wd)
 
     if graph_type == 'single_graph':
-        percls_trn = int(round(0.6 * len(dataset.y) / n_classes))
-        val_lb = int(round(0.2 * len(dataset.y)))
-        dataset = random_planetoid_splits(
-            dataset,
-            n_classes,
-            percls_trn=percls_trn,
-            val_lb=val_lb,
-            seed=seed)
+        index=torch.randperm(len(dataset.y))
+        train_index=index[:int(0.6*len(dataset.y))]
+        val_index=index[int(0.6*len(dataset.y)):int(0.8*len(dataset.y))]
+        test_index=index[int(0.8*len(dataset.y)):]
+
+        train_mask=torch.zeros(len(dataset.y),dtype=torch.bool)
+
+        train_mask[train_index]=True
+
+
+        val_mask=torch.zeros(len(dataset.y),dtype=torch.bool)
+        val_mask[val_index]=True
+        test_mask=torch.zeros(len(dataset.y),dtype=torch.bool)
+        test_mask[test_index]=True
+
+
+        dataset=GraphData(x=dataset.x,edge_index=dataset.edge_index,y=dataset.y,train_mask=train_mask,val_mask=val_mask,test_mask=test_mask)
+
+
         dataset = dataset.to(device)
         loader = NeighborLoader(dataset,
                                 num_neighbors=[-1],
