@@ -219,6 +219,10 @@ for seed in seeds:
 
         dataset=GraphData(x=dataset.x,edge_index=dataset.edge_index,y=dataset.y,train_mask=train_mask,val_mask=val_mask,test_mask=test_mask)
 
+        print(sum(dataset.train_mask))
+        print(sum(dataset.val_mask))
+        print(sum(dataset.test_mask))
+
 
         dataset = dataset.to(device)
         loader = NeighborLoader(dataset,
@@ -233,8 +237,9 @@ for seed in seeds:
                                     directed=False,
                                     batch_size=torch.sum(dataset.val_mask).item()
                                     )
+
         dataset_test = dataset
-        train(criterion,optimizer,loader,loader_val,model,filename_save,filename_best_model,filename_visus,filename_templates,filename_alpha,filename_current_model,save,scheduler, template_sizes,nepochs,model_name)
+        train(criterion,optimizer,loader,loader_val,model,filename_save,filename_best_model,filename_visus,filename_templates,filename_alpha,filename_current_model,save,scheduler, template_sizes,nepochs,model_name,dataset)
 
     elif graph_type == 'multi_graph':
         generator = torch.Generator().manual_seed(seed.item())
