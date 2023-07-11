@@ -246,9 +246,9 @@ class MLP_LTFGW(nn.Module):
 
         x_latent = x
 
-        x = self.linear(x)
+    #    x = self.linear(x)
 
-        return x, x_latent
+        return -x, x_latent
 
 class TFGW_linear(nn.Module):
     """
