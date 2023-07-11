@@ -23,15 +23,15 @@ torch_geometric.typing.WITH_PYG_LIB = False
 param_grid={'lr':[0.1,0.01,0.5,0.05,0.001,0.005,0.0001,0.0005],'wd':[0,0.0005,0.005,0.05,0.5],'drop':[0,0.2,0.4]}
 seed=torch.tensor([21])
 
-dataset_name='anti_sbm'
+dataset_name='anti_sbm1'
 
-method = 'MLP'
+method = 'GCN'
 
 n_hidden_layer=0
 
 hidden_layer=3
 
-model_name='MLP'
+model_name='GCN'
 
 n_templates=0
 n_template_nodes=0
