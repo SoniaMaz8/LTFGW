@@ -161,7 +161,7 @@ class LTFGW(nn.Module):
                   self.q0=torch.nn.ParameterList(q0)
         
         
-        self.softmax1 = nn.Softmax(dim=1)  
+        self.softmax_weights = nn.Softmax(dim=1)  
         self.softmax2 = nn.Softmax(dim=0) 
 
         # initialize the tradeoff parameter alpha
@@ -176,7 +176,7 @@ class LTFGW(nn.Module):
         alpha = torch.sigmoid(self.alpha0)
 
         if self.template_sizes==None:
-          q = self.softmax1(self.q0)
+          q = self.softmax_weights(self.q0)
         else: 
           q=[]
           for i in range(self.n_templates):

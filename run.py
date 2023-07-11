@@ -36,9 +36,9 @@ parser.add_argument('-lr', type=float, default=0.05,
                     help='learning rate')
 parser.add_argument('-wd', type=float, default=5e-4,
                     help='weight decay')
-parser.add_argument('-n_templates', type=int, default=1,
+parser.add_argument('-n_templates', type=int, default=3,
                     help='number of templates for LTFGW')
-parser.add_argument('-n_template_nodes', type=int, default=2,
+parser.add_argument('-n_template_nodes', type=int, default=3,
                     help='number of templates nodes for LTFGW')
 parser.add_argument('-hidden_layer', type=int, default=3,
                     help='hidden dimention')
@@ -203,9 +203,9 @@ for seed in seeds:
     if graph_type == 'single_graph':
         index=torch.randperm(len(dataset.y))
         train_index=index[:int(0.6*len(dataset.y))]
-        val_index=index[int(0.6*len(dataset.y)):int(0.8*len(dataset.y))]
-        test_index=index[int(0.8*len(dataset.y)):]
-
+        test_index=index[int(0.6*len(dataset.y)):int(0.8*len(dataset.y))]
+        val_index=index[int(0.8*len(dataset.y)):]
+ 
         train_mask=torch.zeros(len(dataset.y),dtype=torch.bool)
 
         train_mask[train_index]=True
@@ -223,6 +223,20 @@ for seed in seeds:
         print(sum(dataset.val_mask))
         print(sum(dataset.test_mask))
 
+     #   percls_trn = int(round(0.6 * len(dataset.y) / n_classes))
+       # val_lb = int(round(0.2 * len(dataset.y)))
+
+       # dataset = random_planetoid_splits(
+      #      dataset,
+       #     n_classes,
+       #     percls_trn=percls_trn,
+       #     val_lb=val_lb,
+     #       seed=seed)
+        
+    #    print(sum(dataset.train_mask))
+    #    print(sum(dataset.val_mask))
+     #   print(sum(dataset.test_mask))
+
 
         dataset = dataset.to(device)
         loader = NeighborLoader(dataset,
@@ -237,9 +251,16 @@ for seed in seeds:
                                     directed=False,
                                     batch_size=torch.sum(dataset.val_mask).item()
                                     )
+        
+        loader_test = NeighborLoader(dataset,
+                            num_neighbors=[-1],
+                            input_nodes=dataset.test_mask,
+                            directed=False,
+                            batch_size=torch.sum(dataset.test_mask).item()
+                            )
 
         dataset_test = dataset
-        train(criterion,optimizer,loader,loader_val,model,filename_save,filename_best_model,filename_visus,filename_templates,filename_alpha,filename_current_model,save,scheduler, template_sizes,nepochs,model_name,dataset)
+        train(criterion,optimizer,loader,loader_val,model,filename_save,filename_best_model,filename_visus,filename_templates,filename_alpha,filename_current_model,save,scheduler, template_sizes,nepochs,model_name,dataset,loader_test)
 
     elif graph_type == 'multi_graph':
         generator = torch.Generator().manual_seed(seed.item())
@@ -292,7 +313,7 @@ for seed in seeds:
         Test_accuracy.append(test_acc)
 
     elif graph_type == 'single_graph':
-        test_acc = test(model, dataset_test, test_graph)
+        test_acc = test(model, loader_test)
         Test_accuracy.append(test_acc)
 
     elif graph_type == 'mini_batch':

@@ -5,6 +5,7 @@ from GNN.layers import *
 import torch.nn.functional as F
 from torch_geometric.nn import JumpingKnowledge
 from torch_geometric.nn import APPNP
+from gnn_TFGW import *
 
 
 class GCN(nn.Module):
@@ -36,19 +37,19 @@ class GCN(nn.Module):
 
     def forward(self, x, edge_index):
 
-        x = self.first_conv(x, edge_index)
-  #      x = x.relu()
+       x = self.first_conv(x, edge_index)
+ #       x = x.relu()
  #       x = self.dropout(x)
 
         # go through hidden layers
 
- #       for i in range(self.n_hidden_layers):
- #           x = self.list_hidden_layer[i](x, edge_index)
- #           x = x.relu()
+  #      for i in range(self.n_hidden_layers):
+  #          x = self.list_hidden_layer[i](x, edge_index)
+  #          x = x.relu()
 
-        x_latent = x
-   #     x = self.last_conv(x, edge_index)
-        return x, x_latent
+       x_latent = x
+      #  x = self.last_conv(x, edge_index)
+       return x, x_latent
 
 
 class LTFGW_GCN(nn.Module):
@@ -249,6 +250,70 @@ class MLP_LTFGW(nn.Module):
 
         return x, x_latent
 
+class TFGW_linear(nn.Module):
+    """
+    MLP architecture
+
+    Parameters
+    ----------
+    n_hidden_layer:int
+        Number of linear layers.
+    hidden_layer: int
+        Hidden dimension.
+    dropout: float
+        Dropout.
+    n_classes: int
+        Number of classes for node classification.
+    n_features: int
+        Number of features for each node.
+    """
+    def __init__(self, n_hidden_layer, hidden_layer, dropout, n_classes, n_features,n_templates,n_template_nodes,k,mean_init,std_init,alpha0,train_node_weights,shortest_path,template_sizes,log):
+        """
+        G architecture
+
+        Parameters
+        ----------
+        n_hidden_layer:int
+           Number of linear layers.
+        hidden_layer: int
+           Hidden dimension.
+        dropout: float
+           Dropout.
+        n_classes: int
+           Number of classes for node classification.
+        n_features: int
+           Number of features for each node.
+        """
+        super().__init__()
+
+        self.n_classes = n_classes
+        self.n_features = n_features
+        self.n_hidden_layers = n_hidden_layer
+        self.hidden_layer = hidden_layer
+        self.drop = dropout
+        self.n_templates=n_templates
+        self.n_template_nodes=n_template_nodes
+        self.k=k
+        
+
+        self.first_linear = Linear(self.n_features, self.hidden_layer)
+        self.dropout1 = torch.nn.Dropout(self.drop)
+        self.dropout2 = torch.nn.Dropout(self.drop)
+
+        self.LTFGW=TFGWPooling(self.n_features,self.n_templates,self.n_template_nodes,alpha0,train_node_weights,False,mean_init,std_init)
+
+        self.linear = Linear(self.n_templates, self.n_classes)
+
+    def forward(self, x, edge_index):
+
+
+        x=self.LTFGW(x,edge_index)
+
+        x_latent = x
+
+        x = self.linear(x)
+
+        return x, x_latent
 
 class MLP(nn.Module):
     """

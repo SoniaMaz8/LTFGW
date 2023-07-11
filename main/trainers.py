@@ -4,11 +4,9 @@ import torch
 import os
 import pandas as pd
 from sklearn.manifold import TSNE
-from torch_geometric.loader import DataLoader
 import torch.nn.functional as F
 from torch_geometric.loader import NeighborLoader
 from torch.optim.lr_scheduler import StepLR
-from torch_geometric.utils import is_undirected
 
 
 def train_epoch(dataset, model, criterion, optimizer):
@@ -49,7 +47,7 @@ def val_epoch(dataset, model, criterion):
     return loss_val, val_acc
 
 
-def train(criterion,optimizer,loader,loader_val,model,filename_save,filename_best_model,filename_visus,filename_templates,filename_alpha,filename_current_model,save,schedule, template_sizes,nepochs,model_name):
+def train(criterion,optimizer,loader,loader_val,model,filename_save,filename_best_model,filename_visus,filename_templates,filename_alpha,filename_current_model,save,schedule, template_sizes,nepochs,model_name,dataset,loader_test):
 
     best_val_perf = 0
     Templates = []
@@ -75,6 +73,7 @@ def train(criterion,optimizer,loader,loader_val,model,filename_save,filename_bes
                 'best_validation_accuracy'])
     
     for epoch in tqdm(range(nepochs)):
+
         train_losses = []
         val_losses = []
         train_accs = []
@@ -106,7 +105,7 @@ def train(criterion,optimizer,loader,loader_val,model,filename_save,filename_bes
             df.at[epoch, 'validation_accuracy'] = mean_val_acc
             df.at[epoch, 'loss_validation'] = mean_val_loss
 
-            if  mean_val_acc > best_val_perf:
+            if  mean_val_acc >= best_val_perf:
 
                 # save best model parameters
                 torch.save({'model_state_dict': model.state_dict(),
@@ -132,6 +131,15 @@ def train(criterion,optimizer,loader,loader_val,model,filename_save,filename_bes
 
         end = time.time()
 
+        checkpoint = torch.load(filename_best_model)
+        model.load_state_dict(checkpoint['model_state_dict'])
+
+        test_acc = test(model, loader_test)
+        print(test_acc)
+
+        checkpoint = torch.load(filename_current_model)
+        model.load_state_dict(checkpoint['model_state_dict'])
+
         if save:
           df.to_pickle(filename_save)
         # print performances
@@ -142,23 +150,36 @@ def train(criterion,optimizer,loader,loader_val,model,filename_save,filename_bes
             torch.save(alphas, filename_alpha)
 
         if schedule:
-            scheduler.step()
+            scheduler.step()         
 
-
-def test(model, dataset, test_graph):
+def test(model, loader):
     """"
     test the model
     test_graph: True if the test is done on the whole dataset, False if it is a subset of the dataset
     """
     model.eval()
-    out, _ = model(dataset.x, dataset.edge_index)
-    pred = out.argmax(dim=1)  # Use the class with highest probability.
-    if test_graph:
-        test_correct = pred == dataset.y
-    else:
-        test_correct = pred[dataset.test_mask] == dataset.y[dataset.test_mask]
-    test_acc = int(test_correct.sum()) / len(dataset.x[dataset.test_mask])
-    return test_acc
+    test_accs=[]
+    for data in loader:
+        out, _ = model(data.x, data.edge_index)
+        pred = out.argmax(dim=1)
+        test_correct = pred[data.test_mask] == data.y[data.test_mask]
+        test_accs.append(int(test_correct.sum()) / len(data.x[data.test_mask]))
+    return torch.mean(torch.tensor(test_accs))
+
+#def test(model, dataset, test_graph):
+#    """"
+#    test the model
+#    test_graph: True if the test is done on the whole dataset, False if it is a subset of the dataset
+#    """
+#    model.eval()
+#    out, _ = model(dataset.x, dataset.edge_index)
+#    pred = out.argmax(dim=1)  # Use the class with highest probability.
+#    if test_graph:
+#        test_correct = pred == dataset.y
+#    else:
+#        test_correct = pred[dataset.test_mask] == dataset.y[dataset.test_mask]
+#    test_acc = int(test_correct.sum()) / len(dataset.x[dataset.test_mask])
+#    return test_acc
 
 
 def train_epoch_multi_graph(model, criterion, optimizer, train_loader):
@@ -175,12 +196,12 @@ def train_epoch_multi_graph(model, criterion, optimizer, train_loader):
         # Perform a single forward pass.
         out, x_latent = model(data.x, data.edge_index)
 
-        pred = out.argmax(dim=1)
+        pred = out.argmax()
 
         train_correct = pred == data.y  # number of correct node predictions
-        train_acc = int(train_correct.sum()) / \
-            int(len(data.y))  # training_accuracy
-
+        train_acc = train_correct
+        
+        out=torch.reshape(out,(1,2))
         loss = criterion(out, data.y)
 
         loss.backward()
@@ -208,11 +229,11 @@ def validation_epoch_multi_graph(model, val_loader, criterion):
         Data.append(data)  # save data for visualisation
         # Perform a single forward pass.
         out, x_latent = model(data.x, data.edge_index)
-        pred = out.argmax(dim=1)
+        pred = out.argmax()
+        out=torch.reshape(out,(1,2))
         Loss_val.append(criterion(out, data.y))
         val_correct = pred == data.y  # number of correct node predictions
-        val_acc = int(val_correct.sum()) / \
-            int(len(data.y))  # training_accuracy
+        val_acc = val_correct
         Val_acc.append(val_acc)
         X_latent.append(x_latent.detach().numpy())
 
@@ -278,16 +299,16 @@ def train_multi_graph(
 
                 # save latent embedding for visualisation: train and validation
                 # data
-                df_x = pd.DataFrame(x_latent)
-                df_x.to_pickle(filename_visus)
-                Data = pd.DataFrame(Data)
-                Data.to_pickle('Data_' + filename_visus)
+         #       df_x = pd.DataFrame(x_latent)
+         #       df_x.to_pickle(filename_visus)
+         #       Data = pd.DataFrame(Data)
+         #       Data.to_pickle('Data_' + filename_visus)
 
-                x_latent_val = x_latent_val
-                df_x_val = pd.DataFrame(x_latent_val)
-                df_x_val.to_pickle('validation_' + filename_visus)
-                Data_validation = pd.DataFrame(Data_validation)
-                Data_validation.to_pickle('Data_' + filename_visus)
+         #       x_latent_val = x_latent_val
+         #       df_x_val = pd.DataFrame(x_latent_val)
+         #       df_x_val.to_pickle('validation_' + filename_visus)
+         #       Data_validation = pd.DataFrame(Data_validation)
+         #       Data_validation.to_pickle('Data_' + filename_visus)
 
             df.to_pickle(filename_save)
 
@@ -300,9 +321,9 @@ def test_multigraph(model, dataset):
     Test_acc = []
     for data in dataset:
         out, _ = model(data.x, data.edge_index)
-        pred = out.argmax(dim=1)
+        pred = out.argmax
         test_correct = pred == data.y
-        test_acc = int(test_correct.sum()) / len(data.x)
+        test_acc = test_correct
         Test_acc.append(test_acc)
     Test_acc = torch.tensor(Test_acc)
     return torch.mean(Test_acc)
