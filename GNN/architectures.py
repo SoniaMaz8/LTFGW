@@ -1164,3 +1164,70 @@ class LTFGW_MLP_dropout_relu(nn.Module):
             x = self.Linear3(x)
 
         return x, x_latent
+
+
+class MLP_LTFGW_no_softmax(nn.Module):
+    """
+    MLP architecture
+
+    Parameters
+    ----------
+    n_hidden_layer:int
+        Number of linear layers.
+    hidden_layer: int
+        Hidden dimension.
+    dropout: float
+        Dropout.
+    n_classes: int
+        Number of classes for node classification.
+    n_features: int
+        Number of features for each node.
+    """
+    def __init__(self, n_hidden_layer, hidden_layer, dropout, n_classes, n_features,n_templates,n_template_nodes,k,mean_init,std_init,alpha0,train_node_weights,shortest_path,template_sizes,log):
+        """
+        G architecture
+
+        Parameters
+        ----------
+        n_hidden_layer:int
+           Number of linear layers.
+        hidden_layer: int
+           Hidden dimension.
+        dropout: float
+           Dropout.
+        n_classes: int
+           Number of classes for node classification.
+        n_features: int
+           Number of features for each node.
+        """
+        super().__init__()
+
+        self.n_classes = n_classes
+        self.n_features = n_features
+        self.n_hidden_layers = n_hidden_layer
+        self.hidden_layer = hidden_layer
+        self.drop = dropout
+        self.n_templates=n_templates
+        self.n_template_nodes=n_template_nodes
+        self.k=k
+        
+
+        self.first_linear = Linear(self.n_features, self.hidden_layer)
+        self.dropout1 = torch.nn.Dropout(self.drop)
+        self.dropout2 = torch.nn.Dropout(self.drop)
+
+
+        self.LTFGW=LTFGW_no_softmax(self.n_templates,self.n_template_nodes,self.n_features,self.k,alpha0,mean_init,std_init,train_node_weights,shortest_path,template_sizes,log)
+
+        self.linear = Linear(self.n_templates, self.n_classes)
+
+    def forward(self, x, edge_index):
+
+
+        x=self.LTFGW(x,edge_index)
+
+        x_latent = x
+
+    #    x = self.linear(x)
+
+        return -x, x_latent        

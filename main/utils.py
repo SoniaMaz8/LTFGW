@@ -53,7 +53,7 @@ def get_model(
         Else, list of the number of nodes of the templates. 
     
     """
-    if not model_name in ['LTFGW_GCN','MLP','GCN','LTFGW_MLP','ChebNet','GCN_JK','LTFGW_MLP_semirelaxed', 'LTFGW_MLP_dropout', 'LTFGW_MLP_dropout_relu', 'LTFGW_MLP_dropout_relu_one_node','LTFGW_GCN_dropout','LTFGW','MLP_LTFGW']:
+    if not model_name in ['LTFGW_GCN','MLP','GCN','LTFGW_MLP','ChebNet','GCN_JK','LTFGW_MLP_semirelaxed', 'LTFGW_MLP_dropout', 'LTFGW_MLP_dropout_relu', 'LTFGW_MLP_dropout_relu_one_node','LTFGW_GCN_dropout','LTFGW','MLP_LTFGW','MLP_LTFGW_no_softmax']:
         raise ValueError(
             'The model is not supported.')
     
@@ -89,6 +89,9 @@ def get_model(
 
     elif model_name == 'MLP_LTFGW':
         model = MLP_LTFGW( n_hidden_layer, hidden_layer, dropout, n_classes, n_features,n_templates,n_templates_nodes,k,mean_init,std_init,alpha0,train_node_weights,shortest_path,template_sizes,log)   
+
+    elif model_name == 'MLP_LTFGW_no_softmax':
+        model = MLP_LTFGW( n_hidden_layer, hidden_layer, dropout, n_classes, n_features,n_templates,n_templates_nodes,k,mean_init,std_init,alpha0,train_node_weights,shortest_path,template_sizes,log)       
     
     elif model_name == 'LTFGW_MLP_dropout_relu':
         model = LTFGW_MLP_dropout_relu( n_classes, n_features ,n_templates,n_templates_nodes,hidden_layer,dropout,shortest_path,k,mean_init,std_init,log,alpha0,train_node_weights, skip_connection ,template_sizes)          

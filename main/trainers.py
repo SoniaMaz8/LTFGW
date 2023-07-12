@@ -269,6 +269,7 @@ def train_multi_graph(
         df.to_pickle(filename_save)
 
     for epoch in range(n_epoch):
+        print(epoch)
 
         # training
         start = time.time()
@@ -480,3 +481,100 @@ def test_minibatch(model, loader, criterion):
         total_loss_test += loss_test
 
     return test_acc / len(loader), total_loss_test / len(loader)
+
+
+def train2(criterion,optimizer,loader,loader_val,model,filename_save,filename_best_model,filename_visus,filename_templates,filename_alpha,filename_current_model,save,schedule, template_sizes,nepochs,model_name):
+
+    best_val_perf = 0
+    Templates = []
+    alphas = []
+    if schedule:
+        scheduler = StepLR(optimizer, 200, 0.8)
+
+    if save:
+      save_templates = model_name in ['LTFGW_MLP','LTFGW_GCN','LTFGW_MLP_log','LTFGW_MLP_dropout','LTFGW_MLP_semirelaxed','LTFGW_MLP_dropout','LTFGW_MLP_dropout_relu']
+    
+    else: 
+        save_templates=False
+
+    if save:
+        # create dataframe to save performances
+        df = pd.DataFrame(
+            columns=[
+                'loss',
+                'loss_validation',
+                'train_accuracy',
+                'validation_accuracy',
+                'test_accuracy',
+                'best_validation_accuracy'])
+    
+    for epoch in tqdm(range(nepochs)):
+
+        train_losses = []
+        val_losses = []
+        train_accs = []
+        val_accs = []
+        
+        start = time.time()
+        
+        for dataset in loader:
+            loss, train_acc, x_latent = train_epoch(
+                dataset, model, criterion, optimizer)
+            train_losses.append(loss.item())
+            train_accs.append(train_acc)
+
+        for dataset in loader_val:
+            loss_val, val_acc = val_epoch(dataset, model, criterion)
+            val_losses.append(loss_val.item())
+            val_accs.append(val_acc)
+
+
+        mean_train_acc = torch.mean(torch.tensor(train_accs))
+        mean_train_loss = torch.mean(torch.tensor(train_losses))
+        mean_val_acc = torch.mean(torch.tensor(val_accs))
+        mean_val_loss = torch.mean(torch.tensor(val_losses))
+
+        if save:
+            # add performances to the dataframe
+            df.at[epoch, 'loss'] = mean_train_loss
+            df.at[epoch, 'train_accuracy'] = mean_train_acc
+            df.at[epoch, 'validation_accuracy'] = mean_val_acc
+            df.at[epoch, 'loss_validation'] = mean_val_loss
+
+            if  mean_val_acc >= best_val_perf:
+
+                # save best model parameters
+                torch.save({'model_state_dict': model.state_dict(),
+                            'optimizer_state_dict': optimizer.state_dict()},
+                           filename_best_model)
+                best_val_perf = mean_val_acc
+                df.at[epoch, 'best_validation_accuracy'] = mean_val_acc
+
+                # save latent embedding for visualisation
+                x_latent = x_latent.detach().numpy()
+                df_x = pd.DataFrame(x_latent)
+                df_x.to_csv(filename_visus)
+
+            torch.save({'model_state_dict': model.state_dict(),
+                        'optimizer_state_dict': optimizer.state_dict()},
+                       filename_current_model)
+
+            if save_templates and template_sizes==None:
+
+                df_model = torch.load(filename_current_model)
+                Templates.append(df_model['model_state_dict']['LTFGW.templates'])
+                alphas.append(df_model['model_state_dict']['LTFGW.alpha0'])
+
+        end = time.time()
+
+        if save:
+          df.to_pickle(filename_save)
+        # print performances
+        print(f'Epoch: {epoch:03d},time:{end-start:.4f}, Loss: {mean_train_loss:.4f},Loss validation: {mean_val_loss:.4f},Train Accuracy: {mean_train_acc:.4f},Validation Accuracy:{mean_val_acc:.4f}')
+
+        if save_templates and template_sizes==None:
+            torch.save(Templates, filename_templates)
+            torch.save(alphas, filename_alpha)
+
+        if schedule:
+            scheduler.step()   

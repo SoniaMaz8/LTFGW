@@ -296,3 +296,157 @@ class LTFGW_semirelaxed(nn.Module):
             self.reg)
         return x
 
+
+class LTFGW_no_softmax(nn.Module):
+    """ Layer for the local TFWG 
+
+    Computes an embedding for each node by computing a 1 dimensional array of distances between learned templates
+      and the node's neighbourhood.
+
+    The distance used is the fused Gromov-Wasserstein distance.
+
+    n_templates: int, optional
+        Number of graph templates.
+    n_templates_nodes: int, optional
+        Number of nodes in each template.
+    n_features: int, optional
+        Number of node features.
+    k: int, optional
+        Number of hops fot he nodes' neighbourhood.
+    mean_init: float, optional
+        Mean of the random normal law to initialize the template features.
+    std_init:  float, optional
+        Std of the random normal law to initialize the template features.
+    train_node_weights: bool, optional
+        If True, the node weights are trained.
+        Else they are uniform.
+    shortest_path: bool, optional
+        If True, the templates are characterized by their shortest path matrix.
+        Else, the adjacency matrix is used.
+    template_sizes: if None, all template have the same number of nodes. 
+        Else, list of the number of nodes of the templates. 
+    log: bool
+       If True the log of the output of the layer is used.
+    
+    """
+    def __init__(
+            self,
+            n_templates=10,
+            n_templates_nodes=10,
+            n_features=10,
+            k=1,
+            alpha0=None,
+            mean_init=0,
+            std_init=0.001,
+            train_node_weights=True,
+            shortest_path=False,
+            template_sizes=None,
+            log=False):
+        """ Layer for the local TFWG 
+
+        Computes an embedding for each node by computing a 1 dimensional array of distances between learned templates
+        and the node's neighbourhood.
+
+        The distance used is the fused Gromov-Wasserstein distance.
+
+        Parameters
+        ----------
+
+        n_templates: int, optional
+          Number of graph templates.
+        n_templates_nodes: int, optional
+          Number of nodes in each template.
+        n_features: int, optional
+          Number of node features.
+        k: int, optional
+          Number of hops fot he nodes' neighbourhood.
+        mean_init: float, optional
+          Mean of the random normal law to initialize the template features.
+        std_init:  float, optional
+          Std of the random normal law to initialize the template features.
+        train_node_weights: bool, optional
+          If True, the node weights are trained.
+          Else they are uniform.
+        shortest_path: bool, optional
+          If True, the templates are characterized by their shortest path matrix.
+          Else, the adjacency matrix is used.
+        template_sizes: if None, all template have the same number of nodes. 
+          Else, list of the number of nodes of the templates. 
+        log: bool,optional
+          If True, the output is the log of the LTFGW layer.
+          Else, it is the LTFGW layer.
+        """
+        super().__init__()
+
+        self.n_templates = n_templates
+        self.n_templates_nodes = n_templates_nodes
+        self.n_features = n_features
+        self.k = k
+        self.shortest_path = shortest_path
+        self.template_sizes=template_sizes
+        self.log=log
+
+        templates, templates_features, q0 = template_initialisation(
+        self.n_templates_nodes, self.n_templates, self.n_features, mean_init, std_init, template_sizes)
+
+        
+
+        if self.template_sizes==None:
+            self.templates = nn.Parameter(templates)
+            self.templates_features = nn.Parameter(templates_features)
+            if train_node_weights:
+                 self.q0=torch.nn.Parameter(q0)
+        
+        else:
+            self.templates = nn.ParameterList(templates)
+            self.templates_features = nn.ParameterList(templates_features)
+            if  train_node_weights :
+                  self.q0=torch.nn.ParameterList(q0)
+        
+        
+
+        self.softmax_weights = nn.Softmax(dim=1)  
+        self.softmax2 = nn.Softmax(dim=0) 
+
+        # initialize the tradeoff parameter alpha
+        if alpha0 is None:
+                alpha0 = torch.Tensor([0])
+                self.alpha0 = nn.Parameter(alpha0)
+        else:
+                alpha0 = torch.tensor([alpha0])
+                self.alpha0 = torch.logit(alpha0)
+
+    def forward(self, x, edge_index):
+        alpha = torch.sigmoid(self.alpha0)
+ #       templates_softmax=torch.softmax(self.templates,dim=1)
+
+        if self.template_sizes==None:
+          q = self.softmax_weights(self.q0)
+        else: 
+          q=[]
+          for i in range(self.n_templates):
+            q.append(self.softmax2(self.q0[i]))
+
+        if self.log:
+            x = torch.log(distance_to_template(
+                x,
+                edge_index,
+                self.templates_features,
+                self.templates,
+                alpha,
+                q,
+                self.k,
+                self.shortest_path))
+        else:
+            x = distance_to_template(
+                x,
+                edge_index,
+                self.templates_features,
+                self.templates,
+                alpha,
+                q,
+                self.k,
+                self.shortest_path)  
+            
+             
+        return x
