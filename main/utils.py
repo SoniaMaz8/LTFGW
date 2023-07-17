@@ -8,6 +8,7 @@ import os
 from data.convert_datasets import Citeseer_data
 from GNN.architectures import *
 from GNN.layers import LTFGW
+from torch_geometric.datasets import TUDataset
 
 
 def get_model(
@@ -53,7 +54,7 @@ def get_model(
         Else, list of the number of nodes of the templates. 
     
     """
-    if not model_name in ['LTFGW_GCN','MLP','GCN','LTFGW_MLP','ChebNet','GCN_JK','LTFGW_MLP_semirelaxed', 'LTFGW_MLP_dropout', 'LTFGW_MLP_dropout_relu', 'LTFGW_MLP_dropout_relu_one_node','LTFGW_GCN_dropout','LTFGW','MLP_LTFGW','MLP_LTFGW_no_softmax']:
+    if not model_name in ['LTFGW_GCN','MLP','GCN','LTFGW_MLP','ChebNet','GCN_JK','LTFGW_MLP_semirelaxed', 'LTFGW_MLP_dropout', 'LTFGW_MLP_dropout_relu', 'LTFGW_MLP_dropout_relu_one_node','LTFGW_GCN_dropout','LTFGW','MLP_LTFGW','MLP_LTFGW_no_softmax','pooling_TFGW','MLP_LTFGW_linear']:
         raise ValueError(
             'The model is not supported.')
     
@@ -96,6 +97,14 @@ def get_model(
     elif model_name == 'LTFGW_MLP_dropout_relu':
         model = LTFGW_MLP_dropout_relu( n_classes, n_features ,n_templates,n_templates_nodes,hidden_layer,dropout,shortest_path,k,mean_init,std_init,log,alpha0,train_node_weights, skip_connection ,template_sizes)          
 
+    elif model_name == 'MLP_LTFGW_linear':
+        model = MLP_LTFGW( n_hidden_layer, hidden_layer, dropout, n_classes, n_features,n_templates,n_templates_nodes,k,mean_init,std_init,alpha0,train_node_weights,shortest_path,template_sizes,log)    
+
+    
+    elif model_name == 'pooling_TFGW':
+        model = pooling_TFGW(  n_features, n_templates, n_templates_nodes, n_classes,mean_init, std_init)          
+
+
     return model
 
 
@@ -134,7 +143,7 @@ def get_dataset(dataset_name):
         graph_type = 'multi_graph'
 
     elif dataset_name == 'mutag':
-        dataset = torch.load('data/mutag.pt')
+        dataset = TUDataset(root='data/TUDataset', name='MUTAG')
         n_classes = 7
         n_features = dataset[0].num_features
         test_graph = None
@@ -513,3 +522,100 @@ def random_planetoid_splits(
     data.test_mask = index_to_mask(test_idx, size=data.num_nodes)
 
     return data
+
+
+
+def distance_to_templates(G_edges, tplt_adjacencies, G_features, tplt_features, tplt_weights, alpha, multi_alpha,batch=None):
+    """
+    Computes the FGW distances between a graph and graph templates.
+
+    Parameters
+    ----------
+    G_edges : torch tensor, shape(n_edges, 2)
+        Edge indexes of the graph in the Pytorch Geometric format.
+    tplt_adjacencies : list of torch tensors, shape (n_templates, n_template_nodes, n_templates_nodes)
+        List of the adjacency matrices of the templates.
+    G_features : torch tensor, shape (n_nodes, n_features)
+        Node features of the graph.
+    tplt_features : list of torch tensors, shape (n_templates, n_template_nodes, n_features)
+        List of the node features of the templates.
+    weights : torch tensor, shape (n_templates, n_template_nodes)
+        Weights on the nodes of the templates.
+    alpha : float
+        Trade-off parameter (0 < alpha < 1).
+        Weights features (alpha=0) and structure (alpha=1).
+    multi_alpha: bool, optional
+        If True, the alpha parameter is a vector of size n_templates.
+    batch: torch tensor
+        Node level batch vector.
+
+    Returns
+    -------
+    distances : torch tensor, shape (n_templates)
+        Vector of fused Gromov-Wasserstein distances between the graph and the templates.
+    """
+    
+    if not batch==None:
+      n_T, _, n_feat_T = tplt_features.shape
+
+      num_graphs=torch.max(batch)+1
+      distances=torch.zeros(num_graphs,n_T)
+      
+      #iterate over the graphs in the batch
+      for i in range(num_graphs):
+        
+        nodes=torch.where(batch==i)[0]
+
+        G_edges_i,_=subgraph(nodes,edge_index=G_edges)
+        G_features_i=G_features[nodes]
+
+        n, n_feat = G_features_i.shape
+
+        weights_G = torch.ones(n) / n
+
+        C = torch.sparse_coo_tensor(G_edges_i, torch.ones(len(G_edges_i[0])), size=(n, n)).type(torch.float)
+        C = C.to_dense()
+
+        if not n_feat == n_feat_T:
+            raise ValueError('The templates and the graphs must have the same feature dimension.')
+
+        for j in range(n_T):
+
+            template_features = tplt_features[j].reshape(len(tplt_features[j]), n_feat_T)
+            M = dist(G_features_i, template_features).type(torch.float)
+
+            if multi_alpha:
+                embedding = fused_gromov_wasserstein2(M, C, tplt_adjacencies[j], weights_G, tplt_weights[j], alpha=alpha[j], symmetric=True, max_iter=50)
+            else:
+                embedding = fused_gromov_wasserstein2(M, C, tplt_adjacencies[j], weights_G, tplt_weights[j], alpha=alpha, symmetric=True, max_iter=50)
+
+            distances[i,j] = embedding
+
+    else:
+         
+      n, n_feat = G_features.shape
+      n_T, _, n_feat_T = tplt_features.shape
+
+      weights_G = torch.ones(n) / n
+
+      C = torch.sparse_coo_tensor(G_edges, torch.ones(len(G_edges[0])), size=(n, n)).type(torch.float)
+      C = C.to_dense()
+
+      if not n_feat == n_feat_T:
+          raise ValueError('The templates and the graphs must have the same feature dimension.')
+
+      distances = torch.zeros(n_T)
+
+      for j in range(n_T):
+
+          template_features = tplt_features[j].reshape(len(tplt_features[j]), n_feat_T)
+          M = dist(G_features, template_features).type(torch.float)
+
+          if multi_alpha:
+              embedding = fused_gromov_wasserstein2(M, C, tplt_adjacencies[j], weights_G, tplt_weights[j], alpha=alpha[j], symmetric=True, max_iter=100)
+          else:
+              embedding = fused_gromov_wasserstein2(M, C, tplt_adjacencies[j], weights_G, tplt_weights[j], alpha=alpha, symmetric=True, max_iter=100)
+
+          distances[j] = embedding
+
+    return distances

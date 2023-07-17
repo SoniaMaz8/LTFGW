@@ -1,15 +1,13 @@
 # %%
 
 import torch_geometric
-from torch_geometric.loader import NeighborLoader, DataLoader, ClusterData, ClusterLoader, DataLoader
-from GNN.architectures import *
+from torch_geometric.loader import NeighborLoader, DataLoader, DataLoader
 
 from main.utils import *
 from main.trainers import *
 import os
 import torch
 import numpy as np
-import torch_geometric.transforms as T
 import argparse
 
 torch_geometric.typing.WITH_PYG_LIB = False
@@ -57,7 +55,7 @@ parser.add_argument('-train_node_weights', type=str, default='True',
                     help='wether to train the template node weights')
 parser.add_argument('-save', type=str, default='True',
                     help='wether to save the results')
-parser.add_argument('-random_split', type=list, default=[600, 200, 200],
+parser.add_argument('-random_split', type=list, default=[112, 38, 38],
                     help='size of train/val/test for multigraph')
 parser.add_argument('-alpha0', type=float, default=None,
                     help='alpha0 for LTFGW')
@@ -203,13 +201,12 @@ for seed in seeds:
     if graph_type == 'single_graph':
         index=torch.randperm(len(dataset.y))
         train_index=index[:int(0.6*len(dataset.y))]
-        test_index=index[int(0.6*len(dataset.y)):int(0.8*len(dataset.y))]
-        val_index=index[int(0.8*len(dataset.y)):]
+        val_index=index[int(0.6*len(dataset.y)):int(0.8*len(dataset.y))]
+        test_index=index[int(0.8*len(dataset.y)):]
  
         train_mask=torch.zeros(len(dataset.y),dtype=torch.bool)
 
         train_mask[train_index]=True
-
 
         val_mask=torch.zeros(len(dataset.y),dtype=torch.bool)
         val_mask[val_index]=True
@@ -222,6 +219,7 @@ for seed in seeds:
         print(sum(dataset.train_mask))
         print(sum(dataset.val_mask))
         print(sum(dataset.test_mask))
+
 
      #   percls_trn = int(round(0.6 * len(dataset.y) / n_classes))
        # val_lb = int(round(0.2 * len(dataset.y)))
@@ -278,8 +276,13 @@ for seed in seeds:
             model,
             criterion,
             optimizer,
+            nepochs,
+            save,
+            filename_save,
+            filename_best_model,
             train_loader,
-            val_loader)
+            val_loader,
+            filename_visus)
 
     elif graph_type == 'mini_batch':
         percls_trn = int(round(0.6 * len(dataset.y) / n_classes))

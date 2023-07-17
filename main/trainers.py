@@ -105,7 +105,7 @@ def train(criterion,optimizer,loader,loader_val,model,filename_save,filename_bes
             df.at[epoch, 'validation_accuracy'] = mean_val_acc
             df.at[epoch, 'loss_validation'] = mean_val_loss
 
-            if  mean_val_acc >= best_val_perf:
+            if  mean_val_acc > best_val_perf:
 
                 # save best model parameters
                 torch.save({'model_state_dict': model.state_dict(),
@@ -131,14 +131,14 @@ def train(criterion,optimizer,loader,loader_val,model,filename_save,filename_bes
 
         end = time.time()
 
-  #      checkpoint = torch.load(filename_best_model)
-  #      model.load_state_dict(checkpoint['model_state_dict'])
+        checkpoint = torch.load(filename_best_model)
+        model.load_state_dict(checkpoint['model_state_dict'])
 
-   #     test_acc = test(model, loader_test)
-   #     print(test_acc)
+        test_acc = test(model, loader_test)
+        print(test_acc)
 
-    #    checkpoint = torch.load(filename_current_model)
-    #    model.load_state_dict(checkpoint['model_state_dict'])
+        checkpoint = torch.load(filename_current_model)
+        model.load_state_dict(checkpoint['model_state_dict'])
 
         if save:
           df.to_pickle(filename_save)
@@ -194,14 +194,13 @@ def train_epoch_multi_graph(model, criterion, optimizer, train_loader):
         Data.append(data)  # save data for visualisation
 
         # Perform a single forward pass.
-        out, x_latent = model(data.x, data.edge_index)
+        out, x_latent = model(data.x, data.edge_index, data.batch)
 
         pred = out.argmax()
 
         train_correct = pred == data.y  # number of correct node predictions
-        train_acc = train_correct
+        train_acc = train_correct/len(data)
         
-        out=torch.reshape(out,(1,2))
         loss = criterion(out, data.y)
 
         loss.backward()
@@ -228,7 +227,7 @@ def validation_epoch_multi_graph(model, val_loader, criterion):
     for data in val_loader:  # Iterate in batches over the training dataset.
         Data.append(data)  # save data for visualisation
         # Perform a single forward pass.
-        out, x_latent = model(data.x, data.edge_index)
+        out, x_latent = model(data.x, data.edge_index,data.batch)
         pred = out.argmax()
         out=torch.reshape(out,(1,2))
         Loss_val.append(criterion(out, data.y))
