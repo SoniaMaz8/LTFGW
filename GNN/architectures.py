@@ -1316,11 +1316,10 @@ class MLP_LTFGW_linear(nn.Module):
 
         self.LTFGW=LTFGW(self.n_templates,self.n_template_nodes,self.n_features,self.k,alpha0,mean_init,std_init,train_node_weights,shortest_path,template_sizes,log)
 
+        
         self.linear = Linear(self.n_templates, self.n_classes)
 
     def forward(self, x, edge_index):
-
-
         x=self.LTFGW(x,edge_index)
 
         x_latent = x

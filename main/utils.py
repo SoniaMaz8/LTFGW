@@ -98,7 +98,7 @@ def get_model(
         model = LTFGW_MLP_dropout_relu( n_classes, n_features ,n_templates,n_templates_nodes,hidden_layer,dropout,shortest_path,k,mean_init,std_init,log,alpha0,train_node_weights, skip_connection ,template_sizes)          
 
     elif model_name == 'MLP_LTFGW_linear':
-        model = MLP_LTFGW( n_hidden_layer, hidden_layer, dropout, n_classes, n_features,n_templates,n_templates_nodes,k,mean_init,std_init,alpha0,train_node_weights,shortest_path,template_sizes,log)    
+        model = MLP_LTFGW_linear( n_hidden_layer, hidden_layer, dropout, n_classes, n_features,n_templates,n_templates_nodes,k,mean_init,std_init,alpha0,train_node_weights,shortest_path,template_sizes,log)    
 
     
     elif model_name == 'pooling_TFGW':
