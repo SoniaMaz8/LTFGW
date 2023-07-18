@@ -144,7 +144,7 @@ def get_dataset(dataset_name):
 
     elif dataset_name == 'mutag':
         dataset = TUDataset(root='data/TUDataset', name='MUTAG')
-        n_classes = 7
+        n_classes = 2
         n_features = dataset[0].num_features
         test_graph = None
         graph_type = 'multi_graph'

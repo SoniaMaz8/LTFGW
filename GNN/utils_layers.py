@@ -380,7 +380,7 @@ def distance_to_templates3(G_edges, tplt_adjacencies, G_features, tplt_features,
         
         nodes=torch.where(batch==i)[0]
 
-        G_edges_i,_=sub(nodes,edge_index=G_edges)
+        G_edges_i,_=sub(nodes,edge_index=G_edges,relabel_nodes=True)
         G_features_i=G_features[nodes]
 
         n, n_feat = G_features_i.shape

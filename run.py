@@ -42,7 +42,7 @@ parser.add_argument('-hidden_layer', type=int, default=3,
                     help='hidden dimention')
 parser.add_argument('-n_hidden_layer', type=int, default=0,
                     help='number of hidden layers')
-parser.add_argument('-batch_size', type=int, default=5,
+parser.add_argument('-batch_size', type=int, default=30,
                     help='batch size if multi graph')
 parser.add_argument('-first_seed', type=int, default=20,
                     help='first seed to train with')
@@ -201,8 +201,8 @@ for seed in seeds:
     if graph_type == 'single_graph':
         index=torch.randperm(len(dataset.y))
         train_index=index[:int(0.6*len(dataset.y))]
-        val_index=index[int(0.6*len(dataset.y)):int(0.8*len(dataset.y))]
-        test_index=index[int(0.8*len(dataset.y)):]
+        test_index=index[int(0.6*len(dataset.y)):int(0.8*len(dataset.y))]
+        val_index=index[int(0.8*len(dataset.y)):]
  
         train_mask=torch.zeros(len(dataset.y),dtype=torch.bool)
 

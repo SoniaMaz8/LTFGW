@@ -28,6 +28,7 @@ def train_epoch(dataset, model, criterion, optimizer):
 
     loss.backward()
     optimizer.step()
+    optimizer.zero_grad()
 
     return loss, train_acc, x_latent
 
@@ -196,10 +197,11 @@ def train_epoch_multi_graph(model, criterion, optimizer, train_loader):
         # Perform a single forward pass.
         out, x_latent = model(data.x, data.edge_index, data.batch)
 
-        pred = out.argmax()
+        pred = torch.argmax(out,dim=1)
+
 
         train_correct = pred == data.y  # number of correct node predictions
-        train_acc = train_correct/len(data)
+        train_acc = train_correct.sum()/len(data)
         
         loss = criterion(out, data.y)
 
@@ -211,8 +213,9 @@ def train_epoch_multi_graph(model, criterion, optimizer, train_loader):
         Train_acc.append(train_acc)
         X_latent.append(x_latent.detach().numpy())
 
-    Loss = torch.Tensor(Loss)
-    Train_acc = torch.Tensor(Train_acc)
+    
+    Loss = torch.tensor(Loss)
+    Train_acc = torch.tensor(Train_acc)
 
     return torch.mean(Loss), torch.mean(Train_acc), X_latent, Data
 
@@ -228,11 +231,10 @@ def validation_epoch_multi_graph(model, val_loader, criterion):
         Data.append(data)  # save data for visualisation
         # Perform a single forward pass.
         out, x_latent = model(data.x, data.edge_index,data.batch)
-        pred = out.argmax()
-        out=torch.reshape(out,(1,2))
+        pred = torch.argmax(out,dim=1)
         Loss_val.append(criterion(out, data.y))
         val_correct = pred == data.y  # number of correct node predictions
-        val_acc = val_correct
+        val_acc = val_correct.sum()/len(data)
         Val_acc.append(val_acc)
         X_latent.append(x_latent.detach().numpy())
 
@@ -268,7 +270,6 @@ def train_multi_graph(
         df.to_pickle(filename_save)
 
     for epoch in range(n_epoch):
-        print(epoch)
 
         # training
         start = time.time()
@@ -323,7 +324,7 @@ def test_multigraph(model, dataset):
         out, _ = model(data.x, data.edge_index)
         pred = out.argmax
         test_correct = pred == data.y
-        test_acc = test_correct
+        test_acc = test_correct.sum()/len(data)
         Test_acc.append(test_acc)
     Test_acc = torch.tensor(Test_acc)
     return torch.mean(Test_acc)

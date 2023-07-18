@@ -19,6 +19,8 @@ plt.figure(figsize=(10, 8))
 plt.scatter(X_embedded[:, 0], X_embedded[:, 1],
             c=G.y, cmap='tab10', vmax=9, alpha=0.5)
 
+print(G.y)
+
 # plot connections
 for i in range(len(edges[0])):
     plt.plot([X_embedded[edges[0, i], 0], X_embedded[edges[1, i], 0]], [
@@ -66,10 +68,10 @@ df_GCN = pd.read_pickle(
     'results/GCN/anti_sbm1/20/performances/lr0.01_n_temp3_n_nodes3_alpha0None_k1_drop0.0_wd0.0_hl3_scheduler_False_logFalse.pkl')
 
 df_LTFGW6 = pd.read_pickle(
-    'MLP_LTFGW_linear.pkl')
+    'results/MLP_LTFGW_linear/anti_sbm1/20/performances/lr0.05_n_temp3_n_nodes3_alpha0None_k1_drop0.6_wd0.0005_hl3_scheduler_False_logFalse.pkl')
 
 df_LTFGW3 = pd.read_pickle(
-    'results/MLP_LTFGW_linear/anti_sbm1/20/performances/lr0.05_n_temp3_n_nodes3_alpha0None_k1_drop0.6_wd0.0005_hl3_scheduler_False_logFalse.pkl')
+    'MLP_LTFGW_linear.pkl')
 
 
 loss_GCN = df_GCN['loss']
@@ -515,3 +517,95 @@ parameters = torch.load('results/MLP_LTFGW/anti_sbm1/20/best_model/lr0.05_n_temp
 parameters[checkpoint['model_state_dict']]
 
 
+# %% mutag
+
+df_GCN = pd.read_pickle(
+    'results/pooling_TFGW/mutag/21/performances/lr0.0001_n_temp4_n_nodes4_alpha0None_k1_drop0.6_wd0.0005_hl3_scheduler_False_logFalse.pkl')
+
+
+
+
+loss_GCN = df_GCN['loss']
+validation_GCN = df_GCN['validation_accuracy']
+train_GCN = df_GCN['train_accuracy']
+loss_val_GCN = df_GCN['loss_validation']
+
+plt.figure(1)
+plt.plot(loss_GCN, label='TFGW')
+plt.title('mutag - training loss')
+plt.xlabel('epochs')
+plt.legend()
+
+plt.figure(2)
+plt.plot(loss_val_GCN, label='TFGW')
+plt.title('mutag - validation loss')
+plt.xlabel('epochs')
+plt.legend()
+
+plt.figure(3)
+plt.plot(validation_GCN, label='TFGW')
+plt.title('mutag - validation accuracy')
+plt.xlabel('epochs')
+plt.legend()
+
+plt.figure(4)
+plt.plot(train_GCN, label='TFGW')
+plt.title('mutag - train accuracy')
+plt.xlabel('epochs')
+plt.legend()
+# %%
+data1=np.loadtxt('linear/1.csv')
+data2=np.loadtxt('linear/2.csv')
+data3=np.loadtxt('linear/3.csv')
+data4=np.loadtxt('linear/4.csv')
+data5=np.loadtxt('linear/5.csv')
+data6=np.loadtxt('linear/6.csv')
+
+data1_GCN=np.loadtxt('results/GCN/anti_sbm1/test_seed29_lr0.01_n_temp3_n_nodes3_alpha0None_k1_drop0.6_wd0.0_hl3_schedulerFalse_logFalse.csv')
+data2_GCN=np.loadtxt('results/GCN/anti_sbm2/test_seed29_lr0.01_n_temp3_n_nodes3_alpha0None_k1_drop0.6_wd0.0_hl3_schedulerFalse_logFalse.csv')
+data3_GCN=np.loadtxt('results/GCN/anti_sbm3/test_seed29_lr0.01_n_temp3_n_nodes3_alpha0None_k1_drop0.6_wd0.0_hl3_schedulerFalse_logFalse.csv')
+data4_GCN=np.loadtxt('results/GCN/anti_sbm4/test_seed29_lr0.01_n_temp3_n_nodes3_alpha0None_k1_drop0.6_wd0.0_hl3_schedulerFalse_logFalse.csv')
+data5_GCN=np.loadtxt('results/GCN/anti_sbm5/test_seed29_lr0.01_n_temp3_n_nodes3_alpha0None_k1_drop0.6_wd0.0_hl3_schedulerFalse_logFalse.csv')
+data6_GCN=np.loadtxt('results/GCN/anti_sbm6/test_seed29_lr0.01_n_temp3_n_nodes3_alpha0None_k1_drop0.6_wd0.0_hl3_schedulerFalse_logFalse.csv')
+
+graph1=torch.load('data/anti_sbm1.pt')
+graph2=torch.load('data/anti_sbm2.pt')
+graph3=torch.load('data/anti_sbm3.pt')
+graph4=torch.load('data/anti_sbm4.pt')
+graph5=torch.load('data/anti_sbm5.pt')
+graph6=torch.load('data/anti_sbm6.pt')
+
+hom1=homophily(graph1.edge_index,graph1.y)
+hom2=homophily(graph2.edge_index,graph2.y)
+hom3=homophily(graph3.edge_index,graph3.y)
+hom4=homophily(graph4.edge_index,graph4.y)
+hom5=homophily(graph5.edge_index,graph5.y)
+hom6=homophily(graph6.edge_index,graph6.y)
+
+LTFGW=[data1,data2,data3,data4,data5,data6]
+GCN=[data1_GCN,data2_GCN,data3_GCN,data4_GCN,data5_GCN,data6_GCN]
+
+ticks=["{:.3f}".format(hom1),"{:.3f}".format(hom2),"{:.3f}".format(hom3),"{:.3f}".format(hom4),"{:.3f}".format(hom5),"{:.3f}".format(hom6)]
+
+bp=plt.boxplot(LTFGW,patch_artist=True,showmeans=True,positions=np.array(
+    np.arange(len(LTFGW)))*3.0+0.35,widths=0.6)
+
+bp_GCN=plt.boxplot(GCN,patch_artist=True,showmeans=True,positions=np.array(
+    np.arange(len(GCN)))*3.0-0.35,widths=0.6)
+
+def define_box_properties(plot_name, color_code, label):
+    for k, v in plot_name.items():
+        plt.setp(plot_name.get(k), color=color_code)
+         
+    # use plot function to draw a small line to name the legend.
+    plt.plot([], c=color_code, label=label)
+    plt.legend()  
+
+define_box_properties(bp, '#D7191C', 'LTFGW')
+define_box_properties(bp_GCN, '#2C7BB6', 'GCN')
+
+plt.xticks(np.arange(0, len(ticks) * 3, 3), ticks)
+
+plt.xlabel('increasing homophily')
+plt.title('LTFGW+linear - antisbm - boxplots of the accuracy on test for 10 different train/test splits')
+# %%
