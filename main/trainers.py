@@ -106,7 +106,7 @@ def train(criterion,optimizer,loader,loader_val,model,filename_save,filename_bes
             df.at[epoch, 'validation_accuracy'] = mean_val_acc
             df.at[epoch, 'loss_validation'] = mean_val_loss
 
-            if  mean_val_acc > best_val_perf:
+            if  mean_val_acc >= best_val_perf:
 
                 # save best model parameters
                 torch.save({'model_state_dict': model.state_dict(),

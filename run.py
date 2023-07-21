@@ -241,20 +241,20 @@ for seed in seeds:
                                 num_neighbors=[-1],
                                 input_nodes=dataset.train_mask,
                                 directed=False,
-                                batch_size=torch.sum(dataset.train_mask).item()
+                                batch_size=64
                                 )
         loader_val = NeighborLoader(dataset,
                                     num_neighbors=[-1],
                                     input_nodes=dataset.val_mask,
                                     directed=False,
-                                    batch_size=torch.sum(dataset.val_mask).item()
+                                    batch_size=64
                                     )
         
         loader_test = NeighborLoader(dataset,
                             num_neighbors=[-1],
                             input_nodes=dataset.test_mask,
                             directed=False,
-                            batch_size=torch.sum(dataset.test_mask).item()
+                            batch_size=64
                             )
 
         dataset_test = dataset

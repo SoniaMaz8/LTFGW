@@ -36,7 +36,6 @@ class GCN(nn.Module):
         self.last_conv = GCNConv(self.hidden_layer, self.n_classes)
 
     def forward(self, x, edge_index):
-
        x = self.first_conv(x, edge_index)
    #    x = x.relu()
    #    x = self.dropout(x)
