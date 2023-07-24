@@ -115,6 +115,7 @@ n_hidden_layer=args['n_hidden_layer']
 reg=args['reg']
 nepochs=args['nepochs']
 model_name=args['model']
+batch_size=args['batch_size']
 
 
 
@@ -221,40 +222,25 @@ for seed in seeds:
         print(sum(dataset.test_mask))
 
 
-     #   percls_trn = int(round(0.6 * len(dataset.y) / n_classes))
-       # val_lb = int(round(0.2 * len(dataset.y)))
-
-       # dataset = random_planetoid_splits(
-      #      dataset,
-       #     n_classes,
-       #     percls_trn=percls_trn,
-       #     val_lb=val_lb,
-     #       seed=seed)
-        
-    #    print(sum(dataset.train_mask))
-    #    print(sum(dataset.val_mask))
-     #   print(sum(dataset.test_mask))
-
-
         dataset = dataset.to(device)
         loader = NeighborLoader(dataset,
                                 num_neighbors=[-1],
                                 input_nodes=dataset.train_mask,
                                 directed=False,
-                                batch_size=64
+                                batch_size=sum(dataset.train_mask).item()
                                 )
         loader_val = NeighborLoader(dataset,
                                     num_neighbors=[-1],
                                     input_nodes=dataset.val_mask,
                                     directed=False,
-                                    batch_size=64
+                                    batch_size=sum(dataset.val_mask).item()
                                     )
         
         loader_test = NeighborLoader(dataset,
                             num_neighbors=[-1],
                             input_nodes=dataset.test_mask,
                             directed=False,
-                            batch_size=64
+                            batch_size=sum(dataset.test_mask).item()
                             )
 
         dataset_test = dataset

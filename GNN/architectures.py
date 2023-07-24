@@ -356,7 +356,7 @@ class MLP(nn.Module):
         self.hidden_layer = hidden_layer
         self.drop = dropout
 
-        self.first_linear = Linear(self.n_features, self.hidden_layer)
+        self.first_linear = Linear(self.n_features, self.n_classes)
         self.dropout1 = torch.nn.Dropout(self.drop)
         self.dropout2 = torch.nn.Dropout(self.drop)
 
@@ -370,19 +370,19 @@ class MLP(nn.Module):
 
     def forward(self, x, edge_index):
 
-        x = self.dropout1(x)
+     #   x = self.dropout1(x)
         x = self.first_linear(x)
 
-        x = x.relu()
+      #  x = x.relu()
 
         # go through hidden layers
-        for i in range(self.n_hidden_layers):
-            x = self.list_hidden_layer[i](x)
-            x = x.relu()
+       # for i in range(self.n_hidden_layers):
+       #     x = self.list_hidden_layer[i](x)
+       #     x = x.relu()
 
         x_latent = x
-        x = self.dropout2(x)
-        x = self.last_linear(x)
+        #x = self.dropout2(x)
+        #x = self.last_linear(x)
 
         return x, x_latent
 

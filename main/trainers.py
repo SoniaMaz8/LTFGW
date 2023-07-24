@@ -23,7 +23,7 @@ def train_epoch(dataset, model, criterion, optimizer):
     train_acc = int(train_correct.sum()) / \
         int(dataset.train_mask.sum())  # training_accuracy
     
-
+    
     loss = criterion(out[dataset.train_mask], dataset.y[dataset.train_mask])
 
     loss.backward()
