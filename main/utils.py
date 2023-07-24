@@ -115,7 +115,7 @@ def get_dataset(dataset_name):
 
     """
 
-    if not dataset_name in ['Citeseer','Toy_graph_single','Toy_graph_multi','mutag','cornell','cornell_directed','chameleon', 'wisconsin', 'anti_sbm','anti_sbm1','anti_sbm2','anti_sbm3','anti_sbm4','anti_sbm5','anti_sbm7','anti_sbm6','heterophilic_graph','double_sbm','double_sbm1']:
+    if not dataset_name in ['Citeseer','Toy_graph_single','Toy_graph_multi','mutag','cornell','cornell_directed','chameleon', 'wisconsin', 'anti_sbm','anti_sbm1','anti_sbm2','anti_sbm3','anti_sbm4','anti_sbm5','anti_sbm7','anti_sbm6','heterophilic_graph','double_sbm','double_sbm1','double_sbm2']:
         raise ValueError(
             'The dataset is not supported.')
 
@@ -253,7 +253,14 @@ def get_dataset(dataset_name):
         n_classes = 6
         n_features = 3
         test_graph = False
-        graph_type = 'single_graph'        
+        graph_type = 'single_graph'    
+
+    elif dataset_name == 'double_sbm2':
+        dataset = torch.load('data/double_sbm2.pt')
+        n_classes = 6
+        n_features = 3
+        test_graph = False
+        graph_type = 'single_graph'            
 
 
     mean = float(torch.mean(dataset.x).item())
