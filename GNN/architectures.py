@@ -34,17 +34,17 @@ class GCN(nn.Module):
 
     def forward(self, x, edge_index):
        x = self.first_conv(x, edge_index)
-   #    x = x.relu()
-   #    x = self.dropout(x)
+       x = x.relu()
+       x = self.dropout(x)
 
         # go through hidden layers
 
-  #      for i in range(self.n_hidden_layers):
-  #          x = self.list_hidden_layer[i](x, edge_index)
-  #          x = x.relu()
+        for i in range(self.n_hidden_layers):
+            x = self.list_hidden_layer[i](x, edge_index)
+            x = x.relu()
 
        x_latent = x
-  #     x = self.last_conv(x, edge_index)
+       x = self.last_conv(x, edge_index)
        return x
 
 class LTFGW_GCN(nn.Module):
@@ -235,15 +235,11 @@ class LTFGW_GCN(nn.Module):
         self.linear = Linear(self.n_templates, self.n_classes)
 
     def forward(self, x, edge_index):
-
-
         x=self.LTFGW(x,edge_index)
 
-        x_latent = x
+        x = self.linear(x)
 
-    #    x = self.linear(x)
-
-        return x, x_latent
+        return x
 
 
     """
@@ -301,14 +297,11 @@ class LTFGW_GCN(nn.Module):
 
     def forward(self, x, edge_index):
 
-
         x=self.LTFGW(x,edge_index)
-
-        x_latent = x
 
         x = self.linear(x)
 
-        return x, x_latent
+        return x
 
 class MLP(nn.Module):
     """
@@ -612,4 +605,4 @@ class GAT(torch.nn.Module):
 
     def forward(self, x,edge_index):
         x = GAT()
-        return x,x
+        return x
